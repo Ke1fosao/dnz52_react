@@ -193,7 +193,12 @@ USE_TZ = True
 # Статичні файли (CSS, JS, SVG)
 # ----------------------------------------------------------------------------
 STATIC_URL = '/static/'
+
+# Включаємо як локальну static/ так і spa/assets/ зібраного React build
 STATICFILES_DIRS = [BASE_DIR / 'static']
+if (BASE_DIR / 'spa').exists():
+    STATICFILES_DIRS.append(BASE_DIR / 'spa')
+
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # WhiteNoise — стиснення + кешування.

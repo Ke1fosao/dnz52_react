@@ -1,5 +1,17 @@
+"""URL роутер для production.
+
+Архітектура:
+  /admin/       → Django адмінка (для додавання контенту)
+  /api/v1/      → REST API для React фронтенду
+  /media/       → завантажені фото/документи
+  /static/      → CSS/JS для адмінки
+  /assets/      → JS/CSS React додатку
+  /sitemap.xml  → SEO
+  /robots.txt   → SEO
+  /*            → React SPA (index.html, далі React Router бере на себе)
+"""
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, re_path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.sitemaps.views import sitemap
@@ -8,6 +20,8 @@ from django.views.generic import TemplateView
 from main.sitemaps import (
     StaticViewSitemap, PageSitemap, NewsSitemap, GroupSitemap,
 )
+from dnz52_site.spa_views import spa_index
+
 
 sitemaps = {
     'static': StaticViewSitemap,
@@ -17,34 +31,51 @@ sitemaps = {
 }
 
 urlpatterns = [
+    # 1. Django admin (для адміністраторів)
     path('admin/', admin.site.urls),
 
-    # REST API для React фронтенду (dnz52-react)
+    # 2. REST API (для React)
     path('api/v1/', include('dnz52_site.api_urls')),
 
-    # SEO
+    # 3. SEO
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap'),
     path('robots.txt', TemplateView.as_view(
         template_name='robots.txt', content_type='text/plain'
     )),
 
-    path('', include('main.urls')),
-    path('news/', include('news.urls')),
-    path('gallery/', include('gallery.urls')),
-    path('documents/', include('documents.urls')),
-    path('groups/', include('groups.urls')),
-    path('specialists/', include('specialists.urls')),
-    path('circles/', include('circles.urls')),
-    path('reviews/', include('reviews.urls')),
-    path('menu/', include('menu.urls')),
-    path('events/', include('events.urls')),
-    path('faq/', include('faq.urls')),
+    # 4. CKEditor (для адмінки)
     path('ckeditor/', include('ckeditor_uploader.urls')),
 ]
 
+# 5. У DEV режимі віддаємо media і static самостійно
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+# 6. У DEV режимі також залишаємо старі Django шаблони (для backward compatibility
+#    якщо React dev сервер не запущено). У продакшені їх не реєструємо —
+#    React SPA повністю замінює UI.
+if settings.DEBUG and not getattr(settings, 'USE_REACT_SPA', False):
+    urlpatterns += [
+        path('', include('main.urls')),
+        path('news/', include('news.urls')),
+        path('gallery/', include('gallery.urls')),
+        path('documents/', include('documents.urls')),
+        path('groups/', include('groups.urls')),
+        path('specialists/', include('specialists.urls')),
+        path('circles/', include('circles.urls')),
+        path('reviews/', include('reviews.urls')),
+        path('menu/', include('menu.urls')),
+        path('events/', include('events.urls')),
+        path('faq/', include('faq.urls')),
+    ]
+
+# 7. React SPA fallback — будь-який інший URL віддає index.html.
+#    React Router всередині обробляє роутинг клієнтсько.
+#    ВАЖЛИВО: цей патерн має бути ОСТАННІМ — інакше перехопить всі інші роути.
+urlpatterns += [
+    re_path(r'^.*$', spa_index, name='spa-index'),
+]
 
 # Кастомні сторінки помилок (підхоплюються Django автоматично коли DEBUG=False)
 handler404 = 'main.views.error_404'
