@@ -28,23 +28,48 @@ function telHref(phone: string): string {
 interface ScheduleRow {
   days: string;
   time: string;
+  isShortTime: boolean;     // true коли час короткий і можна показати красивою бейджкою
+  isClosed: boolean;        // вихідний / закрито
+}
+
+const SHORT_TIME_LIMIT = 28;  // символів — більше цього показуємо як параграф
+
+/** Перевіряє чи це короткий "чистий" час типу "7:00–19:00" або "вихідний" */
+function isShortClean(text: string): boolean {
+  return text.length <= SHORT_TIME_LIMIT && !/[(){}[\]]/.test(text);
 }
 
 /**
- * Розбиває "Пн–Пт: 7:00–19:00\nСб–Нд: вихідний" на масив { days, time }.
- * Підтримує : або — як розділювач, або просто одну колонку.
+ * Розбиває графік на масив рядків.
+ * Підтримує розділювачі: \n, ; (крапка з комою) — кожне стає окремим рядком.
+ * У кожному рядку шукає шаблон "ярлик: час" або просто час.
  */
 function parseSchedule(raw: string): ScheduleRow[] {
   return raw
-    .split(/\n+/)
+    .split(/[\n;]+/)                  // нові рядки АБО крапки з комою
     .map(line => line.trim())
+    .map(line => line.replace(/\.$/, ''))  // прибираємо крапку в кінці
     .filter(Boolean)
     .map(line => {
-      const m = line.match(/^(.+?)\s*[:—–-]\s*(.+)$/);
+      // Шукаємо роздільник: ":" або довге тире "—" / "–" (але НЕ дефіс "-",
+      // бо дефіс може бути всередині часу "7-19")
+      const m = line.match(/^([^:—–]{2,40}?)\s*[:—–]\s*(.+)$/);
       if (m) {
-        return { days: m[1].trim(), time: m[2].trim() };
+        const days = m[1].trim();
+        const time = m[2].trim();
+        return {
+          days,
+          time,
+          isShortTime: isShortClean(time),
+          isClosed: /вихідн|закри|не\s*працю/i.test(time),
+        };
       }
-      return { days: '', time: line };
+      return {
+        days: '',
+        time: line,
+        isShortTime: isShortClean(line),
+        isClosed: /вихідн|закри|не\s*працю/i.test(line),
+      };
     });
 }
 
@@ -113,28 +138,47 @@ export function ContactsPage() {
               {/* Режим роботи */}
               {contact.working_hours && (
                 <ContactCard icon={<Clock />} label="Режим роботи">
-                  <div className="mt-1 divide-y divide-border/60">
-                    {parseSchedule(contact.working_hours).map((row, i) => (
-                      <div
-                        key={i}
-                        className="py-2 flex items-center justify-between gap-3 first:pt-0 last:pb-0"
-                      >
-                        {row.days ? (
-                          <>
+                  <div className="mt-2 space-y-3">
+                    {parseSchedule(contact.working_hours).map((row, i) => {
+                      // Випадок 1: короткий час → горизонтально з бейджкою
+                      if (row.days && row.isShortTime) {
+                        return (
+                          <div
+                            key={i}
+                            className="flex items-center justify-between gap-3 py-2 border-b border-border/40 last:border-0"
+                          >
                             <span className="font-display font-bold text-sm">{row.days}</span>
-                            <span className={`text-sm font-semibold px-3 py-1 rounded-full ${
-                              /вихідн|закри/i.test(row.time)
+                            <span className={`text-xs font-semibold px-3 py-1 rounded-full shrink-0 ${
+                              row.isClosed
                                 ? 'bg-red-100 text-red-700'
                                 : 'bg-green-100 text-green-700'
                             }`}>
                               {row.time}
                             </span>
-                          </>
-                        ) : (
-                          <span className="text-sm">{row.time}</span>
-                        )}
-                      </div>
-                    ))}
+                          </div>
+                        );
+                      }
+                      // Випадок 2: довгий час → вертикально з підзаголовком
+                      if (row.days) {
+                        return (
+                          <div
+                            key={i}
+                            className="rounded-2xl bg-primary-50/50 border border-primary-100 p-3"
+                          >
+                            <div className="font-display font-bold text-sm text-primary-700 mb-1 capitalize">
+                              {row.days}
+                            </div>
+                            <div className="text-sm leading-relaxed text-foreground/85">
+                              {row.time}
+                            </div>
+                          </div>
+                        );
+                      }
+                      // Випадок 3: тільки текст без ярлика
+                      return (
+                        <p key={i} className="text-sm leading-relaxed">{row.time}</p>
+                      );
+                    })}
                   </div>
                 </ContactCard>
               )}
@@ -171,9 +215,9 @@ export function ContactsPage() {
               )}
             </div>
 
-            {/* Права колонка — карта */}
-            <Card className="overflow-hidden lg:col-span-3 self-start">
-              <div className="aspect-square lg:aspect-auto lg:h-full lg:min-h-[600px] w-full">
+            {/* Права колонка — карта (на десктопі розтягується на висоту лівої колонки) */}
+            <Card className="overflow-hidden lg:col-span-3 flex flex-col">
+              <div className="aspect-[4/3] sm:aspect-video lg:aspect-auto lg:flex-1 w-full lg:min-h-[640px]">
                 <MapEmbed embed={contact.map_embed} address={contact.address} />
               </div>
             </Card>
