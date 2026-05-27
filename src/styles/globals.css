@@ -1,0 +1,128 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 210 25% 18%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 210 25% 18%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 25% 18%;
+
+    --primary: 213 73% 59%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 168 72% 60%;
+    --secondary-foreground: 168 60% 18%;
+
+    --muted: 210 20% 96%;
+    --muted-foreground: 210 12% 45%;
+
+    --accent: 35 100% 65%;
+    --accent-foreground: 30 80% 15%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 20% 90%;
+    --input: 210 20% 90%;
+    --ring: 213 73% 59%;
+
+    --radius: 1rem;
+  }
+
+  .dark {
+    --background: 210 30% 10%;
+    --foreground: 0 0% 95%;
+    --card: 210 30% 14%;
+    --card-foreground: 0 0% 95%;
+    --popover: 210 30% 14%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 213 73% 65%;
+    --primary-foreground: 210 30% 10%;
+    --secondary: 168 60% 50%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 210 25% 20%;
+    --muted-foreground: 210 15% 70%;
+    --accent: 35 90% 60%;
+    --accent-foreground: 30 80% 15%;
+    --destructive: 0 70% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 210 25% 25%;
+    --input: 210 25% 25%;
+    --ring: 213 73% 65%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+}
+
+@layer components {
+  /* CKEditor контент з Django */
+  .prose-content {
+    @apply text-base leading-relaxed;
+  }
+  .prose-content h2 {
+    @apply text-2xl font-bold mt-6 mb-3 text-primary-700;
+  }
+  .prose-content h3 {
+    @apply text-xl font-semibold mt-5 mb-2;
+  }
+  .prose-content p {
+    @apply mb-4;
+  }
+  .prose-content ul, .prose-content ol {
+    @apply mb-4 pl-6;
+  }
+  .prose-content ul {
+    @apply list-disc;
+  }
+  .prose-content ol {
+    @apply list-decimal;
+  }
+  .prose-content a {
+    @apply text-primary-600 underline hover:text-primary-800;
+  }
+  .prose-content img {
+    @apply rounded-2xl my-4 max-w-full h-auto shadow-soft;
+  }
+  .prose-content blockquote {
+    @apply border-l-4 border-primary-400 pl-4 italic my-4 text-muted-foreground;
+  }
+
+  /* Декоративні бекграунди */
+  .bg-clouds {
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(168, 218, 255, 0.4) 0%, transparent 50%),
+      radial-gradient(circle at 80% 60%, rgba(149, 225, 211, 0.3) 0%, transparent 50%),
+      radial-gradient(circle at 40% 80%, rgba(255, 217, 61, 0.2) 0%, transparent 50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
