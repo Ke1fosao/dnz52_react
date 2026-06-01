@@ -1,14 +1,45 @@
 from datetime import timedelta
 from django.contrib import admin, messages
 from django.utils.html import format_html
-from .models import DailyMenu
+from simple_history.admin import SimpleHistoryAdmin
+from .models import DailyMenu, MenuTemplate
 
 
 _WEEKDAYS_UK = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', "П'ятниця", 'Субота', 'Неділя']
 
 
+@admin.register(MenuTemplate)
+class MenuTemplateAdmin(admin.ModelAdmin):
+    """Шаблон-основа меню за днями тижня. Показується коли немає DailyMenu на дату."""
+    list_display = ['weekday_name', 'meals_chips', 'note', 'is_active']
+    list_editable = ['is_active']
+    ordering = ['weekday']
+
+    fieldsets = (
+        (None, {
+            'fields': ('weekday', 'is_active', 'note'),
+            'description': 'Заповніть страви для кожного дня тижня ОДИН раз — і це меню '
+                           'показуватиметься щотижня автоматично, поки на конкретну дату '
+                           'не буде створено окреме «Меню на день» (воно має пріоритет).',
+        }),
+        ('🥣 Сніданок', {'fields': ('breakfast', 'second_breakfast')}),
+        ('🍲 Обід', {'fields': ('lunch',)}),
+        ('🥨 Полуденок та вечеря', {'fields': ('snack', 'dinner')}),
+    )
+
+    @admin.display(description='День тижня', ordering='weekday')
+    def weekday_name(self, obj):
+        return obj.get_weekday_display()
+
+    @admin.display(description='Прийоми їжі')
+    def meals_chips(self, obj):
+        chips = [e for e, v in [('🥣', obj.breakfast), ('🍎', obj.second_breakfast),
+                                ('🍲', obj.lunch), ('🥨', obj.snack), ('🥛', obj.dinner)] if v]
+        return ' '.join(chips) if chips else format_html('<span style="color:#aaa;">— порожньо —</span>')
+
+
 @admin.register(DailyMenu)
-class DailyMenuAdmin(admin.ModelAdmin):
+class DailyMenuAdmin(SimpleHistoryAdmin):
     list_display = ['date_display', 'weekday', 'meals_chips', 'note', 'is_published']
     list_editable = ['is_published']
     list_filter = ['is_published']

@@ -43,8 +43,8 @@ urlpatterns = [
         template_name='robots.txt', content_type='text/plain'
     )),
 
-    # 4. CKEditor (для адмінки)
-    path('ckeditor/', include('ckeditor_uploader.urls')),
+    # 4. Markdownx (редактор для адмінки — завантаження зображень, превʼю)
+    path('markdownx/', include('markdownx.urls')),
 ]
 
 # 5. У DEV режимі віддаємо media і static самостійно

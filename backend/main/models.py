@@ -1,18 +1,21 @@
 from django.db import models
 from django.urls import reverse
-from ckeditor.fields import RichTextField
+from markdownx.models import MarkdownxField
+from simple_history.models import HistoricalRecords
 
 
 class Page(models.Model):
     """Статичні сторінки (Про заклад, Контакти тощо)"""
     title = models.CharField('Заголовок', max_length=200)
     slug = models.SlugField('URL', unique=True)
-    content = RichTextField('Контент')
+    content = MarkdownxField('Контент')
     image = models.ImageField('Зображення', upload_to='pages/', blank=True, null=True)
     created_at = models.DateTimeField('Дата створення', auto_now_add=True)
     updated_at = models.DateTimeField('Дата оновлення', auto_now=True)
     is_published = models.BooleanField('Опубліковано', default=True)
     order = models.IntegerField('Порядок', default=0)
+
+    history = HistoricalRecords()
 
     class Meta:
         verbose_name = 'Сторінка'
@@ -307,14 +310,14 @@ class AttestationSettings(models.Model):
                                     default='Атестація — це система заходів, спрямована на всебічне комплексне '
                                             'оцінювання педагогічної діяльності, за результатами якої '
                                             'присвоюється кваліфікаційна категорія.')
-    intro_html = RichTextField('Вступний блок (синій, ліворуч)',
+    intro_html = MarkdownxField('Вступний блок (синій, ліворуч)',
                                   help_text='Підтримує форматування. Зʼявляється угорі сторінки.',
                                   blank=True)
     docs_section_subtitle = models.CharField('Підзаголовок секції документів', max_length=200,
                                                default='2025–2026 навчальний рік')
     contact_title = models.CharField('Заголовок підказки про контакти', max_length=200,
                                        default='Маєте запитання щодо атестації?')
-    contact_html = RichTextField('Текст підказки про контакти (жовтий блок)',
+    contact_html = MarkdownxField('Текст підказки про контакти (жовтий блок)',
                                     default='<p>Звертайтеся до <strong>вихователя-методиста</strong> закладу — '
                                             'він допоможе з оформленням документів, поясненням етапів і термінів.</p>',
                                     blank=True)
@@ -346,7 +349,7 @@ class StaffMember(models.Model):
     category = models.CharField('Категорія / Звання', max_length=300, blank=True)
     awards = models.TextField('Нагороди та звання', blank=True,
                                 help_text='Кожна нагорода — з нового рядка. Будуть показані як список.')
-    bio = RichTextField('Біографія / Додаткова інформація', blank=True)
+    bio = MarkdownxField('Біографія / Додаткова інформація', blank=True)
     email = models.EmailField('Email', blank=True)
     phone = models.CharField('Телефон', max_length=50, blank=True)
     reception_hours = models.CharField('Години прийому', max_length=200, blank=True)

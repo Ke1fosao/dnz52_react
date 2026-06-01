@@ -85,8 +85,9 @@ INSTALLED_APPS = [
     'django.contrib.sitemaps',
 
     # Сторонні
-    'ckeditor',
-    'ckeditor_uploader',
+    'markdownx',                 # markdown-редактор (замість CKEditor)
+    'simple_history',            # версійність (хто/коли змінив)
+    'adminsortable2',            # drag-drop сортування в адмінці
     'crispy_forms',
     'crispy_bootstrap5',
     'rest_framework',
@@ -124,7 +125,13 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # simple_history — відстежує користувача що зробив зміну
+    'simple_history.middleware.HistoryRequestMiddleware',
 ]
+
+# Markdownx — налаштування редактора
+MARKDOWNX_MEDIA_PATH = 'markdownx/'
+MARKDOWNX_UPLOAD_MAX_SIZE = 5 * 1024 * 1024  # 5 МБ
 
 ROOT_URLCONF = 'dnz52_site.urls'
 
@@ -226,18 +233,6 @@ STORAGES = {
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-
-# ----------------------------------------------------------------------------
-# CKEditor
-# ----------------------------------------------------------------------------
-CKEDITOR_UPLOAD_PATH = 'uploads/'
-CKEDITOR_CONFIGS = {
-    'default': {
-        'toolbar': 'full',
-        'height': 300,
-        'width': '100%',
-    },
-}
 
 
 # ----------------------------------------------------------------------------

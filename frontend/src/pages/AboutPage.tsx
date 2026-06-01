@@ -2,6 +2,7 @@ import { Seo } from '@/components/common/Seo';
 import { PageHero } from '@/components/common/PageHero';
 import { PageSpinner } from '@/components/common/Spinner';
 import { ZoomableImage } from '@/components/common/ZoomableImage';
+import { RichContent } from '@/components/common/RichContent';
 import { Card, CardContent } from '@/components/ui/card';
 import { usePage } from '@/hooks/useApi';
 
@@ -34,7 +35,7 @@ export function AboutPage() {
             )}
             <Card>
               <CardContent className="p-6 md:p-10">
-                <div className="prose-content" dangerouslySetInnerHTML={{ __html: data.content }} />
+                <RichContent content={data.content} />
               </CardContent>
             </Card>
           </>

@@ -4,6 +4,7 @@ import { Seo } from '@/components/common/Seo';
 import { PageHero } from '@/components/common/PageHero';
 import { PageSpinner } from '@/components/common/Spinner';
 import { ZoomableImage, PhotoGalleryLightbox } from '@/components/common/ZoomableImage';
+import { RichContent } from '@/components/common/RichContent';
 import { usePage } from '@/hooks/useApi';
 import { NotFoundPage } from './NotFoundPage';
 
@@ -30,7 +31,7 @@ export function PageDetail() {
             className="w-full h-full object-cover"
           />
         )}
-        <div className="prose-content" dangerouslySetInnerHTML={{ __html: data.content }} />
+        <RichContent content={data.content} />
 
         {data.images.length > 0 && (
           <>

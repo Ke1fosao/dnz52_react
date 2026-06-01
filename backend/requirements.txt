@@ -11,9 +11,8 @@ python-dotenv==1.2.2
 # Картинки (потрібно для ImageField)
 pillow==12.2.0
 
-# Розширений редактор тексту для адмінки
-django-ckeditor==6.7.1
-django-js-asset==3.1.2
+# Markdown-редактор для адмінки (замінив django-ckeditor — легший, менше статики)
+# (django-markdownx нижче у секції адмінки)
 
 # Гарні форми
 django-crispy-forms==2.3
@@ -57,3 +56,10 @@ django-filter==24.3
 
 # Web-push сповіщення (VAPID)
 pywebpush==2.0.0
+
+# ============================================================================
+# Адмінка: версійність, drag-drop сортування, markdown-редактор
+# ============================================================================
+django-simple-history==3.11.0
+django-admin-sortable2==2.3.1
+django-markdownx==4.0.11

@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
-from ckeditor.fields import RichTextField
+from markdownx.models import MarkdownxField
 
 
 class FAQCategory(models.Model):
@@ -25,7 +25,7 @@ class FAQCategory(models.Model):
 class FAQItem(models.Model):
     """Питання-відповідь. Один запис = один пункт."""
     question = models.CharField('Питання', max_length=400)
-    answer   = RichTextField('Відповідь',
+    answer   = MarkdownxField('Відповідь',
                               help_text='Підтримує форматування: жирний, посилання тощо.')
     category = models.ForeignKey(
         FAQCategory, on_delete=models.SET_NULL,

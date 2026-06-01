@@ -4,6 +4,7 @@ import { ArrowLeft, ExternalLink, GraduationCap, Quote } from 'lucide-react';
 import { Seo } from '@/components/common/Seo';
 import { PageSpinner } from '@/components/common/Spinner';
 import { ZoomableImage, PhotoGalleryLightbox } from '@/components/common/ZoomableImage';
+import { RichContent } from '@/components/common/RichContent';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -106,7 +107,7 @@ export function SpecialistPageView() {
         {data.description && (
           <Card>
             <CardContent className="p-6 md:p-8">
-              <div className="prose-content" dangerouslySetInnerHTML={{ __html: data.description }} />
+              <RichContent content={data.description} />
             </CardContent>
           </Card>
         )}
@@ -166,7 +167,7 @@ function SectionCard({ section }: { section: SpecialistPageSection }) {
         </div>
 
         {section.description && (
-          <div className="prose-content mb-4" dangerouslySetInnerHTML={{ __html: section.description }} />
+          <RichContent content={section.description} className="mb-4" />
         )}
 
         {section.kind === 'info' && section.photos.length > 0 && (

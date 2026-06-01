@@ -2,6 +2,7 @@ import { ExternalLink, FileText, BookOpen } from 'lucide-react';
 import { Seo } from '@/components/common/Seo';
 import { PageHero } from '@/components/common/PageHero';
 import { Spinner } from '@/components/common/Spinner';
+import { RichContent } from '@/components/common/RichContent';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -49,7 +50,7 @@ export function AttestationPage() {
         {settings?.intro_html && (
           <Card className="border-primary-200 bg-primary-50">
             <CardContent className="p-6">
-              <div className="prose-content" dangerouslySetInnerHTML={{ __html: settings.intro_html }} />
+              <RichContent content={settings.intro_html} />
             </CardContent>
           </Card>
         )}
@@ -159,9 +160,9 @@ export function AttestationPage() {
           <Card className="bg-gradient-warm text-white border-0">
             <CardContent className="p-6 md:p-8">
               <h3 className="font-display text-xl font-bold mb-2">{settings.contact_title}</h3>
-              <div
-                className="text-white/90 [&_a]:text-white [&_a]:underline"
-                dangerouslySetInnerHTML={{ __html: settings.contact_html }}
+              <RichContent
+                content={settings.contact_html}
+                className="text-white/90 [&_a]:text-white [&_a]:underline [&_h2]:text-white [&_h3]:text-white [&_strong]:text-white"
               />
             </CardContent>
           </Card>

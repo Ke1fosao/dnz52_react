@@ -5,6 +5,7 @@ import { PageSpinner } from '@/components/common/Spinner';
 import { ZoomableImage } from '@/components/common/ZoomableImage';
 import { ReadingProgress } from '@/components/common/ReadingProgress';
 import { ShareButtons } from '@/components/common/ShareButtons';
+import { RichContent } from '@/components/common/RichContent';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -71,10 +72,7 @@ export function NewsDetailPage() {
           {data.title}
         </h1>
 
-        <div
-          className="prose-content"
-          dangerouslySetInnerHTML={{ __html: data.content }}
-        />
+        <RichContent content={data.content} />
 
         <Separator className="my-8" />
 

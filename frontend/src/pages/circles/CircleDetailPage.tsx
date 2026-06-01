@@ -4,6 +4,7 @@ import { Seo } from '@/components/common/Seo';
 import { PageSpinner } from '@/components/common/Spinner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { RichContent } from '@/components/common/RichContent';
 import { useCircle } from '@/hooks/useApi';
 import { NotFoundPage } from '../NotFoundPage';
 
@@ -59,7 +60,7 @@ export function CircleDetailPage() {
             <Card>
               <CardContent className="p-6">
                 <h2 className="font-display text-2xl font-bold mb-3">🎯 Мета та завдання</h2>
-                <div className="prose-content" dangerouslySetInnerHTML={{ __html: data.goal }} />
+                <RichContent content={data.goal} />
               </CardContent>
             </Card>
           )}
@@ -68,7 +69,7 @@ export function CircleDetailPage() {
             <Card>
               <CardContent className="p-6">
                 <h2 className="font-display text-2xl font-bold mb-3">Опис діяльності</h2>
-                <div className="prose-content" dangerouslySetInnerHTML={{ __html: data.description }} />
+                <RichContent content={data.description} />
               </CardContent>
             </Card>
           )}

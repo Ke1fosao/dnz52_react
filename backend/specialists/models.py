@@ -1,5 +1,5 @@
 from django.db import models
-from ckeditor.fields import RichTextField
+from markdownx.models import MarkdownxField
 from gallery.models import GalleryAlbum
 
 
@@ -19,7 +19,7 @@ class SpecialistPage(models.Model):
     title       = models.CharField('Заголовок сторінки', max_length=200)
     intro       = models.TextField('Вступний текст', blank=True,
                                    help_text='Короткий текст під заголовком')
-    description = RichTextField('Опис діяльності (під картками спеціалістів)', blank=True,
+    description = MarkdownxField('Опис діяльності (під картками спеціалістів)', blank=True,
                                  help_text='Розширений опис напрямку: програми, тема, методи роботи тощо.')
     theme_title = models.CharField('Заголовок науково-методичної теми', max_length=300, blank=True)
     theme_period = models.CharField('Період', max_length=50, blank=True,
@@ -49,7 +49,7 @@ class Specialist(models.Model):
     experience  = models.CharField('Педагогічний стаж', max_length=100, blank=True)
     category    = models.CharField('Кваліфікаційна категорія', max_length=100, blank=True)
     motto       = models.CharField('Життєве кредо / девіз', max_length=500, blank=True)
-    bio         = RichTextField('Біографія / опис діяльності', blank=True)
+    bio         = MarkdownxField('Біографія / опис діяльності', blank=True)
     order       = models.IntegerField('Порядок', default=0)
 
     class Meta:
@@ -108,7 +108,7 @@ class SpecialistPageSection(models.Model):
                                      verbose_name='Сторінка')
     title       = models.CharField('Заголовок розділу', max_length=200)
     subtitle    = models.CharField('Підзаголовок', max_length=300, blank=True)
-    description = RichTextField('Опис розділу', blank=True)
+    description = MarkdownxField('Опис розділу', blank=True)
     icon        = models.CharField('Іконка (Bootstrap Icons)', max_length=80,
                                     default='bi-lightning-fill',
                                     help_text='Наприклад: bi-snow, bi-sun, bi-bicycle, bi-heart-pulse.')

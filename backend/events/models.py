@@ -1,7 +1,7 @@
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
-from ckeditor.fields import RichTextField
+from markdownx.models import MarkdownxField
 
 
 class Event(models.Model):
@@ -33,7 +33,7 @@ class Event(models.Model):
     slug        = models.SlugField('URL', unique=True)
     event_type  = models.CharField('Тип події', max_length=20,
                                      choices=EVENT_TYPE_CHOICES, default='other')
-    description = RichTextField('Опис', blank=True)
+    description = MarkdownxField('Опис', blank=True)
     start_date  = models.DateTimeField('Початок (дата і час)')
     end_date    = models.DateTimeField('Закінчення', blank=True, null=True,
                                          help_text='Залиште порожнім якщо подія однієї дати.')

@@ -1,5 +1,5 @@
 from django.db import models
-from ckeditor.fields import RichTextField
+from markdownx.models import MarkdownxField
 from gallery.models import GalleryAlbum
 from documents.models import Document
 
@@ -12,8 +12,8 @@ class Circle(models.Model):
     schedule    = models.CharField('Розклад занять', max_length=200, blank=True)
     icon        = models.CharField('Іконка (Bootstrap Icons)', max_length=50, default='bi-star')
     color       = models.CharField('Колір (HEX)', max_length=7, default='#4A90E2')
-    goal        = RichTextField('Мета та завдання')
-    description = RichTextField('Опис діяльності')
+    goal        = MarkdownxField('Мета та завдання')
+    description = MarkdownxField('Опис діяльності')
     album       = models.ForeignKey(GalleryAlbum, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Фотоальбом')
     order       = models.IntegerField('Порядок', default=0)
     is_published = models.BooleanField('Опубліковано', default=True)
