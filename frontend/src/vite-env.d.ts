@@ -6,6 +6,7 @@ interface ImportMetaEnv {
   readonly VITE_GA_ID?: string;
   readonly VITE_PLAUSIBLE_DOMAIN?: string;
   readonly VITE_VAPID_PUBLIC_KEY?: string;
+  readonly VITE_ENABLE_WEBP?: string;
 }
 
 interface ImportMeta {

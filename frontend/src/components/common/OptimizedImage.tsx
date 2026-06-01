@@ -1,24 +1,30 @@
 import { useState, ImgHTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 
+// WebP вмикається ТІЛЬКИ якщо у .env задано VITE_ENABLE_WEBP=true.
+// За замовчуванням ВИМКНЕНО — бо webp-версії додаються поряд з оригіналами
+// і подвоюють обсяг media (не підходить для хостингів з малим диском, напр. PA free).
+// Вмикайте лише якщо реально згенерували .webp і маєте достатньо місця.
+const WEBP_ENABLED = import.meta.env.VITE_ENABLE_WEBP === 'true';
+
 interface Props extends ImgHTMLAttributes<HTMLImageElement> {
   src: string;
   alt: string;
-  /** Чи пробувати WebP-версію (заміна розширення на .webp). За замовчуванням true. */
+  /** Примусово увімкнути/вимкнути WebP для конкретного зображення. */
   webp?: boolean;
 }
 
 /**
  * Оптимізоване зображення:
- *   • <picture> з WebP-джерелом + оригінал як fallback
  *   • lazy loading + async decoding
  *   • blur-up: поки вантажиться — розмитий плейсхолдер, потім плавна поява
+ *   • (опціонально) <picture> з WebP — лише якщо VITE_ENABLE_WEBP=true
  *
- * WebP-версії генеруються на бекенді командою:
- *   python manage.py generate_webp
- * Якщо .webp немає — браузер автоматично бере оригінал з <img>.
+ * WebP-версії генеруються командою `python manage.py generate_webp`.
+ * УВАГА: вони ДОДАЮТЬСЯ поряд з оригіналами (не замінюють), тому збільшують
+ * обсяг media. Вмикайте WebP тільки маючи достатньо дискового простору.
  */
-export function OptimizedImage({ src, alt, webp = true, className, ...props }: Props) {
+export function OptimizedImage({ src, alt, webp = WEBP_ENABLED, className, ...props }: Props) {
   const [loaded, setLoaded] = useState(false);
 
   // Будуємо шлях до webp: foo.jpg → foo.webp (тільки для локальних media)
