@@ -52,25 +52,7 @@ if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
-# 6. У DEV режимі також залишаємо старі Django шаблони (для backward compatibility
-#    якщо React dev сервер не запущено). У продакшені їх не реєструємо —
-#    React SPA повністю замінює UI.
-if settings.DEBUG and not getattr(settings, 'USE_REACT_SPA', False):
-    urlpatterns += [
-        path('', include('main.urls')),
-        path('news/', include('news.urls')),
-        path('gallery/', include('gallery.urls')),
-        path('documents/', include('documents.urls')),
-        path('groups/', include('groups.urls')),
-        path('specialists/', include('specialists.urls')),
-        path('circles/', include('circles.urls')),
-        path('reviews/', include('reviews.urls')),
-        path('menu/', include('menu.urls')),
-        path('events/', include('events.urls')),
-        path('faq/', include('faq.urls')),
-    ]
-
-# 7. React SPA fallback — будь-який інший URL віддає index.html.
+# 6. React SPA fallback — будь-який інший URL віддає index.html.
 #    React Router всередині обробляє роутинг клієнтсько.
 #    ВАЖЛИВО: цей патерн має бути ОСТАННІМ — інакше перехопить всі інші роути.
 urlpatterns += [

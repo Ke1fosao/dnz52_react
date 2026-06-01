@@ -1,6 +1,6 @@
 @echo off
 REM ============================================================================
-REM Білдить React для продакшену і копіює готовий dist/ у backend/spa/
+REM Білдить React (frontend/) для продакшену і копіює готовий білд у backend/spa/
 REM Потім ці файли заливаються у git і деплояться на PythonAnywhere.
 REM ============================================================================
 cd /d "%~dp0"
@@ -9,22 +9,29 @@ echo.
 echo ============================================================
 echo  [1/3] Білд React (Vite) у production режимі
 echo ============================================================
+cd frontend
+if not exist "node_modules" (
+    echo [setup] node_modules відсутні — встановлюю...
+    call npm install
+)
 call npm run build
 if errorlevel 1 (
     echo [error] npm run build впав. Перевірте помилки вище.
+    cd ..
     pause
     exit /b 1
 )
+cd ..
 
 echo.
 echo ============================================================
-echo  [2/3] Чищу стару backend\spa\ і копіюю свіжий dist
+echo  [2/3] Чищу стару backend\spa\ і копіюю свіжий білд
 echo ============================================================
 if exist "backend\spa" (
     rmdir /s /q "backend\spa"
 )
 mkdir "backend\spa"
-xcopy "dist\*" "backend\spa\" /E /I /Y /Q
+xcopy "frontend\dist\*" "backend\spa\" /E /I /Y /Q
 if errorlevel 1 (
     echo [error] Копіювання не вдалось.
     pause
@@ -37,19 +44,10 @@ echo  [3/3] Готово! Готові файли у backend\spa\
 echo ============================================================
 echo.
 echo  Наступні кроки:
+echo    git add backend/spa
+echo    git commit -m "build: production React bundle"
+echo    git push
 echo.
-echo  1^) Перевірте локально що все працює:
-echo     - Зупиніть React dev сервер ^(якщо запущений^)
-echo     - У backend\.env поставте DEBUG=False
-echo     - cd backend ^&^& .venv\Scripts\python manage.py collectstatic --noinput
-echo     - python manage.py runserver
-echo     - Відкрийте http://localhost:8000 — побачите React сайт
-echo.
-echo  2^) Закомітьте і запуште в GitHub:
-echo     git add backend/spa
-echo     git commit -m "build: production React bundle"
-echo     git push
-echo.
-echo  3^) На PythonAnywhere: git pull ^+ python manage.py collectstatic ^+ reload
+echo  На PythonAnywhere: git pull + collectstatic + reload
 echo.
 pause

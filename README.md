@@ -1,16 +1,17 @@
 # ЗДО №52 — повний проект (React + Django)
 
-Сайт закладу дошкільної освіти №52 (м. Рівне) — **монорепо** з Django REST API
-бекендом і React фронтендом в одній папці.
+Сайт закладу дошкільної освіти №52 (м. Рівне) — **монорепо** з двох частин:
+**`frontend/`** (React) і **`backend/`** (Django REST API + адмінка).
 
 ## 🎨 Технологічний стек
 
-**Frontend** (`/` корінь проекту):
+**Frontend** (`/frontend/`):
 - React 18 + TypeScript + Vite 6
 - Tailwind CSS + shadcn/ui
 - React Router v6, TanStack Query, Axios
 - React Hook Form + Zod, Framer Motion
 - Lucide React (іконки), `yet-another-react-lightbox` (фото-zoom)
+- sonner (тостери), canvas-confetti (конфетті), темна тема
 
 **Backend** (`/backend/`):
 - Django 5.2 + Django REST Framework
@@ -69,7 +70,7 @@ python manage.py runserver                 # → http://localhost:8000
 
 **Термінал 2 — React frontend:**
 ```powershell
-cd F:\Project\dnz52-react
+cd F:\Project\dnz52-react\frontend
 npm install                                # одноразово
 npm run dev                                # → http://localhost:5173
 ```
@@ -78,39 +79,48 @@ npm run dev                                # → http://localhost:5173
 
 ```
 dnz52-react/                      ← КОРІНЬ ПРОЕКТУ
-├── backend/                      ← Django бекенд
+├── backend/                      ← 🐍 Django бекенд (API + адмінка)
 │   ├── dnz52_site/               ← основні налаштування
 │   │   ├── settings.py
-│   │   ├── urls.py
-│   │   └── api_urls.py           ← REST API роутер
+│   │   ├── urls.py               ← admin + API + SPA fallback
+│   │   ├── api_urls.py           ← REST API роутер
+│   │   └── spa_views.py          ← віддає React index.html
 │   ├── main/, news/, gallery/,
 │   │   groups/, specialists/,
 │   │   circles/, documents/,
-│   │   reviews/, menu/, …        ← Django apps (11 модулів)
-│   ├── media/                    ← завантажені фото (227 MB)
-│   ├── static/                   ← CSS/JS для Django адмінки
-│   ├── templates/                ← старі Django шаблони (404, robots)
-│   ├── db.sqlite3                ← база даних
+│   │   reviews/, menu/, …        ← Django apps: models, admin,
+│   │                                serializers, api_views
+│   ├── spa/                      ← зібраний React білд (для прода)
+│   ├── media/                    ← завантажені фото (НЕ в git)
+│   ├── static/                   ← CSS для Django адмінки
+│   ├── templates/                ← 404.html, 500.html, robots.txt
+│   ├── db.sqlite3                ← база (НЕ в git)
 │   ├── manage.py
 │   ├── requirements.txt
-│   └── .venv/                    ← Python virtual env (створюється)
+│   └── .venv/                    ← Python venv (НЕ в git)
 │
-├── src/                          ← React frontend
-│   ├── api/                      ← axios клієнт + endpoints
-│   ├── components/
-│   │   ├── ui/                   ← shadcn/ui (Button, Card, Dialog…)
-│   │   ├── layout/               ← Header, Navbar, Footer
-│   │   ├── common/               ← Logo, PageHero, ZoomableImage, Seo
-│   │   ├── home/                 ← HeroSlider, NewsPreview
-│   │   ├── news/                 ← NewsCard
-│   │   └── gallery/              ← AlbumCard
-│   ├── pages/                    ← усі сторінки (11 модулів)
-│   ├── hooks/useApi.ts           ← TanStack Query хуки
-│   ├── types/                    ← TypeScript типи
-│   ├── lib/utils.ts              ← cn, formatDate
-│   ├── styles/globals.css        ← Tailwind directives
-│   ├── App.tsx                   ← роутинг (lazy-loaded)
-│   └── main.tsx
+├── frontend/                     ← ⚛️ React фронтенд
+│   ├── src/
+│   │   ├── api/                  ← axios клієнт + endpoints
+│   │   ├── components/
+│   │   │   ├── ui/               ← shadcn/ui (Button, Card, Dialog…)
+│   │   │   ├── layout/           ← Navbar, Footer, MobileMenu
+│   │   │   ├── common/           ← Logo, ThemeToggle, ShareButtons…
+│   │   │   ├── home/             ← HeroSlider, ParallaxDecor, QuickLinks
+│   │   │   ├── news/             ← NewsCard
+│   │   │   └── gallery/          ← AlbumCard
+│   │   ├── pages/                ← усі сторінки (11 модулів)
+│   │   ├── hooks/                ← useApi, useTheme, useVotedReviews
+│   │   ├── types/                ← TypeScript типи
+│   │   ├── lib/                  ← utils, confetti
+│   │   ├── styles/globals.css    ← Tailwind + темна тема
+│   │   ├── App.tsx               ← роутинг (lazy-loaded)
+│   │   └── main.tsx
+│   ├── public/                   ← favicon
+│   ├── package.json
+│   ├── vite.config.ts            ← proxy /api → Django + code splitting
+│   ├── tailwind.config.js
+│   └── node_modules/             ← npm пакети (НЕ в git)
 │
 ├── public/                       ← статика фронтенду
 ├── tailwind.config.js            ← дитячі кольори, шрифти

@@ -10,13 +10,14 @@ class StaticViewSitemap(Sitemap):
     priority = 0.6
     changefreq = 'monthly'
 
+    # Прямі шляхи React SPA (без reverse на Django named urls,
+    # бо старі app urls.py видалені — UI тепер на React).
     def items(self):
-        return ['main:home', 'main:contacts', 'news:news_list',
-                'gallery:gallery_list', 'documents:documents_list',
-                'groups:groups_list', 'reviews:reviews_page']
+        return ['/', '/contacts', '/news', '/gallery',
+                '/documents', '/groups', '/reviews', '/menu', '/circles']
 
     def location(self, item):
-        return reverse(item)
+        return item
 
 
 class PageSitemap(Sitemap):
