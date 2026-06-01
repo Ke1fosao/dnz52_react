@@ -14,6 +14,7 @@ from main.api_views import (
     AttestationDocumentViewSet, AttestationStepViewSet,
     AttestationCategoryViewSet, AttestationLawViewSet,
     attestation_settings, global_search,
+    push_vapid_key, push_subscribe, push_unsubscribe,
 )
 from news.api_views import NewsViewSet, NewsCategoryViewSet
 from gallery.api_views import GalleryCategoryViewSet, GalleryAlbumViewSet
@@ -89,4 +90,9 @@ urlpatterns = [
     # Окремі endpoints (menu/today/ та menu/week/ тепер як @action в DailyMenuViewSet)
     path('search/', global_search, name='api-search'),
     path('attestation/settings/', attestation_settings, name='api-attestation-settings'),
+
+    # Web-push
+    path('push/vapid-key/', push_vapid_key, name='api-push-vapid'),
+    path('push/subscribe/', push_subscribe, name='api-push-subscribe'),
+    path('push/unsubscribe/', push_unsubscribe, name='api-push-unsubscribe'),
 ]

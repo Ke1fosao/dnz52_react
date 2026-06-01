@@ -7,6 +7,7 @@ import { CardSkeletonGrid } from '@/components/common/CardSkeleton';
 import { EmptyState } from '@/components/common/EmptyState';
 import { Pagination } from '@/components/common/Pagination';
 import { NewsCard } from '@/components/news/NewsCard';
+import { PushSubscribeButton } from '@/components/common/PushSubscribeButton';
 import { Badge } from '@/components/ui/badge';
 import { useNewsList, useNewsCategories } from '@/hooks/useApi';
 import { cn } from '@/lib/utils';
@@ -36,7 +37,11 @@ export function NewsListPage() {
         title={currentCategory ? currentCategory.name : 'Новини та оголошення'}
         subtitle="Будьте в курсі того, що відбувається у нашому садочку"
         icon="📰"
-      />
+      >
+        <div className="mt-4">
+          <PushSubscribeButton />
+        </div>
+      </PageHero>
 
       {categories && categories.length > 0 && (
         <div className="container pt-8">

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Image as ImageIcon } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { formatDate } from '@/lib/utils';
 import type { GalleryAlbumListItem } from '@/types';
 
@@ -10,10 +11,9 @@ export function AlbumCard({ album }: { album: GalleryAlbumListItem }) {
     <Card className="group overflow-hidden hover:shadow-card-hover hover:-translate-y-1 transition-all">
       <Link to={`/gallery/album/${album.slug}`}>
         <div className="aspect-[4/3] overflow-hidden relative bg-muted">
-          <img
+          <OptimizedImage
             src={album.cover}
             alt={album.title}
-            loading="lazy"
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />

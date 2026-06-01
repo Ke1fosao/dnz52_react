@@ -7,6 +7,9 @@ import { Navbar } from './Navbar';
 import { Footer } from './Footer';
 import { MobileMenu } from './MobileMenu';
 import { ScrollToTopButton } from '@/components/common/ScrollToTopButton';
+import { StructuredData } from '@/components/common/StructuredData';
+import { Analytics } from '@/components/common/Analytics';
+import { PWAInstallPrompt } from '@/components/common/PWAInstallPrompt';
 
 export function RootLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -18,6 +21,8 @@ export function RootLayout() {
 
   return (
     <div className="flex min-h-screen flex-col">
+      <StructuredData />
+      <Analytics />
       <TopBar />
       <Navbar onMenuClick={() => setMobileMenuOpen(true)} />
       <MobileMenu isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
@@ -37,6 +42,7 @@ export function RootLayout() {
       <Footer />
 
       <ScrollToTopButton />
+      <PWAInstallPrompt />
 
       {/* Тостер-нотифікації (sonner) */}
       <Toaster

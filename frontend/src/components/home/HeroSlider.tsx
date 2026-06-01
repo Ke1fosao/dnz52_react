@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, type PanInfo } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSliders } from '@/hooks/useApi';
+
+const SWIPE_THRESHOLD = 50;  // px — мінімальний свайп для перемикання
 
 /**
  * Mobile-first hero slider.
@@ -44,6 +46,22 @@ export function HeroSlider() {
   }
 
   const slide = slides[index];
+  const goNext = () => setIndex(i => (i + 1) % slides.length);
+  const goPrev = () => setIndex(i => (i - 1 + slides.length) % slides.length);
+
+  // Swipe (мобільний дотик) / drag (миша на десктопі)
+  const handleDragEnd = (_e: unknown, info: PanInfo) => {
+    if (info.offset.x < -SWIPE_THRESHOLD) goNext();
+    else if (info.offset.x > SWIPE_THRESHOLD) goPrev();
+  };
+
+  // Спільні пропси для drag-контейнера
+  const dragProps = slides.length > 1 ? {
+    drag: 'x' as const,
+    dragConstraints: { left: 0, right: 0 },
+    dragElastic: 0.2,
+    onDragEnd: handleDragEnd,
+  } : {};
 
   return (
     <section className="relative bg-gradient-primary">
@@ -51,18 +69,22 @@ export function HeroSlider() {
           МОБІЛЬНА ВЕРСІЯ (< sm): фото зверху, текст знизу
          ============================================================ */}
       <div className="sm:hidden">
-        <div className="relative aspect-[4/3] overflow-hidden">
+        <motion.div
+          className="relative aspect-[4/3] overflow-hidden touch-pan-y cursor-grab active:cursor-grabbing"
+          {...dragProps}
+        >
           <AnimatePresence mode="wait">
             <motion.img
               key={slide.id}
               src={slide.image}
               alt={slide.title}
               loading="eager"
+              draggable={false}
               initial={{ opacity: 0, scale: 1.05 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.7 }}
-              className="absolute inset-0 w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
             />
           </AnimatePresence>
 
@@ -84,7 +106,7 @@ export function HeroSlider() {
               </button>
             </>
           )}
-        </div>
+        </motion.div>
 
         {/* Текст ПІД фото на градієнтному фоні */}
         <div className="bg-gradient-primary px-4 pt-5 pb-6 text-white relative">
@@ -132,7 +154,10 @@ export function HeroSlider() {
       {/* ============================================================
           ДЕСКТОПНА ВЕРСІЯ (sm+): фото на весь блок, текст накладається
          ============================================================ */}
-      <div className="hidden sm:block relative aspect-[16/7] md:aspect-[21/9] overflow-hidden">
+      <motion.div
+        className="hidden sm:block relative aspect-[16/7] md:aspect-[21/9] overflow-hidden cursor-grab active:cursor-grabbing"
+        {...dragProps}
+      >
         <AnimatePresence mode="wait">
           <motion.div
             key={slide.id}
@@ -145,8 +170,9 @@ export function HeroSlider() {
             <img
               src={slide.image}
               alt={slide.title}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover pointer-events-none"
               loading="eager"
+              draggable={false}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
             <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent" />
@@ -211,7 +237,7 @@ export function HeroSlider() {
             </div>
           </>
         )}
-      </div>
+      </motion.div>
     </section>
   );
 }

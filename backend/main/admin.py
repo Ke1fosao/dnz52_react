@@ -6,8 +6,19 @@ from .models import (
     ParentsAnnouncement, ParentsDocument, ParentsAdaptationPhoto, ParentsEnrollmentDoc,
     ParentsApplicationSample, StaffMember,
     AttestationDocument, AttestationStep, AttestationCategory, AttestationLaw,
-    AttestationSettings,
+    AttestationSettings, PushSubscription,
 )
+
+
+@admin.register(PushSubscription)
+class PushSubscriptionAdmin(admin.ModelAdmin):
+    list_display = ['id', 'short_endpoint', 'is_active', 'created_at']
+    list_filter = ['is_active', 'created_at']
+    readonly_fields = ['endpoint', 'p256dh', 'auth', 'user_agent', 'created_at']
+
+    @admin.display(description='Endpoint')
+    def short_endpoint(self, obj):
+        return f'{obj.endpoint[:50]}…'
 
 
 class PageImageInline(admin.TabularInline):

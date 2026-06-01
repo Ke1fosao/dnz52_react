@@ -204,3 +204,56 @@ def global_search(request):
         })
 
     return Response({'query': q, 'count': len(results), 'results': results})
+
+
+# ============================================================================
+# Web-Push endpoints
+# ============================================================================
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def push_vapid_key(request):
+    """Повертає публічний VAPID-ключ для підписки браузера."""
+    from django.conf import settings
+    key = getattr(settings, 'VAPID_PUBLIC_KEY', '')
+    return Response({'publicKey': key, 'enabled': bool(key)})
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def push_subscribe(request):
+    """Зберігає push-підписку браузера.
+    Очікує JSON: { endpoint, keys: { p256dh, auth } }
+    """
+    from .models import PushSubscription
+
+    data = request.data or {}
+    endpoint = data.get('endpoint')
+    keys = data.get('keys') or {}
+    p256dh = keys.get('p256dh')
+    auth = keys.get('auth')
+
+    if not endpoint or not p256dh or not auth:
+        return Response({'detail': 'Некоректні дані підписки'}, status=400)
+
+    PushSubscription.objects.update_or_create(
+        endpoint=endpoint,
+        defaults={
+            'p256dh': p256dh,
+            'auth': auth,
+            'user_agent': request.META.get('HTTP_USER_AGENT', '')[:300],
+            'is_active': True,
+        },
+    )
+    return Response({'detail': 'Підписку збережено'}, status=201)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def push_unsubscribe(request):
+    """Деактивує підписку за endpoint."""
+    from .models import PushSubscription
+    endpoint = (request.data or {}).get('endpoint')
+    if endpoint:
+        PushSubscription.objects.filter(endpoint=endpoint).update(is_active=False)
+    return Response({'detail': 'Відписано'})

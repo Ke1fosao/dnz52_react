@@ -373,3 +373,25 @@ class StaffMember(models.Model):
         if not self.awards:
             return []
         return [a.strip() for a in self.awards.splitlines() if a.strip()]
+
+
+# ============================================================================
+# Web-Push підписки (сповіщення про новини)
+# ============================================================================
+
+class PushSubscription(models.Model):
+    """Підписка браузера на push-сповіщення (Web Push API)."""
+    endpoint = models.URLField('Endpoint', max_length=600, unique=True)
+    p256dh = models.CharField('Ключ p256dh', max_length=200)
+    auth = models.CharField('Ключ auth', max_length=100)
+    user_agent = models.CharField('User-Agent', max_length=300, blank=True)
+    created_at = models.DateTimeField('Підписано', auto_now_add=True)
+    is_active = models.BooleanField('Активна', default=True)
+
+    class Meta:
+        verbose_name = 'Push-підписка'
+        verbose_name_plural = 'Push-підписки'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'Підписка #{self.pk} ({self.endpoint[:40]}…)'

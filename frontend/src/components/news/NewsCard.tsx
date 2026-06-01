@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Calendar, Eye, ArrowRight, Newspaper } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { formatDate } from '@/lib/utils';
 import type { NewsListItem } from '@/types';
 
@@ -11,10 +12,9 @@ export function NewsCard({ item }: { item: NewsListItem }) {
       <Link to={`/news/${item.slug}`} className="block">
         <div className="aspect-video overflow-hidden bg-muted relative">
           {item.image ? (
-            <img
+            <OptimizedImage
               src={item.image}
               alt={item.title}
-              loading="lazy"
               className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
           ) : (

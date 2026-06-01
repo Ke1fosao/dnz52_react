@@ -21,7 +21,14 @@ export function NewsDetailPage() {
 
   return (
     <>
-      <Seo title={data.title} description={data.title} image={data.image || undefined} />
+      <Seo
+        title={data.title}
+        description={data.title}
+        image={data.image || undefined}
+        type="article"
+        path={`/news/${data.slug}`}
+        publishedTime={data.created_at}
+      />
       <ReadingProgress />
 
       <article className="container max-w-4xl py-10">
