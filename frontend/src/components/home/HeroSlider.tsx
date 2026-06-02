@@ -3,27 +3,28 @@ import { Sparkles } from 'lucide-react';
 import { useSliders } from '@/hooks/useApi';
 import { cn } from '@/lib/utils';
 
-// Дефолтні слайди — показуються якщо в адмінці ще немає жодного слайда
+// Дефолтні слайди — показуються якщо в адмінці ще немає жодного слайда.
+// Без зовнішніх зображень: imageless-слайди рендеряться як локальний градієнт.
 const FALLBACK = [
   {
     id: -1,
     title: 'Створюємо магію дитинства',
     description: 'Заклад дошкільної освіти №52 — простір, де кожен день перетворюється на захопливу пригоду.',
-    image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=2120&auto=format&fit=crop',
+    image: '',
     link: '',
   },
   {
     id: -2,
     title: 'Безпека та комфорт',
     description: 'Сучасне укриття, відеонагляд та закрита територія. Ми піклуємося про спокій батьків.',
-    image: 'https://images.unsplash.com/photo-1587691592099-24045742c181?q=80&w=2073&auto=format&fit=crop',
+    image: '',
     link: '',
   },
   {
     id: -3,
     title: 'Сучасний розвиток',
     description: 'STEAM-освіта, інтерактивні ігри та креативні підходи. Розкриваємо таланти з ранніх років.',
-    image: 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?q=80&w=2000&auto=format&fit=crop',
+    image: '',
     link: '',
   },
 ];
@@ -49,12 +50,16 @@ export function HeroSlider() {
         <div key={slide.id} className={cn('absolute inset-0 transition-opacity duration-1000 ease-in-out', i === current ? 'opacity-100 z-10' : 'opacity-0 z-0')}>
           <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/50 to-transparent z-10" />
           <div className="absolute inset-0 bg-black/20 z-10" />
-          <img
-            src={slide.image}
-            alt={slide.title}
-            loading={i === 0 ? 'eager' : 'lazy'}
-            className={cn('w-full h-full object-cover transition-transform duration-[10000ms] ease-linear', i === current ? 'scale-110' : 'scale-100')}
-          />
+          {slide.image ? (
+            <img
+              src={slide.image}
+              alt={slide.title}
+              loading={i === 0 ? 'eager' : 'lazy'}
+              className={cn('w-full h-full object-cover', i === current ? 'animate-hero-zoom' : 'scale-100')}
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-sky-500 via-blue-600 to-indigo-700" />
+          )}
         </div>
       ))}
 

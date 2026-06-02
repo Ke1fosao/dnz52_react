@@ -120,8 +120,11 @@
    ТЕМНА ТЕМА — приглушуємо яскраві світлі фони у dark режимі
    ======================================================================== */
 @layer utilities {
-  /* Білі/кремові фони → темні картки */
-  .dark .bg-white { @apply bg-card; }
+  /* Білі/кремові фони → темні картки.
+     :not([class*="dark:bg-"]) — не чіпаємо елементи, що САМІ задали темний фон
+     (напр. `dark:bg-white` чи `bg-white dark:bg-slate-900`), інакше виходив
+     темний-на-темному (див. памʼять проєкту: dark-bg-white-override-footgun). */
+  .dark .bg-white:not([class*="dark:bg-"]) { @apply bg-card; }
   .dark .bg-cream { background-color: hsl(var(--card)); }
 
   /* Світлі градієнти-картки → темні */
@@ -241,6 +244,13 @@
   100% { transform: translateY(0px) rotate(0deg) scale(1); }
 }
 .animate-float-complex { animation: float-complex 8s infinite ease-in-out; }
+
+/* Повільний Ken Burns-зум для слайдів hero (заміна неоднозначного duration-[10000ms]) */
+@keyframes heroZoom {
+  from { transform: scale(1); }
+  to   { transform: scale(1.1); }
+}
+.animate-hero-zoom { animation: heroZoom 10s linear forwards; }
 
 /* Біжучий рядок (kinetic marquee) */
 @keyframes marquee {

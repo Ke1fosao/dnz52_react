@@ -5,6 +5,10 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      // Застосувати збережену тему ДО першого рендера — щоб не блимало світлим
+      try { if (localStorage.getItem('dnz52:theme') === 'dark') document.documentElement.classList.add('dark'); } catch (e) {}
+    </script>
     <meta name="theme-color" content="#4A90E2" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />

@@ -91,7 +91,7 @@ export function Navbar() {
         )}>
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 relative z-50 group shrink-0">
-            <div className="w-12 h-12 bg-gray-900 dark:bg-slate-50 rounded-2xl flex items-center justify-center text-white dark:text-gray-900 font-black text-xl shadow-[0_10px_20px_rgba(0,0,0,0.2)] dark:shadow-[0_10px_20px_rgba(255,255,255,0.1)] group-hover:rotate-[15deg] transition-all duration-300">
+            <div className="w-12 h-12 bg-gray-900 dark:bg-white rounded-2xl flex items-center justify-center text-white dark:text-gray-900 font-black text-xl shadow-[0_10px_20px_rgba(0,0,0,0.2)] dark:shadow-[0_10px_20px_rgba(255,255,255,0.1)] group-hover:rotate-[15deg] transition-all duration-300">
               52
             </div>
             <div className="hidden sm:block">
@@ -185,7 +185,7 @@ export function Navbar() {
             </button>
             <Link to="/contacts" className={cn(
               'px-6 py-3 rounded-full font-bold text-sm shadow-[0_10px_20px_rgba(0,0,0,0.2)] dark:shadow-[0_10px_20px_rgba(255,255,255,0.1)] hover:-translate-y-1 transition-all whitespace-nowrap',
-              isActive('/contacts') ? 'bg-blue-600 text-white' : 'bg-gray-900 dark:bg-slate-50 text-white dark:text-gray-900 hover:bg-blue-600 dark:hover:bg-blue-500 hover:text-white dark:hover:text-white',
+              isActive('/contacts') ? 'bg-blue-600 text-white' : 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-blue-600 dark:hover:bg-blue-500 hover:text-white dark:hover:text-white',
             )}>
               Звʼязок
             </Link>
@@ -236,7 +236,7 @@ export function Navbar() {
         {/* Власний хедер меню з логотипом і кнопкою закриття (завжди видима) */}
         <div className="flex items-center justify-between px-6 h-20 border-b border-gray-100 dark:border-slate-800">
           <Link to="/" onClick={closeMobile} className="flex items-center gap-3">
-            <div className="w-11 h-11 bg-gray-900 dark:bg-slate-50 rounded-2xl flex items-center justify-center text-white dark:text-gray-900 font-black text-lg">52</div>
+            <div className="w-11 h-11 bg-gray-900 dark:bg-white rounded-2xl flex items-center justify-center text-white dark:text-gray-900 font-black text-lg">52</div>
             <span className="font-extrabold text-gray-900 dark:text-white text-lg">ЗДО №52</span>
           </Link>
           <button onClick={closeMobile} className="w-12 h-12 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-gray-900 dark:text-white hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/40 transition-colors" aria-label="Закрити меню">

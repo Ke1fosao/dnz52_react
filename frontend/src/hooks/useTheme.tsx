@@ -24,12 +24,9 @@ function getInitialTheme(): Theme {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('light');
-
-  useEffect(() => {
-    const initial = getInitialTheme();
-    setThemeState(initial);
-  }, []);
+  // Читаємо збережену тему СИНХРОННО на старті — інакше у StrictMode (dev)
+  // подвійний виклик ефектів перезаписував localStorage назад на 'light'.
+  const [theme, setThemeState] = useState<Theme>(getInitialTheme);
 
   useEffect(() => {
     const root = document.documentElement;
