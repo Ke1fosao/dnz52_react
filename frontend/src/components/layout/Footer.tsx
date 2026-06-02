@@ -89,14 +89,7 @@ export function Footer() {
 
       <div className="container mx-auto px-4 border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center text-gray-500 font-medium text-sm gap-3">
         <p>© {year} ЗДО №52, м. Рівне. Усі права захищено.</p>
-        <a
-          href="http://localhost:8000/admin/"
-          target="_blank"
-          rel="noreferrer"
-          className="hover:text-white transition-colors opacity-60 hover:opacity-100"
-        >
-          Адмінпанель
-        </a>
+        <p className="opacity-80">Made by Kovtunovych Dmytro Valeriyovych</p>
       </div>
     </footer>
   );
