@@ -10,8 +10,6 @@ import { PageHero } from '@/components/common/PageHero';
 import { Spinner } from '@/components/common/Spinner';
 import { EmptyState } from '@/components/common/EmptyState';
 import { Pagination } from '@/components/common/Pagination';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -29,7 +27,6 @@ const reviewSchema = z.object({
 });
 
 type FormData = z.infer<typeof reviewSchema>;
-
 const PAGE_SIZE = 12;
 
 export function ReviewsPage() {
@@ -43,11 +40,8 @@ export function ReviewsPage() {
   const dislikeReview = useDislikeReview();
   const { getVote, setVote, hasVoted } = useVotedReviews();
 
-  const {
-    register, handleSubmit, watch, setValue, reset, formState: { errors },
-  } = useForm<FormData>({
-    resolver: zodResolver(reviewSchema),
-    defaultValues: { rating: 5 },
+  const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<FormData>({
+    resolver: zodResolver(reviewSchema), defaultValues: { rating: 5 },
   });
   const rating = watch('rating');
 
@@ -55,76 +49,49 @@ export function ReviewsPage() {
     try {
       await createReview.mutateAsync(formData);
       reset({ rating: 5 });
-      celebrate();  // 🎉 конфетті
+      celebrate();
       toast.success('Дякуємо! Ваш відгук відправлено на модерацію.', {
-        description: 'Він з\'явиться на сайті після перевірки адміністратором.',
-        duration: 6000,
+        description: 'Він з\'явиться на сайті після перевірки адміністратором.', duration: 6000,
       });
     } catch (err) {
       const ax = err as AxiosError<{ detail?: string; [key: string]: unknown }>;
-      const data = ax.response?.data;
+      const d = ax.response?.data;
       let message = 'Не вдалось надіслати відгук. Спробуйте пізніше.';
-
-      if (data?.detail) {
-        message = String(data.detail);
-      } else if (data && typeof data === 'object') {
-        const errors = Object.entries(data)
-          .map(([field, errs]) => Array.isArray(errs) ? `${field}: ${errs.join(', ')}` : `${field}: ${errs}`)
-          .join('; ');
-        if (errors) message = errors;
+      if (d?.detail) message = String(d.detail);
+      else if (d && typeof d === 'object') {
+        const errs = Object.entries(d).map(([f, e]) => Array.isArray(e) ? `${f}: ${e.join(', ')}` : `${f}: ${e}`).join('; ');
+        if (errs) message = errs;
       }
-
       toast.error('Помилка', { description: message, duration: 8000 });
     }
   };
 
-  const handleVote = (reviewId: number, type: 'like' | 'dislike') => {
-    if (hasVoted(reviewId)) return;
-    setVote(reviewId, type);
-    if (type === 'like') likeReview.mutate(reviewId);
-    else dislikeReview.mutate(reviewId);
+  const handleVote = (id: number, type: 'like' | 'dislike') => {
+    if (hasVoted(id)) return;
+    setVote(id, type);
+    if (type === 'like') likeReview.mutate(id); else dislikeReview.mutate(id);
   };
 
   return (
-    <>
+    <div className="container mx-auto px-4 max-w-7xl">
       <Seo title="Відгуки" description="Відгуки батьків про заклад дошкільної освіти №52" />
-      <PageHero
-        title="Відгуки батьків"
-        subtitle="Ваша думка дуже важлива для нас!"
-        icon="💬"
-        variant="warm"
-      />
+      <PageHero title="Відгуки батьків" subtitle="Ваша думка дуже важлива для нас!" icon="💬" variant="warm" />
 
-      <div className="container py-10 grid lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-semibold mr-2">Фільтр:</span>
-            <button
-              onClick={() => { setRatingFilter(undefined); setPage(1); }}
-              className={cn(
-                'px-3 py-1.5 rounded-full text-xs font-semibold',
-                !ratingFilter ? 'bg-primary text-white' : 'bg-muted'
-              )}
-            >
-              Усі
-            </button>
+      <div className="grid lg:grid-cols-3 gap-8 pb-12">
+        {/* Список */}
+        <div className="lg:col-span-2 space-y-5">
+          {/* Фільтри */}
+          <div className="flex flex-wrap items-center gap-2 bg-white dark:bg-slate-900 rounded-[1.5rem] p-3 shadow-sm border border-gray-100 dark:border-slate-800">
+            <Pill active={!ratingFilter} onClick={() => { setRatingFilter(undefined); setPage(1); }}>Усі</Pill>
             {[5, 4, 3, 2, 1].map(r => (
-              <button
-                key={r}
-                onClick={() => { setRatingFilter(r); setPage(1); }}
-                className={cn(
-                  'px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1',
-                  ratingFilter === r ? 'bg-amber-500 text-white' : 'bg-muted'
-                )}
-              >
-                {r} <Star className="h-3 w-3 fill-current" />
+              <button key={r} onClick={() => { setRatingFilter(r); setPage(1); }}
+                className={cn('px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 transition-colors',
+                  ratingFilter === r ? 'bg-amber-500 text-white' : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300')}>
+                {r} <Star size={12} className="fill-current" />
               </button>
             ))}
-            <select
-              value={ordering}
-              onChange={e => { setOrdering(e.target.value); setPage(1); }}
-              className="ml-auto px-3 py-1.5 rounded-full text-xs font-semibold bg-muted border-0"
-            >
+            <select value={ordering} onChange={e => { setOrdering(e.target.value); setPage(1); }}
+              className="ml-auto px-3 py-1.5 rounded-full text-xs font-bold bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 border-0 outline-none cursor-pointer">
               <option value="-created_at">Найновіші</option>
               <option value="created_at">Найстаріші</option>
               <option value="-rating">Найкращі</option>
@@ -133,178 +100,120 @@ export function ReviewsPage() {
           </div>
 
           {data && data.count > 0 && (
-            <p className="text-xs text-muted-foreground">
-              Всього відгуків: <strong>{data.count}</strong>
-              {data.count > PAGE_SIZE && (
-                <> · сторінка {page} з {Math.ceil(data.count / PAGE_SIZE)}</>
-              )}
+            <p className="text-xs text-gray-400 dark:text-slate-500 font-medium px-1">
+              Всього відгуків: <strong className="text-gray-700 dark:text-slate-300">{data.count}</strong>
+              {data.count > PAGE_SIZE && <> · сторінка {page} з {Math.ceil(data.count / PAGE_SIZE)}</>}
             </p>
           )}
 
           {isLoading ? (
             <Spinner />
           ) : !data || data.results.length === 0 ? (
-            <EmptyState
-              icon={<MessageSquare className="h-16 w-16" />}
-              title="Поки немає відгуків"
-              description="Будьте першим, хто залишить відгук про наш садочок!"
-            />
+            <EmptyState icon={<MessageSquare className="h-16 w-16" />} title="Поки немає відгуків"
+              description="Будьте першим, хто залишить відгук про наш садочок!" />
           ) : (
             <>
-            <div className="space-y-4">
-              {data.results.map(review => {
-                const currentVote = getVote(review.id);
-                const voted = hasVoted(review.id);
-
-                return (
-                  <Card key={review.id} className="hover:shadow-card-hover transition-shadow">
-                    <CardContent className="p-5">
-                      <div className="flex items-start justify-between gap-3 mb-2">
-                        <div>
-                          <h4 className="font-display font-bold">{review.author}</h4>
-                          {review.child_group && (
-                            <p className="text-xs text-muted-foreground">{review.child_group}</p>
-                          )}
+              <div className="space-y-4">
+                {data.results.map(review => {
+                  const currentVote = getVote(review.id);
+                  const voted = hasVoted(review.id);
+                  return (
+                    <div key={review.id} className="bg-white dark:bg-slate-900 rounded-[2rem] p-6 shadow-sm border border-gray-100 dark:border-slate-800 hover:shadow-lg transition-shadow">
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-400 to-rose-500 text-white flex items-center justify-center font-black text-lg shrink-0">
+                            {review.author.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <h4 className="font-black text-gray-900 dark:text-white">{review.author}</h4>
+                            {review.child_group && <p className="text-xs text-gray-400 dark:text-slate-500 font-medium">{review.child_group}</p>}
+                          </div>
                         </div>
                         <div className="flex items-center gap-0.5">
                           {Array.from({ length: 5 }).map((_, i) => (
-                            <Star
-                              key={i}
-                              className={cn(
-                                'h-4 w-4',
-                                i < review.rating ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30'
-                              )}
-                            />
+                            <Star key={i} size={16} className={cn(i < review.rating ? 'fill-amber-400 text-amber-400' : 'text-gray-200 dark:text-slate-700')} />
                           ))}
                         </div>
                       </div>
-                      <p className="text-sm whitespace-pre-line mb-3">{review.text}</p>
-                      <div className="flex items-center justify-between gap-3 text-xs">
-                        <span className="text-muted-foreground">{formatDate(review.created_at)}</span>
+                      <p className="text-sm text-gray-700 dark:text-slate-300 whitespace-pre-line mb-4 leading-relaxed">{review.text}</p>
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-xs text-gray-400 dark:text-slate-500 font-medium">{formatDate(review.created_at)}</span>
                         <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => handleVote(review.id, 'like')}
-                            disabled={voted}
-                            title={voted
-                              ? (currentVote === 'like' ? 'Ви вже поставили лайк' : 'Ви вже проголосували')
-                              : 'Поставити лайк'}
-                            className={cn(
-                              'flex items-center gap-1 px-2.5 py-1.5 rounded-full font-semibold transition-colors',
-                              currentVote === 'like'
-                                ? 'bg-green-100 text-green-700 cursor-default'
-                                : voted
-                                  ? 'text-muted-foreground/50 cursor-not-allowed'
-                                  : 'hover:bg-green-50 hover:text-green-600 cursor-pointer'
-                            )}
-                          >
-                            <ThumbsUp
-                              className={cn('h-3.5 w-3.5', currentVote === 'like' && 'fill-current')}
-                            />
-                            {review.likes}
-                          </button>
-                          <button
-                            onClick={() => handleVote(review.id, 'dislike')}
-                            disabled={voted}
-                            title={voted
-                              ? (currentVote === 'dislike' ? 'Ви вже поставили дизлайк' : 'Ви вже проголосували')
-                              : 'Поставити дизлайк'}
-                            className={cn(
-                              'flex items-center gap-1 px-2.5 py-1.5 rounded-full font-semibold transition-colors',
-                              currentVote === 'dislike'
-                                ? 'bg-red-100 text-red-700 cursor-default'
-                                : voted
-                                  ? 'text-muted-foreground/50 cursor-not-allowed'
-                                  : 'hover:bg-red-50 hover:text-red-600 cursor-pointer'
-                            )}
-                          >
-                            <ThumbsDown
-                              className={cn('h-3.5 w-3.5', currentVote === 'dislike' && 'fill-current')}
-                            />
-                            {review.dislikes}
-                          </button>
+                          <VoteBtn type="up" count={review.likes} active={currentVote === 'like'} voted={voted} onClick={() => handleVote(review.id, 'like')} />
+                          <VoteBtn type="down" count={review.dislikes} active={currentVote === 'dislike'} voted={voted} onClick={() => handleVote(review.id, 'dislike')} />
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-            <Pagination
-              page={page}
-              pageSize={PAGE_SIZE}
-              total={data.count}
-              onChange={p => {
-                setPage(p);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-            />
+                    </div>
+                  );
+                })}
+              </div>
+              <Pagination page={page} pageSize={PAGE_SIZE} total={data.count} onChange={p => { setPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
             </>
           )}
         </div>
 
-        <aside className="lg:sticky lg:top-24 self-start">
-          <Card className="border-2 border-primary-200">
-            <CardContent className="p-6">
-              <h2 className="font-display text-2xl font-bold mb-2">Залишити відгук ✨</h2>
-              <p className="text-sm text-muted-foreground mb-5">
-                Поділіться вашими враженнями. Відгук з'явиться після модерації адміністратором.
-              </p>
+        {/* Форма */}
+        <aside className="lg:sticky lg:top-28 self-start">
+          <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-6 md:p-7 shadow-lg border border-gray-100 dark:border-slate-800">
+            <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">Залишити відгук ✨</h2>
+            <p className="text-sm text-gray-500 dark:text-slate-400 mb-5 font-medium">Поділіться враженнями. Відгук зʼявиться після модерації.</p>
 
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                <input type="text" {...register('website')} className="hidden" tabIndex={-1} autoComplete="off" />
-
-                <div>
-                  <Label htmlFor="author">Ваше ім'я *</Label>
-                  <Input id="author" placeholder="Олена Петрівна" {...register('author')} />
-                  {errors.author && <p className="text-xs text-destructive mt-1">{errors.author.message}</p>}
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <input type="text" {...register('website')} className="hidden" tabIndex={-1} autoComplete="off" />
+              <div>
+                <Label htmlFor="author">Ваше імʼя *</Label>
+                <Input id="author" placeholder="Олена Петрівна" {...register('author')} />
+                {errors.author && <p className="text-xs text-red-500 mt-1 font-medium">{errors.author.message}</p>}
+              </div>
+              <div>
+                <Label htmlFor="child_group">Група дитини</Label>
+                <Input id="child_group" placeholder="напр. Сонечко" {...register('child_group')} />
+              </div>
+              <div>
+                <Label>Оцінка *</Label>
+                <div className="flex items-center gap-1 mt-1">
+                  {[1, 2, 3, 4, 5].map(n => (
+                    <button key={n} type="button" onClick={() => setValue('rating', n)} className="p-1" aria-label={`Оцінка ${n}`}>
+                      <Star size={28} className={cn('transition-colors', n <= rating ? 'fill-amber-400 text-amber-400' : 'text-gray-300 dark:text-slate-600')} />
+                    </button>
+                  ))}
                 </div>
-
-                <div>
-                  <Label htmlFor="child_group">Група дитини</Label>
-                  <Input id="child_group" placeholder="напр. Сонечко" {...register('child_group')} />
-                </div>
-
-                <div>
-                  <Label>Оцінка *</Label>
-                  <div className="flex items-center gap-1 mt-1">
-                    {[1, 2, 3, 4, 5].map(n => (
-                      <button
-                        key={n}
-                        type="button"
-                        onClick={() => setValue('rating', n)}
-                        className="p-1"
-                        aria-label={`Оцінка ${n}`}
-                      >
-                        <Star
-                          className={cn(
-                            'h-7 w-7 transition-colors',
-                            n <= rating ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/40'
-                          )}
-                        />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="text">Ваш відгук *</Label>
-                  <Textarea
-                    id="text"
-                    placeholder="Поділіться вашими враженнями про садочок..."
-                    rows={5}
-                    {...register('text')}
-                  />
-                  {errors.text && <p className="text-xs text-destructive mt-1">{errors.text.message}</p>}
-                </div>
-
-                <Button type="submit" variant="gradient" className="w-full" disabled={createReview.isPending}>
-                  {createReview.isPending ? 'Надсилаємо...' : <>Надіслати відгук <Send className="h-4 w-4" /></>}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+              </div>
+              <div>
+                <Label htmlFor="text">Ваш відгук *</Label>
+                <Textarea id="text" placeholder="Поділіться вашими враженнями про садочок..." rows={5} {...register('text')} />
+                {errors.text && <p className="text-xs text-red-500 mt-1 font-medium">{errors.text.message}</p>}
+              </div>
+              <button type="submit" disabled={createReview.isPending}
+                className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-rose-500 text-white font-bold py-3.5 rounded-full shadow-lg hover:-translate-y-0.5 transition-transform disabled:opacity-60">
+                {createReview.isPending ? 'Надсилаємо...' : <>Надіслати відгук <Send size={16} /></>}
+              </button>
+            </form>
+          </div>
         </aside>
       </div>
-    </>
+    </div>
+  );
+}
+
+function Pill({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button onClick={onClick} className={cn('px-3.5 py-1.5 rounded-full text-xs font-bold transition-colors',
+      active ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300')}>
+      {children}
+    </button>
+  );
+}
+
+function VoteBtn({ type, count, active, voted, onClick }: { type: 'up' | 'down'; count: number; active: boolean; voted: boolean; onClick: () => void }) {
+  const Icon = type === 'up' ? ThumbsUp : ThumbsDown;
+  const activeColor = type === 'up' ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300';
+  const hoverColor = type === 'up' ? 'hover:bg-green-50 hover:text-green-600 dark:hover:bg-green-900/20' : 'hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20';
+  return (
+    <button onClick={onClick} disabled={voted}
+      className={cn('flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-bold transition-colors',
+        active ? `${activeColor} cursor-default` : voted ? 'text-gray-300 dark:text-slate-600 cursor-not-allowed' : `text-gray-500 dark:text-slate-400 ${hoverColor} cursor-pointer`)}>
+      <Icon size={14} className={cn(active && 'fill-current')} /> {count}
+    </button>
   );
 }
