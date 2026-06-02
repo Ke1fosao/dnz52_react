@@ -1,14 +1,12 @@
 import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Newspaper } from 'lucide-react';
 import { Seo } from '@/components/common/Seo';
 import { PageHero } from '@/components/common/PageHero';
-import { CardSkeletonGrid } from '@/components/common/CardSkeleton';
 import { EmptyState } from '@/components/common/EmptyState';
 import { Pagination } from '@/components/common/Pagination';
 import { NewsCard } from '@/components/news/NewsCard';
 import { PushSubscribeButton } from '@/components/common/PushSubscribeButton';
-import { Badge } from '@/components/ui/badge';
 import { useNewsList, useNewsCategories } from '@/hooks/useApi';
 import { cn } from '@/lib/utils';
 
@@ -16,89 +14,72 @@ const PAGE_SIZE = 12;
 
 export function NewsListPage() {
   const { slug: categorySlug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const { data: categories } = useNewsCategories();
-  const { data, isLoading } = useNewsList({
-    page,
-    category__slug: categorySlug,
-  });
+  const { data, isLoading } = useNewsList({ page, category__slug: categorySlug });
 
-  const currentCategory = categorySlug
-    ? categories?.find(c => c.slug === categorySlug)
-    : null;
+  const currentCategory = categorySlug ? categories?.find(c => c.slug === categorySlug) : null;
 
   return (
-    <>
+    <div className="container mx-auto px-4 max-w-7xl">
       <Seo
         title={currentCategory ? `Новини: ${currentCategory.name}` : 'Новини'}
         description="Свіжі новини, оголошення та події закладу дошкільної освіти №52"
       />
       <PageHero
-        title={currentCategory ? currentCategory.name : 'Новини та оголошення'}
+        title={currentCategory ? currentCategory.name : 'Новини та події'}
         subtitle="Будьте в курсі того, що відбувається у нашому садочку"
         icon="📰"
       >
-        <div className="mt-4">
-          <PushSubscribeButton />
-        </div>
+        <div className="mt-5"><PushSubscribeButton /></div>
       </PageHero>
 
+      {/* Капсули-фільтри категорій */}
       {categories && categories.length > 0 && (
-        <div className="container pt-8">
-          <div className="flex flex-wrap gap-2">
-            <Link to="/news">
-              <Badge
-                variant={!categorySlug ? 'default' : 'outline'}
-                className={cn(
-                  'cursor-pointer text-sm py-2 px-4',
-                  !categorySlug && 'bg-gradient-primary text-white',
-                )}
-              >
-                Усі новини
-              </Badge>
-            </Link>
-            {categories.map(cat => (
-              <Link key={cat.id} to={`/news/category/${cat.slug}`}>
-                <Badge
-                  variant={categorySlug === cat.slug ? 'default' : 'outline'}
-                  className={cn(
-                    'cursor-pointer text-sm py-2 px-4',
-                    categorySlug === cat.slug && 'bg-gradient-primary text-white',
-                  )}
-                >
-                  {cat.name}
-                </Badge>
-              </Link>
-            ))}
-          </div>
+        <div className="flex flex-wrap gap-2.5 md:gap-3 mb-10">
+          <FilterPill label="Усі новини" active={!categorySlug} onClick={() => navigate('/news')} />
+          {categories.map(cat => (
+            <FilterPill key={cat.id} label={cat.name} active={categorySlug === cat.slug} onClick={() => navigate(`/news/category/${cat.slug}`)} />
+          ))}
         </div>
       )}
 
-      <div className="container py-10">
+      <div className="pb-10">
         {isLoading ? (
-          <CardSkeletonGrid count={9} />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i}>
+                <div className="aspect-[16/11] rounded-3xl bg-gray-200/60 dark:bg-slate-800/60 animate-pulse mb-4" />
+                <div className="h-5 w-2/3 bg-gray-200/60 dark:bg-slate-800/60 rounded-full animate-pulse" />
+              </div>
+            ))}
+          </div>
         ) : !data || data.results.length === 0 ? (
-          <EmptyState
-            icon={<Newspaper className="h-16 w-16" />}
-            title="Поки немає новин"
-            description="Заходьте пізніше — ми регулярно публікуємо новини про життя садочка"
-          />
+          <EmptyState icon={<Newspaper className="h-16 w-16" />} title="Поки немає новин"
+            description="Заходьте пізніше — ми регулярно публікуємо новини про життя садочка" />
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {data.results.map(item => (
-                <NewsCard key={item.id} item={item} />
-              ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
+              {data.results.map(item => <NewsCard key={item.id} item={item} />)}
             </div>
-            <Pagination
-              page={page}
-              pageSize={PAGE_SIZE}
-              total={data.count}
-              onChange={setPage}
-            />
+            <Pagination page={page} pageSize={PAGE_SIZE} total={data.count} onChange={p => { setPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
           </>
         )}
       </div>
-    </>
+    </div>
+  );
+}
+
+function FilterPill({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button onClick={onClick} className={cn(
+      'px-6 py-3 rounded-full font-bold text-sm transition-all duration-300 border shadow-sm hover:-translate-y-1',
+      active
+        ? 'bg-blue-500 border-blue-500 text-white shadow-blue-500/25'
+        : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 hover:border-blue-300 dark:hover:border-blue-500',
+    )}>
+      {label}
+    </button>
   );
 }

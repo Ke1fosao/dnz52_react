@@ -6,9 +6,6 @@ import { ZoomableImage } from '@/components/common/ZoomableImage';
 import { ReadingProgress } from '@/components/common/ReadingProgress';
 import { ShareButtons } from '@/components/common/ShareButtons';
 import { RichContent } from '@/components/common/RichContent';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { useNewsDetail } from '@/hooks/useApi';
 import { formatDate } from '@/lib/utils';
 import { NotFoundPage } from '../NotFoundPage';
@@ -22,67 +19,48 @@ export function NewsDetailPage() {
 
   return (
     <>
-      <Seo
-        title={data.title}
-        description={data.title}
-        image={data.image || undefined}
-        type="article"
-        path={`/news/${data.slug}`}
-        publishedTime={data.created_at}
-      />
+      <Seo title={data.title} description={data.title} image={data.image || undefined}
+        type="article" path={`/news/${data.slug}`} publishedTime={data.created_at} />
       <ReadingProgress />
 
-      <article className="container max-w-4xl py-10">
-        <Button asChild variant="ghost" size="sm" className="mb-6">
-          <Link to="/news">
-            <ArrowLeft className="h-4 w-4" /> До усіх новин
-          </Link>
-        </Button>
+      <article className="container mx-auto px-4 max-w-4xl pb-16">
+        <Link to="/news" className="group inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors mb-6 bg-white dark:bg-slate-800 py-2 px-4 rounded-full shadow-sm border border-gray-100 dark:border-slate-700">
+          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> До усіх новин
+        </Link>
 
-        {data.image && (
-          <ZoomableImage
-            src={data.image}
-            alt={data.title}
-            zoomTitle={data.title}
-            wrapperClassName="aspect-video rounded-3xl overflow-hidden mb-6 shadow-soft-lg"
-            className="w-full h-full object-cover"
-          />
-        )}
-
-        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4 flex-wrap">
-          <span className="flex items-center gap-1.5">
-            <Calendar className="h-4 w-4" />
-            {formatDate(data.created_at)}
-          </span>
-          <span className="flex items-center gap-1.5">
-            <Eye className="h-4 w-4" />
-            {data.views} переглядів
-          </span>
+        {/* Мета + заголовок */}
+        <div className="flex items-center gap-3 flex-wrap mb-4">
           {data.category && (
-            <Link to={`/news/category/${data.category.slug}`}>
-              <Badge>
-                <Tag className="h-3 w-3 mr-1" />
-                {data.category.name}
-              </Badge>
+            <Link to={`/news/category/${data.category.slug}`}
+              className="inline-flex items-center gap-1 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-wide hover:bg-blue-200 dark:hover:bg-blue-900/60 transition-colors">
+              <Tag size={12} /> {data.category.name}
             </Link>
           )}
+          <span className="flex items-center gap-1.5 text-sm font-medium text-gray-500 dark:text-slate-400"><Calendar size={15} /> {formatDate(data.created_at)}</span>
+          <span className="flex items-center gap-1.5 text-sm font-medium text-gray-500 dark:text-slate-400"><Eye size={15} /> {data.views} переглядів</span>
         </div>
 
-        <h1 className="font-display text-3xl md:text-5xl font-bold mb-6 leading-tight">
+        <h1 className="text-3xl md:text-5xl font-black tracking-tight text-gray-900 dark:text-white mb-7 leading-[1.1]">
           {data.title}
         </h1>
 
-        <RichContent content={data.content} />
+        {data.image && (
+          <ZoomableImage src={data.image} alt={data.title} zoomTitle={data.title}
+            wrapperClassName="aspect-video rounded-[2rem] overflow-hidden mb-8 shadow-xl"
+            className="w-full h-full object-cover" />
+        )}
 
-        <Separator className="my-8" />
+        {/* Контент у clay-картці */}
+        <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-6 md:p-10 shadow-sm border border-gray-100 dark:border-slate-800">
+          <RichContent content={data.content} className="prose-lg" />
+        </div>
 
-        <div className="flex items-center justify-between gap-4 flex-wrap">
+        {/* Поділитись */}
+        <div className="mt-8 flex items-center justify-between gap-4 flex-wrap bg-white dark:bg-slate-900 rounded-[2rem] p-5 md:p-6 shadow-sm border border-gray-100 dark:border-slate-800">
           <ShareButtons title={data.title} />
-          <Button asChild variant="outline" size="sm">
-            <Link to="/news">
-              <ArrowLeft className="h-4 w-4" /> До усіх новин
-            </Link>
-          </Button>
+          <Link to="/news" className="inline-flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+            <ArrowLeft size={16} /> Усі новини
+          </Link>
         </div>
       </article>
     </>

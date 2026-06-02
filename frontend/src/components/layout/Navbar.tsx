@@ -232,8 +232,18 @@ export function Navbar() {
       )}
 
       {/* Mobile menu */}
-      <div className={cn('xl:hidden fixed inset-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl transition-all duration-500', mobileOpen ? 'opacity-100 visible' : 'opacity-0 invisible')}>
-        <div className="flex flex-col h-full pt-28 px-6 pb-10 overflow-y-auto">
+      <div className={cn('xl:hidden fixed inset-0 z-[120] bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl transition-all duration-500', mobileOpen ? 'opacity-100 visible' : 'opacity-0 invisible')}>
+        {/* Власний хедер меню з логотипом і кнопкою закриття (завжди видима) */}
+        <div className="flex items-center justify-between px-6 h-20 border-b border-gray-100 dark:border-slate-800">
+          <Link to="/" onClick={closeMobile} className="flex items-center gap-3">
+            <div className="w-11 h-11 bg-gray-900 dark:bg-white rounded-2xl flex items-center justify-center text-white dark:text-gray-900 font-black text-lg">52</div>
+            <span className="font-extrabold text-gray-900 dark:text-white text-lg">ЗДО №52</span>
+          </Link>
+          <button onClick={closeMobile} className="w-12 h-12 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-gray-900 dark:text-white hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/40 transition-colors" aria-label="Закрити меню">
+            <X size={24} />
+          </button>
+        </div>
+        <div className="flex flex-col h-[calc(100%-5rem)] px-6 pt-6 pb-10 overflow-y-auto">
           <MobileLink to="/" label="Головна" onClick={closeMobile} />
           <MobileGroup label="Про заклад" id="about" expanded={expandedMobile} setExpanded={setExpandedMobile} items={ABOUT_ITEMS} onNav={closeMobile} />
           <MobileLink to="/groups" label="Групи" onClick={closeMobile} />
