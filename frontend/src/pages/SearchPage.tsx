@@ -1,11 +1,9 @@
 import { useSearchParams, Link } from 'react-router-dom';
-import { Search as SearchIcon, FileText, Image, Users, Sparkles, GraduationCap, Newspaper } from 'lucide-react';
+import { Search as SearchIcon, FileText, Users, Sparkles, GraduationCap, Newspaper } from 'lucide-react';
 import { Seo } from '@/components/common/Seo';
 import { PageHero } from '@/components/common/PageHero';
 import { Spinner } from '@/components/common/Spinner';
 import { EmptyState } from '@/components/common/EmptyState';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { useSearch } from '@/hooks/useApi';
 import { stripHtml, truncate } from '@/lib/utils';
 import type { SearchResultType } from '@/types';
@@ -29,63 +27,40 @@ export function SearchPage() {
   const { data, isLoading } = useSearch(q);
 
   return (
-    <>
+    <div className="container mx-auto px-4 max-w-4xl">
       <Seo title={`Пошук: ${q}`} />
-      <PageHero
-        title="Пошук"
-        subtitle={q ? `Результати за запитом «${q}»` : 'Введіть запит для пошуку'}
-        icon="🔍"
-        variant="soft"
-      />
+      <PageHero title="Пошук" subtitle={q ? `Результати за запитом «${q}»` : 'Введіть запит для пошуку'} icon="🔍" variant="soft" />
 
-      <div className="container py-10 max-w-4xl">
+      <div className="pb-12">
         {!q || q.length < 2 ? (
-          <EmptyState
-            icon={<SearchIcon className="h-16 w-16" />}
-            title="Введіть запит"
-            description="Мінімум 2 символи для початку пошуку"
-          />
+          <EmptyState icon={<SearchIcon className="h-16 w-16" />} title="Введіть запит" description="Мінімум 2 символи для початку пошуку" />
         ) : isLoading ? (
           <Spinner />
         ) : !data || data.results.length === 0 ? (
-          <EmptyState
-            icon={<SearchIcon className="h-16 w-16" />}
-            title="Нічого не знайдено"
-            description="Спробуйте інший запит або перевірте написання"
-          />
+          <EmptyState icon={<SearchIcon className="h-16 w-16" />} title="Нічого не знайдено" description="Спробуйте інший запит або перевірте написання" />
         ) : (
           <>
-            <p className="text-sm text-muted-foreground mb-6">
-              Знайдено результатів: <strong>{data.count}</strong>
+            <p className="text-sm text-gray-400 dark:text-slate-500 font-medium mb-6 px-1">
+              Знайдено результатів: <strong className="text-gray-700 dark:text-slate-300">{data.count}</strong>
             </p>
             <div className="space-y-3">
               {data.results.map((result, i) => {
                 const meta = TYPE_META[result.type];
                 return (
-                  <Card key={`${result.type}-${result.slug}-${i}`} className="hover:shadow-card-hover transition-shadow">
-                    <Link to={meta.pathPrefix(result.slug)}>
-                      <CardContent className="p-5">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Badge variant="default">
-                            {meta.icon}
-                            <span className="ml-1">{meta.label}</span>
-                          </Badge>
-                        </div>
-                        <h3 className="font-display font-bold mb-1">{result.title}</h3>
-                        {result.excerpt && (
-                          <p className="text-sm text-muted-foreground">
-                            {truncate(stripHtml(result.excerpt), 200)}
-                          </p>
-                        )}
-                      </CardContent>
-                    </Link>
-                  </Card>
+                  <Link key={`${result.type}-${result.slug}-${i}`} to={meta.pathPrefix(result.slug)}
+                    className="block bg-white dark:bg-slate-900 rounded-[1.5rem] p-5 shadow-sm border border-gray-100 dark:border-slate-800 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+                    <div className="inline-flex items-center gap-1.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-xs font-black px-3 py-1 rounded-full mb-2 uppercase tracking-wide">
+                      {meta.icon} {meta.label}
+                    </div>
+                    <h3 className="font-black text-gray-900 dark:text-white mb-1">{result.title}</h3>
+                    {result.excerpt && <p className="text-sm text-gray-500 dark:text-slate-400">{truncate(stripHtml(result.excerpt), 200)}</p>}
+                  </Link>
                 );
               })}
             </div>
           </>
         )}
       </div>
-    </>
+    </div>
   );
 }

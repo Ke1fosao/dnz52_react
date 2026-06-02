@@ -3,50 +3,35 @@ import { PageHero } from '@/components/common/PageHero';
 import { PageSpinner } from '@/components/common/Spinner';
 import { ZoomableImage } from '@/components/common/ZoomableImage';
 import { RichContent } from '@/components/common/RichContent';
-import { Card, CardContent } from '@/components/ui/card';
 import { usePage } from '@/hooks/useApi';
 
 export function AboutPage() {
   const { data, isLoading } = usePage('about');
 
   return (
-    <>
+    <div className="container mx-auto px-4 max-w-4xl">
       <Seo title="Про заклад" description="Інформація про заклад дошкільної освіти №52" />
-      <PageHero
-        title={data?.title || 'Про наш заклад'}
-        subtitle="Затишний дім для маленьких сердець"
-        icon="🏡"
-        variant="sky"
-      />
+      <PageHero title={data?.title || 'Про наш заклад'} subtitle="Затишний дім для маленьких сердець" icon="🏡" variant="sky" />
 
-      <div className="container max-w-4xl py-10">
+      <div className="pb-12">
         {isLoading ? (
           <PageSpinner />
         ) : data ? (
           <>
             {data.image && (
-              <ZoomableImage
-                src={data.image}
-                alt={data.title}
-                zoomTitle={data.title}
-                wrapperClassName="w-full aspect-video rounded-3xl overflow-hidden shadow-soft-lg mb-8"
-                className="w-full h-full object-cover"
-              />
+              <ZoomableImage src={data.image} alt={data.title} zoomTitle={data.title}
+                wrapperClassName="w-full aspect-video rounded-[2rem] overflow-hidden shadow-xl mb-8" className="w-full h-full object-cover" />
             )}
-            <Card>
-              <CardContent className="p-6 md:p-10">
-                <RichContent content={data.content} />
-              </CardContent>
-            </Card>
+            <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-6 md:p-10 shadow-sm border border-gray-100 dark:border-slate-800">
+              <RichContent content={data.content} />
+            </div>
           </>
         ) : (
-          <Card>
-            <CardContent className="p-10 text-center">
-              <p className="text-muted-foreground">Інформація про заклад поки не додана.</p>
-            </CardContent>
-          </Card>
+          <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-10 text-center shadow-sm border border-gray-100 dark:border-slate-800">
+            <p className="text-gray-500 dark:text-slate-400">Інформація про заклад поки не додана.</p>
+          </div>
         )}
       </div>
-    </>
+    </div>
   );
 }
