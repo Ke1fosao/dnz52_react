@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Phone, Mail, MapPin, Facebook, Instagram, Youtube, Clock } from 'lucide-react';
-import { Logo } from '@/components/common/Logo';
+import { Facebook, Instagram, Youtube } from 'lucide-react';
 import { useContact } from '@/hooks/useApi';
 
 const FOOTER_LINKS = [
@@ -16,7 +15,7 @@ const FOOTER_LINKS = [
     { to: '/menu', label: 'Меню' },
     { to: '/gallery', label: 'Галерея' },
   ]},
-  { title: 'Для батьків', links: [
+  { title: 'Батькам', links: [
     { to: '/parents', label: 'Батькам' },
     { to: '/news', label: 'Новини' },
     { to: '/documents', label: 'Документи' },
@@ -28,52 +27,56 @@ export function Footer() {
   const { data } = useContact();
   const contact = data?.[0];
   const year = new Date().getFullYear();
+  const address = contact?.address || 'м. Рівне, вул. Коновальця, 17-б';
 
   return (
-    <footer className="bg-gradient-to-br from-primary-700 to-primary-900 text-white mt-20">
-      <div className="container py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
-          <div className="lg:col-span-2">
-            <div className="flex items-center gap-3 mb-4">
-              <Logo size="md" showText={false} className="text-white" />
-              <div>
-                <div className="font-display font-bold text-2xl">ЗДО №52</div>
-                <div className="text-sm text-white/80">Заклад дошкільної освіти</div>
-              </div>
-            </div>
-            <p className="text-sm text-white/80 leading-relaxed mb-4 max-w-md">
-              Турбота, розвиток і щастя кожної дитини — наша головна цінність.
-              Працюємо для того, щоб ваші малюки росли в любові й безпеці.
-            </p>
-            <div className="flex gap-3">
-              {contact?.facebook_url && (
-                <a href={contact.facebook_url} target="_blank" rel="noreferrer" aria-label="Facebook"
-                  className="h-10 w-10 rounded-full bg-white/10 hover:bg-secondary hover:text-secondary-foreground flex items-center justify-center transition-colors">
-                  <Facebook className="h-5 w-5" />
-                </a>
-              )}
-              {contact?.instagram_url && (
-                <a href={contact.instagram_url} target="_blank" rel="noreferrer" aria-label="Instagram"
-                  className="h-10 w-10 rounded-full bg-white/10 hover:bg-secondary hover:text-secondary-foreground flex items-center justify-center transition-colors">
-                  <Instagram className="h-5 w-5" />
-                </a>
-              )}
-              {contact?.youtube_url && (
-                <a href={contact.youtube_url} target="_blank" rel="noreferrer" aria-label="YouTube"
-                  className="h-10 w-10 rounded-full bg-white/10 hover:bg-secondary hover:text-secondary-foreground flex items-center justify-center transition-colors">
-                  <Youtube className="h-5 w-5" />
-                </a>
-              )}
-            </div>
-          </div>
+    <footer className="bg-gray-950 text-white pt-28 pb-10 relative overflow-hidden rounded-t-[3rem] md:rounded-t-[4rem] mt-20">
+      {/* Світлова пляма */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
 
+      <div className="container mx-auto px-4 relative z-10">
+        {/* Гігантський заголовок */}
+        <div className="flex flex-col items-center text-center mb-20">
+          <Link
+            to="/"
+            className="text-6xl sm:text-7xl md:text-8xl lg:text-[9rem] font-black tracking-tighter leading-none mb-6 hover:scale-105 transition-transform duration-500"
+          >
+            ЗДО №52
+          </Link>
+          <p className="text-lg md:text-2xl text-gray-400 font-medium max-w-2xl mb-10">
+            Чекаємо на вас за адресою {address}
+          </p>
+          <div className="flex gap-4">
+            {contact?.facebook_url && (
+              <a href={contact.facebook_url} target="_blank" rel="noreferrer" aria-label="Facebook"
+                className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center hover:bg-blue-600 hover:scale-110 transition-all backdrop-blur-md border border-white/10">
+                <Facebook size={22} />
+              </a>
+            )}
+            {contact?.instagram_url && (
+              <a href={contact.instagram_url} target="_blank" rel="noreferrer" aria-label="Instagram"
+                className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center hover:bg-pink-600 hover:scale-110 transition-all backdrop-blur-md border border-white/10">
+                <Instagram size={22} />
+              </a>
+            )}
+            {contact?.youtube_url && (
+              <a href={contact.youtube_url} target="_blank" rel="noreferrer" aria-label="YouTube"
+                className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center hover:bg-red-600 hover:scale-110 transition-all backdrop-blur-md border border-white/10">
+                <Youtube size={22} />
+              </a>
+            )}
+          </div>
+        </div>
+
+        {/* Навігаційні колонки */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-8 max-w-3xl mx-auto mb-16">
           {FOOTER_LINKS.map(section => (
-            <div key={section.title}>
-              <h4 className="font-display font-bold text-lg mb-4">{section.title}</h4>
-              <ul className="space-y-2">
+            <div key={section.title} className="text-center md:text-left">
+              <h4 className="font-extrabold text-sm uppercase tracking-widest text-blue-400 mb-4">{section.title}</h4>
+              <ul className="space-y-2.5">
                 {section.links.map(link => (
                   <li key={link.to}>
-                    <Link to={link.to} className="text-sm text-white/80 hover:text-secondary transition-colors">
+                    <Link to={link.to} className="text-gray-400 hover:text-white font-medium transition-colors">
                       {link.label}
                     </Link>
                   </li>
@@ -82,41 +85,18 @@ export function Footer() {
             </div>
           ))}
         </div>
-
-        {contact && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-10 pt-8 border-t border-white/10">
-            {contact.address && (
-              <div className="flex items-start gap-3 text-sm">
-                <MapPin className="h-5 w-5 text-secondary shrink-0 mt-0.5" />
-                <span className="text-white/90">{contact.address}</span>
-              </div>
-            )}
-            {contact.phone && (
-              <a href={`tel:${contact.phone}`} className="flex items-start gap-3 text-sm hover:text-secondary transition-colors">
-                <Phone className="h-5 w-5 text-secondary shrink-0 mt-0.5" />
-                <span>{contact.phone}</span>
-              </a>
-            )}
-            {contact.email && (
-              <a href={`mailto:${contact.email}`} className="flex items-start gap-3 text-sm hover:text-secondary transition-colors">
-                <Mail className="h-5 w-5 text-secondary shrink-0 mt-0.5" />
-                <span>{contact.email}</span>
-              </a>
-            )}
-            {contact.working_hours && (
-              <div className="flex items-start gap-3 text-sm md:col-span-3">
-                <Clock className="h-5 w-5 text-secondary shrink-0 mt-0.5" />
-                <span className="text-white/90 whitespace-pre-line">{contact.working_hours}</span>
-              </div>
-            )}
-          </div>
-        )}
       </div>
 
-      <div className="border-t border-white/10">
-        <div className="container py-4 text-xs text-white/60 text-center">
-          © {year} Заклад дошкільної освіти №52, м. Рівне. Усі права захищено.
-        </div>
+      <div className="container mx-auto px-4 border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center text-gray-500 font-medium text-sm gap-3">
+        <p>© {year} ЗДО №52, м. Рівне. Усі права захищено.</p>
+        <a
+          href="http://localhost:8000/admin/"
+          target="_blank"
+          rel="noreferrer"
+          className="hover:text-white transition-colors opacity-60 hover:opacity-100"
+        >
+          Адмінпанель
+        </a>
       </div>
     </footer>
   );

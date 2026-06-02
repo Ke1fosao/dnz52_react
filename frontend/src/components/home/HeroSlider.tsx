@@ -1,243 +1,108 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence, type PanInfo } from 'framer-motion';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Sparkles } from 'lucide-react';
 import { useSliders } from '@/hooks/useApi';
+import { cn } from '@/lib/utils';
 
-const SWIPE_THRESHOLD = 50;  // px — мінімальний свайп для перемикання
+// Дефолтні слайди — показуються якщо в адмінці ще немає жодного слайда
+const FALLBACK = [
+  {
+    id: -1,
+    title: 'Створюємо магію дитинства',
+    description: 'Заклад дошкільної освіти №52 — простір, де кожен день перетворюється на захопливу пригоду.',
+    image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=2120&auto=format&fit=crop',
+    link: '',
+  },
+  {
+    id: -2,
+    title: 'Безпека та комфорт',
+    description: 'Сучасне укриття, відеонагляд та закрита територія. Ми піклуємося про спокій батьків.',
+    image: 'https://images.unsplash.com/photo-1587691592099-24045742c181?q=80&w=2073&auto=format&fit=crop',
+    link: '',
+  },
+  {
+    id: -3,
+    title: 'Сучасний розвиток',
+    description: 'STEAM-освіта, інтерактивні ігри та креативні підходи. Розкриваємо таланти з ранніх років.',
+    image: 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?q=80&w=2000&auto=format&fit=crop',
+    link: '',
+  },
+];
 
-/**
- * Mobile-first hero slider.
- * Структура різна на мобілці vs десктоп:
- *   📱 Mobile (< sm): фото зверху, текст ПІД фото — без overlay (читається 100%)
- *   💻 Desktop (sm+): фото на весь екран, текст накладається з градієнтом затемнення
- */
 export function HeroSlider() {
-  const { data: slides, isLoading } = useSliders();
-  const [index, setIndex] = useState(0);
+  const { data } = useSliders();
+  const slides = data && data.length > 0 ? data : FALLBACK;
+  const [current, setCurrent] = useState(0);
 
   useEffect(() => {
-    if (!slides || slides.length <= 1) return;
-    const timer = setInterval(() => {
-      setIndex(i => (i + 1) % slides.length);
-    }, 6000);
+    if (slides.length <= 1) return;
+    const timer = setInterval(() => setCurrent(p => (p + 1) % slides.length), 6000);
     return () => clearInterval(timer);
-  }, [slides]);
+  }, [slides.length]);
 
-  if (isLoading) {
-    return <Skeleton className="aspect-[4/3] sm:aspect-[16/7] w-full" />;
-  }
-
-  if (!slides || slides.length === 0) {
-    return (
-      <section className="relative aspect-[4/3] sm:aspect-[16/7] md:aspect-[21/9] bg-gradient-primary text-white flex items-center">
-        <div className="absolute inset-0 bg-clouds opacity-30" />
-        <div className="container relative text-center px-4">
-          <h1 className="font-display text-2xl sm:text-4xl md:text-6xl font-bold mb-3 drop-shadow-md">
-            Ласкаво просимо до ЗДО №52! 👋
-          </h1>
-          <p className="text-sm sm:text-lg md:text-xl text-white/90 max-w-2xl mx-auto">
-            Місце, де дитинство сповнене відкриттів, дружби та радості
-          </p>
-        </div>
-      </section>
-    );
-  }
-
-  const slide = slides[index];
-  const goNext = () => setIndex(i => (i + 1) % slides.length);
-  const goPrev = () => setIndex(i => (i - 1 + slides.length) % slides.length);
-
-  // Swipe (мобільний дотик) / drag (миша на десктопі)
-  const handleDragEnd = (_e: unknown, info: PanInfo) => {
-    if (info.offset.x < -SWIPE_THRESHOLD) goNext();
-    else if (info.offset.x > SWIPE_THRESHOLD) goPrev();
-  };
-
-  // Спільні пропси для drag-контейнера
-  const dragProps = slides.length > 1 ? {
-    drag: 'x' as const,
-    dragConstraints: { left: 0, right: 0 },
-    dragElastic: 0.2,
-    onDragEnd: handleDragEnd,
-  } : {};
+  // Скидаємо індекс якщо кількість слайдів змінилась
+  useEffect(() => { setCurrent(0); }, [slides.length]);
 
   return (
-    <section className="relative bg-gradient-primary">
-      {/* ============================================================
-          МОБІЛЬНА ВЕРСІЯ (< sm): фото зверху, текст знизу
-         ============================================================ */}
-      <div className="sm:hidden">
-        <motion.div
-          className="relative aspect-[4/3] overflow-hidden touch-pan-y cursor-grab active:cursor-grabbing"
-          {...dragProps}
-        >
-          <AnimatePresence mode="wait">
-            <motion.img
-              key={slide.id}
-              src={slide.image}
-              alt={slide.title}
-              loading="eager"
-              draggable={false}
-              initial={{ opacity: 0, scale: 1.05 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.7 }}
-              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-            />
-          </AnimatePresence>
+    <section className="relative w-full min-h-[92svh] flex items-center pt-20 overflow-hidden bg-gray-900">
+      {/* Фонові фото */}
+      {slides.map((slide, i) => (
+        <div key={slide.id} className={cn('absolute inset-0 transition-opacity duration-1000 ease-in-out', i === current ? 'opacity-100 z-10' : 'opacity-0 z-0')}>
+          <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/50 to-transparent z-10" />
+          <div className="absolute inset-0 bg-black/20 z-10" />
+          <img
+            src={slide.image}
+            alt={slide.title}
+            loading={i === 0 ? 'eager' : 'lazy'}
+            className={cn('w-full h-full object-cover transition-transform duration-[10000ms] ease-linear', i === current ? 'scale-110' : 'scale-100')}
+          />
+        </div>
+      ))}
 
-          {slides.length > 1 && (
-            <>
-              <button
-                onClick={() => setIndex(i => (i - 1 + slides.length) % slides.length)}
-                className="absolute left-2 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white/30 hover:bg-white/50 backdrop-blur text-white flex items-center justify-center"
-                aria-label="Попередній слайд"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-              <button
-                onClick={() => setIndex(i => (i + 1) % slides.length)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white/30 hover:bg-white/50 backdrop-blur text-white flex items-center justify-center"
-                aria-label="Наступний слайд"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </button>
-            </>
-          )}
-        </motion.div>
+      {/* Плаваючі скляні фігури */}
+      <div className="absolute top-1/4 left-6 md:left-10 w-24 h-24 md:w-32 md:h-32 bg-white/10 backdrop-blur-md rounded-full animate-float-complex z-20 shadow-2xl border border-white/20" />
+      <div className="absolute bottom-1/4 right-6 md:right-10 w-32 h-32 md:w-48 md:h-48 bg-blue-400/20 backdrop-blur-xl rounded-[3rem] rotate-12 animate-float-complex z-20 shadow-2xl border border-white/20" style={{ animationDelay: '1s' }} />
 
-        {/* Текст ПІД фото на градієнтному фоні */}
-        <div className="bg-gradient-primary px-4 pt-5 pb-6 text-white relative">
-          <div className="absolute inset-0 bg-clouds opacity-20" />
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={`text-mobile-${slide.id}`}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.4 }}
-              className="relative"
-            >
-              <h1 className="font-display text-2xl font-bold mb-2 leading-tight">
+      {/* Текст */}
+      <div className="container mx-auto px-4 relative z-30 flex flex-col items-center text-center">
+        <div className="h-[320px] md:h-[420px] relative w-full flex flex-col justify-center items-center mt-10">
+          {slides.map((slide, i) => (
+            <div key={slide.id} className={cn('absolute w-full transition-all duration-1000 ease-out', i === current ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-8 scale-95 pointer-events-none')}>
+              <div className="inline-flex items-center gap-2 px-5 py-2 bg-white/20 backdrop-blur-md rounded-full text-white font-extrabold text-xs md:text-sm mb-6 border border-white/30 shadow-sm uppercase tracking-wider">
+                <Sparkles size={16} className="text-yellow-400" /> Кращий старт
+              </div>
+              <h1 className="text-4xl sm:text-6xl lg:text-[6.5rem] font-black text-white leading-[1.05] tracking-tighter mb-6 max-w-5xl mx-auto drop-shadow-xl">
                 {slide.title}
               </h1>
               {slide.description && (
-                <p className="text-sm text-white/95 mb-3 leading-snug">
+                <p className="text-base md:text-xl lg:text-2xl text-gray-200 font-medium max-w-3xl mx-auto drop-shadow-md leading-snug">
                   {slide.description}
                 </p>
               )}
-              {slide.link && (
-                <Button asChild variant="default" size="sm" className="bg-white text-primary-700 hover:bg-cream">
-                  <a href={slide.link}>Дізнатися більше</a>
-                </Button>
-              )}
-            </motion.div>
-          </AnimatePresence>
-
-          {slides.length > 1 && (
-            <div className="flex gap-1.5 mt-4 justify-center">
-              {slides.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setIndex(i)}
-                  className={`h-1.5 rounded-full transition-all ${i === index ? 'w-6 bg-white' : 'w-1.5 bg-white/40'}`}
-                  aria-label={`Слайд ${i + 1}`}
-                />
-              ))}
             </div>
-          )}
+          ))}
         </div>
+
+        {/* Точки */}
+        {slides.length > 1 && (
+          <div className="flex items-center gap-3 mt-6 relative z-30">
+            {slides.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrent(i)}
+                aria-label={`Слайд ${i + 1}`}
+                className={cn('h-2 rounded-full transition-all duration-500 ease-out', i === current ? 'w-16 bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.6)]' : 'w-4 bg-white/40 hover:bg-white/70')}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* ============================================================
-          ДЕСКТОПНА ВЕРСІЯ (sm+): фото на весь блок, текст накладається
-         ============================================================ */}
-      <motion.div
-        className="hidden sm:block relative aspect-[16/7] md:aspect-[21/9] overflow-hidden cursor-grab active:cursor-grabbing"
-        {...dragProps}
-      >
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={slide.id}
-            initial={{ opacity: 0, scale: 1.05 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.7 }}
-            className="absolute inset-0"
-          >
-            <img
-              src={slide.image}
-              alt={slide.title}
-              className="w-full h-full object-cover pointer-events-none"
-              loading="eager"
-              draggable={false}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent" />
-          </motion.div>
-        </AnimatePresence>
-
-        <div className="absolute inset-0 flex items-end">
-          <div className="container pb-12 md:pb-20">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={`text-desk-${slide.id}`}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-                className="max-w-2xl text-white"
-              >
-                <h1 className="font-display text-3xl md:text-5xl font-bold mb-3 drop-shadow-lg">
-                  {slide.title}
-                </h1>
-                {slide.description && (
-                  <p className="text-base md:text-xl text-white/95 mb-4 drop-shadow-md">
-                    {slide.description}
-                  </p>
-                )}
-                {slide.link && (
-                  <Button asChild variant="warm" size="lg">
-                    <a href={slide.link}>Дізнатися більше</a>
-                  </Button>
-                )}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </div>
-
-        {slides.length > 1 && (
-          <>
-            <button
-              onClick={() => setIndex(i => (i - 1 + slides.length) % slides.length)}
-              className="absolute left-6 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur text-white flex items-center justify-center transition-colors"
-              aria-label="Попередній слайд"
-            >
-              <ChevronLeft className="h-6 w-6" />
-            </button>
-            <button
-              onClick={() => setIndex(i => (i + 1) % slides.length)}
-              className="absolute right-6 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur text-white flex items-center justify-center transition-colors"
-              aria-label="Наступний слайд"
-            >
-              <ChevronRight className="h-6 w-6" />
-            </button>
-
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-              {slides.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setIndex(i)}
-                  className={`h-2 rounded-full transition-all ${i === index ? 'w-8 bg-white' : 'w-2 bg-white/50'}`}
-                  aria-label={`Слайд ${i + 1}`}
-                />
-              ))}
-            </div>
-          </>
-        )}
-      </motion.div>
+      {/* SVG-хвиля знизу */}
+      <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-none z-30 translate-y-1">
+        <svg className="relative block w-full h-[50px] md:h-[100px]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+          <path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.26-17.34-168.06-16.33-250.45.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V0C1132.19,23.09,1055.71,74.35,985.66,92.83Z" className="fill-[#f8fafc] dark:fill-slate-950 transition-colors duration-500" />
+        </svg>
+      </div>
     </section>
   );
 }

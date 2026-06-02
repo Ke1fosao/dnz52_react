@@ -1,310 +1,297 @@
 import { useState, useEffect, ReactNode } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
-  Search, Menu as MenuIcon, X, ChevronDown,
-  Home, Info, GraduationCap, Phone, Users, Sparkles,
-  Music, Brain, Stethoscope, BookOpen, Newspaper, Image as ImageIcon,
-  FileText, MessageSquare, Utensils, Heart,
+  MapPin, Search, Menu as MenuIcon, X, ChevronDown, Sun, Moon,
+  Info, Users, GraduationCap, Utensils, Heart, FileText, MessageSquare,
+  Brain, Music, Activity, Star, Zap,
 } from 'lucide-react';
-import {
-  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
-} from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Logo } from '@/components/common/Logo';
-import { ThemeToggle } from '@/components/common/ThemeToggle';
+import { useTheme } from '@/hooks/useTheme';
 import { useGroups } from '@/hooks/useApi';
 import { cn } from '@/lib/utils';
 
-// ============================================================================
-// Меню згруповане по розділах
-// ============================================================================
+interface DropItem { title: string; desc: string; icon: typeof Info; to: string; color: string; }
 
-interface NavLinkItem {
-  to: string;
-  label: string;
-  description?: string;
-  icon: ReactNode;
-}
-
-const FACILITY_LINKS: NavLinkItem[] = [
-  { to: '/about',       label: 'Про заклад',   description: 'Історія, місія, цінності',     icon: <Info className="h-5 w-5" /> },
-  { to: '/staff',       label: 'Керівництво',  description: 'Адміністрація закладу',        icon: <Users className="h-5 w-5" /> },
-  { to: '/attestation', label: 'Атестація',    description: 'Документи атестаційної комісії', icon: <GraduationCap className="h-5 w-5" /> },
-  { to: '/contacts',    label: 'Контакти',     description: 'Адреса, телефон, карта',       icon: <Phone className="h-5 w-5" /> },
+const ABOUT_ITEMS: DropItem[] = [
+  { title: 'Історія та місія', desc: 'Наші цінності', icon: Info, to: '/about', color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400' },
+  { title: 'Керівництво', desc: 'Адміністрація', icon: Users, to: '/staff', color: 'bg-purple-100 text-purple-600 dark:bg-purple-900/40 dark:text-purple-400' },
+  { title: 'Атестація', desc: 'Документи комісії', icon: GraduationCap, to: '/attestation', color: 'bg-pink-100 text-pink-600 dark:bg-pink-900/40 dark:text-pink-400' },
 ];
 
-const SPECIALISTS_LINKS = [
-  { to: '/specialists/methodical',   label: 'Методична робота',     icon: <BookOpen className="h-4 w-4" /> },
-  { to: '/specialists/physical',     label: 'Фізкультурно-оздоровча', icon: <Sparkles className="h-4 w-4" /> },
-  { to: '/specialists/music',        label: 'Музичний керівник',     icon: <Music className="h-4 w-4" /> },
-  { to: '/specialists/psychologist', label: 'Психолог',              icon: <Brain className="h-4 w-4" /> },
-  { to: '/specialists/medical',      label: 'Медична сестра',        icon: <Stethoscope className="h-4 w-4" /> },
+const SERVICE_ITEMS: DropItem[] = [
+  { title: 'Меню на сьогодні', desc: 'Смачно та корисно', icon: Utensils, to: '/menu', color: 'bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400' },
+  { title: 'Батькам', desc: 'Корисна інформація', icon: Heart, to: '/parents', color: 'bg-rose-100 text-rose-600 dark:bg-rose-900/40 dark:text-rose-400' },
+  { title: 'Документи', desc: 'Офіційні папери', icon: FileText, to: '/documents', color: 'bg-cyan-100 text-cyan-600 dark:bg-cyan-900/40 dark:text-cyan-400' },
+  { title: 'Відгуки', desc: 'Думки батьків', icon: MessageSquare, to: '/reviews', color: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400' },
 ];
 
-const SERVICES_LINKS: NavLinkItem[] = [
-  { to: '/menu',      label: 'Меню харчування', description: 'Корисне меню на тиждень',     icon: <Utensils className="h-5 w-5" /> },
-  { to: '/documents', label: 'Документи',       description: 'Нормативні документи',         icon: <FileText className="h-5 w-5" /> },
-  { to: '/reviews',   label: 'Відгуки',         description: 'Думки батьків',                icon: <MessageSquare className="h-5 w-5" /> },
-  { to: '/parents',   label: 'Батькам',         description: 'Оголошення, поради, зразки',   icon: <Heart className="h-5 w-5" /> },
+const SPECIALISTS = [
+  { title: 'Психологічна служба', icon: Brain, to: '/specialists/psychologist' },
+  { title: 'Музична студія', icon: Music, to: '/specialists/music' },
+  { title: 'Спорт та здоровʼя', icon: Activity, to: '/specialists/physical' },
 ];
 
-// ============================================================================
-// Navbar
-// ============================================================================
+export function Navbar() {
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [expandedMobile, setExpandedMobile] = useState<string | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState('');
 
-export function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === 'dark';
   const location = useLocation();
   const navigate = useNavigate();
   const { data: groups } = useGroups();
 
   useEffect(() => {
-    const handler = () => setIsScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handler);
-    return () => window.removeEventListener('scroll', handler);
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   useEffect(() => {
-    setShowSearch(false);
-    setSearchQuery('');
+    setMobileOpen(false);
+    setExpandedMobile(null);
+    setSearchOpen(false);
   }, [location.pathname]);
+
+  const isActive = (to: string) => to === '/' ? location.pathname === '/' : location.pathname.startsWith(to);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-    }
+    if (query.trim()) navigate(`/search?q=${encodeURIComponent(query.trim())}`);
   };
 
   return (
-    <header
-      className={cn(
-        'sticky top-0 z-40 w-full bg-background/95 backdrop-blur border-b transition-shadow',
-        isScrolled && 'shadow-soft',
-      )}
-    >
-      <div className="container flex h-16 items-center gap-3">
-        <Logo size="sm" />
-
-        {/* Desktop navigation */}
-        <nav className="hidden xl:flex items-center gap-1 ml-4 flex-1">
-          <NavItem to="/" icon={<Home className="h-4 w-4" />} label="Головна" />
-
-          <NavDropdown label="Заклад" align="start" width="w-[480px]">
-            <div className="grid grid-cols-2 gap-2">
-              {FACILITY_LINKS.map(link => <MegaItem key={link.to} {...link} />)}
+    <header className={cn('fixed w-full top-0 z-[100] transition-all duration-500 ease-out', scrolled ? 'pt-2' : 'pt-4')}>
+      <div className="container mx-auto px-4">
+        <div className={cn(
+          'mx-auto max-w-6xl transition-all duration-500 flex items-center justify-between',
+          scrolled ? 'ultra-glass rounded-[2rem] px-4 py-2' : 'bg-transparent px-2 py-2',
+        )}>
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-3 relative z-50 group shrink-0">
+            <div className="w-12 h-12 bg-gray-900 dark:bg-white rounded-2xl flex items-center justify-center text-white dark:text-gray-900 font-black text-xl shadow-[0_10px_20px_rgba(0,0,0,0.2)] dark:shadow-[0_10px_20px_rgba(255,255,255,0.1)] group-hover:rotate-[15deg] transition-all duration-300">
+              52
             </div>
-          </NavDropdown>
-
-          <NavDropdown label="Дітям" align="start" width="w-[680px]">
-            <div className="grid grid-cols-3 gap-3">
-              {/* Групи */}
-              <div>
-                <SectionHeader icon={<Users className="h-3.5 w-3.5" />} label="Групи" />
-                <Link
-                  to="/groups"
-                  className="block px-3 py-2 rounded-xl hover:bg-primary-50 hover:text-primary-700 font-semibold text-sm transition-colors"
-                >
-                  Усі групи →
-                </Link>
-                <ul className="space-y-0.5 mt-1">
-                  {groups?.slice(0, 6).map(g => (
-                    <li key={g.id}>
-                      <Link
-                        to={`/groups/${g.slug}`}
-                        className="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-primary-50 hover:text-primary-700 text-sm transition-colors"
-                      >
-                        <span className="h-2 w-2 rounded-full shrink-0" style={{ background: g.color }} />
-                        <span className="truncate">{g.name}</span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Спеціалісти */}
-              <div>
-                <SectionHeader icon={<GraduationCap className="h-3.5 w-3.5" />} label="Спеціалісти" />
-                <ul className="space-y-0.5">
-                  {SPECIALISTS_LINKS.map(link => (
-                    <li key={link.to}>
-                      <Link
-                        to={link.to}
-                        className="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-primary-50 hover:text-primary-700 text-sm transition-colors"
-                      >
-                        {link.icon}
-                        <span>{link.label}</span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Гуртки */}
-              <div>
-                <SectionHeader icon={<Sparkles className="h-3.5 w-3.5" />} label="Активності" />
-                <Link
-                  to="/circles"
-                  className="block p-3 rounded-2xl bg-gradient-to-br from-coral/10 to-accent/10 hover:from-coral/20 hover:to-accent/20 transition-colors"
-                >
-                  <div className="text-2xl mb-1">🎨</div>
-                  <div className="font-semibold text-sm">Гуртки та секції</div>
-                  <div className="text-xs text-muted-foreground">Творчість і розвиток</div>
-                </Link>
+            <div>
+              <h1 className="font-extrabold text-gray-900 dark:text-white text-xl tracking-tight leading-none">ЗДО №52</h1>
+              <div className="flex items-center gap-1 text-[10px] text-gray-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">
+                <MapPin size={10} /> Рівне
               </div>
             </div>
-          </NavDropdown>
+          </Link>
 
-          <NavItem to="/news" icon={<Newspaper className="h-4 w-4" />} label="Новини" />
-          <NavItem to="/gallery" icon={<ImageIcon className="h-4 w-4" />} label="Галерея" />
+          {/* Desktop nav */}
+          <nav className="hidden lg:flex items-center gap-1 bg-white/40 dark:bg-slate-900/40 backdrop-blur-md p-1.5 rounded-full border border-white/50 dark:border-slate-700/50 shadow-sm">
+            <NavPill to="/" label="Головна" active={isActive('/')} />
 
-          <NavDropdown label="Сервіси" align="end" width="w-[480px]">
-            <div className="grid grid-cols-2 gap-2">
-              {SERVICES_LINKS.map(link => <MegaItem key={link.to} {...link} />)}
-            </div>
-          </NavDropdown>
-        </nav>
+            <NavDrop label="Про заклад">
+              <div className="w-[360px] glass-dropdown rounded-[2rem] p-3">
+                <div className="flex flex-col gap-1">
+                  {ABOUT_ITEMS.map(it => <DropLink key={it.to} {...it} />)}
+                </div>
+              </div>
+            </NavDrop>
 
-        {/* Правий блок — пошук, контакти, моб. меню */}
-        <div className="flex items-center gap-2 ml-auto">
-          {showSearch ? (
-            <form onSubmit={handleSearch} className="relative">
-              <Input
-                autoFocus
-                placeholder="Пошук..."
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                className="h-10 w-56 pr-10"
-              />
-              <button
-                type="button"
-                onClick={() => setShowSearch(false)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                aria-label="Закрити пошук"
-              >
-                <X className="h-4 w-4" />
+            <NavDrop label="Світ дитинства">
+              <div className="w-[600px] glass-dropdown rounded-[2rem] p-6">
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="bg-white/40 dark:bg-slate-800/40 p-5 rounded-[1.5rem]">
+                    <div className="text-[10px] font-black text-blue-500 dark:text-blue-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                      <Star size={12} className="fill-current" /> Вікові групи
+                    </div>
+                    <ul className="space-y-2.5">
+                      <li>
+                        <Link to="/groups" className="text-sm font-extrabold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                          Усі групи →
+                        </Link>
+                      </li>
+                      {groups?.slice(0, 5).map(g => (
+                        <li key={g.id}>
+                          <Link to={`/groups/${g.slug}`} className="text-sm font-bold text-gray-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                            {g.name}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-black text-purple-500 dark:text-purple-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                      <Zap size={12} className="fill-current" /> Напрямки
+                    </div>
+                    <ul className="space-y-3">
+                      {SPECIALISTS.map(s => (
+                        <li key={s.to}>
+                          <Link to={s.to} className="flex items-center gap-3 text-sm font-bold text-gray-700 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-400 group/spec">
+                            <div className="p-2 bg-white dark:bg-slate-800 rounded-lg shadow-sm group-hover/spec:scale-110 transition-transform">
+                              <s.icon size={16} className="text-purple-500 dark:text-purple-400" />
+                            </div>
+                            {s.title}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </NavDrop>
+
+            <NavPill to="/news" label="Новини" active={isActive('/news')} />
+            <NavPill to="/gallery" label="Галерея" active={isActive('/gallery')} />
+
+            <NavDrop label="Сервіси">
+              <div className="w-[380px] glass-dropdown rounded-[2rem] p-3">
+                <div className="flex flex-col gap-1">
+                  {SERVICE_ITEMS.map(it => <DropLink key={it.to} {...it} />)}
+                </div>
+              </div>
+            </NavDrop>
+          </nav>
+
+          {/* Right actions */}
+          <div className="hidden lg:flex items-center gap-3">
+            <button onClick={toggleTheme} className="w-12 h-12 rounded-full flex items-center justify-center text-gray-900 dark:text-white shadow-sm hover:scale-105 transition-transform bg-white dark:bg-slate-800 border border-white dark:border-slate-700" aria-label="Тема">
+              {isDark ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+            <form onSubmit={handleSearch} className={cn('relative flex items-center bg-white dark:bg-slate-800 rounded-full shadow-sm transition-all duration-500 ease-in-out border border-white dark:border-slate-700', searchOpen ? 'w-64' : 'w-12')}>
+              <button type={searchOpen ? 'submit' : 'button'} onClick={() => !searchOpen && setSearchOpen(true)} className="w-12 h-12 rounded-full flex items-center justify-center text-gray-900 dark:text-white shrink-0 z-10 hover:scale-105 transition-transform" aria-label="Пошук">
+                <Search size={20} />
               </button>
+              <input
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                type="text" placeholder="Шукати..."
+                className={cn('absolute left-12 w-[calc(100%-5.5rem)] h-full bg-transparent outline-none text-sm font-bold text-gray-700 dark:text-slate-200 transition-all', searchOpen ? 'opacity-100' : 'opacity-0 pointer-events-none')}
+              />
+              {searchOpen && (
+                <button type="button" onClick={() => setSearchOpen(false)} className="absolute right-2 text-gray-400 hover:text-gray-700 dark:hover:text-white" aria-label="Закрити">
+                  <X size={16} />
+                </button>
+              )}
             </form>
-          ) : (
-            <Button variant="ghost" size="icon" onClick={() => setShowSearch(true)} aria-label="Пошук">
-              <Search className="h-5 w-5" />
-            </Button>
-          )}
+            <Link to="/contacts" className={cn(
+              'px-6 py-3 rounded-full font-bold text-sm shadow-[0_10px_20px_rgba(0,0,0,0.2)] dark:shadow-[0_10px_20px_rgba(255,255,255,0.1)] hover:-translate-y-1 transition-all whitespace-nowrap',
+              isActive('/contacts') ? 'bg-blue-600 text-white' : 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-blue-600 dark:hover:bg-blue-500 hover:text-white dark:hover:text-white',
+            )}>
+              Звʼязок
+            </Link>
+          </div>
 
-          <ThemeToggle />
+          {/* Mobile toggles */}
+          <div className="lg:hidden flex items-center gap-2">
+            <button onClick={toggleTheme} className="w-10 h-10 rounded-full flex items-center justify-center text-gray-900 dark:text-white shadow-sm bg-white dark:bg-slate-800 border border-white dark:border-slate-700 relative z-50" aria-label="Тема">
+              {isDark ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+            <button onClick={() => setMobileOpen(!mobileOpen)} className="w-12 h-12 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center text-gray-900 dark:text-white shadow-md relative z-50 border border-white dark:border-slate-700" aria-label="Меню">
+              {mobileOpen ? <X size={24} /> : <MenuIcon size={24} />}
+            </button>
+          </div>
+        </div>
 
-          <Button asChild variant="gradient" size="sm" className="hidden md:inline-flex">
-            <Link to="/contacts">Контакти</Link>
-          </Button>
+        {/* Mobile menu */}
+        <div className={cn('lg:hidden fixed inset-0 z-40 bg-white/90 dark:bg-slate-900/95 backdrop-blur-2xl transition-all duration-500', mobileOpen ? 'opacity-100 visible' : 'opacity-0 invisible')}>
+          <div className="flex flex-col h-full pt-28 px-6 pb-10 overflow-y-auto">
+            <form onSubmit={handleSearch} className="relative mb-4">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Пошук по сайту..."
+                className="w-full h-12 pl-11 pr-4 rounded-2xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 font-bold text-gray-700 dark:text-slate-200 outline-none" />
+            </form>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="xl:hidden"
-            onClick={onMenuClick}
-            aria-label="Меню"
-          >
-            <MenuIcon className="h-6 w-6" />
-          </Button>
+            <MobileLink to="/" label="Головна" />
+            <MobileGroup label="Про заклад" id="about" expanded={expandedMobile} setExpanded={setExpandedMobile} items={ABOUT_ITEMS} />
+            <MobileLink to="/groups" label="Групи" />
+            <MobileLink to="/news" label="Новини" />
+            <MobileLink to="/gallery" label="Галерея" />
+            <MobileGroup label="Сервіси" id="services" expanded={expandedMobile} setExpanded={setExpandedMobile} items={SERVICE_ITEMS} />
+
+            <Link to="/contacts" className="w-full mt-4 bg-blue-600 text-white py-4 rounded-3xl font-extrabold text-xl shadow-lg text-center">
+              Контакти
+            </Link>
+          </div>
         </div>
       </div>
     </header>
   );
 }
 
-// ============================================================================
-// Допоміжні компоненти
-// ============================================================================
+// ---------- helpers ----------
 
-function NavItem({ to, icon, label }: { to: string; icon: ReactNode; label: string }) {
+function NavPill({ to, label, active }: { to: string; label: string; active: boolean }) {
   return (
-    <NavLink
-      to={to}
-      end={to === '/'}
-      className={({ isActive }) =>
-        cn(
-          'inline-flex items-center gap-1.5 h-10 px-3 rounded-xl text-sm font-semibold transition-colors',
-          isActive
-            ? 'bg-primary-100 text-primary-700'
-            : 'text-foreground hover:bg-primary-50 hover:text-primary-700',
-        )
-      }
-    >
-      {icon} {label}
+    <NavLink to={to} end={to === '/'} className={cn(
+      'px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300',
+      active ? 'bg-white dark:bg-slate-800 text-gray-900 dark:text-white shadow-sm'
+             : 'text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800/50',
+    )}>
+      {label}
     </NavLink>
   );
 }
 
-function NavDropdown({
-  label,
-  children,
-  align = 'start',
-  width = 'w-[480px]',
-}: {
-  label: string;
-  children: ReactNode;
-  align?: 'start' | 'center' | 'end';
-  width?: string;
-}) {
-  const [open, setOpen] = useState(false);
-  const location = useLocation();
-
-  // Закриваємо при зміні маршруту (на випадок гарячих оновлень)
-  useEffect(() => {
-    setOpen(false);
-  }, [location.pathname]);
-
-  // Закриваємо коли користувач клікнув на будь-яке посилання всередині дропдауну
-  const handleContentClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const target = e.target as HTMLElement;
-    if (target.closest('a[href]')) {
-      setOpen(false);
-    }
-  };
-
+function NavDrop({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger className="group inline-flex items-center gap-1 h-10 px-3 rounded-xl text-sm font-semibold transition-colors text-foreground hover:bg-primary-50 hover:text-primary-700 data-[state=open]:bg-primary-50 data-[state=open]:text-primary-700 focus:outline-none">
+    <div className="relative group/nav">
+      <button className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-sm font-bold text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800/50 transition-all">
         {label}
-        <ChevronDown className="h-3.5 w-3.5 transition-transform group-data-[state=open]:rotate-180" />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align={align}
-        className={cn(width, 'max-w-[calc(100vw-2rem)]')}
-        onClick={handleContentClick}
-      >
+        <ChevronDown size={14} className="opacity-50 group-hover/nav:rotate-180 transition-transform" />
+      </button>
+      <div className="absolute top-full left-0 w-full h-6" />
+      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 opacity-0 translate-y-4 invisible group-hover/nav:opacity-100 group-hover/nav:translate-y-0 group-hover/nav:visible transition-all duration-300 z-50 origin-top">
         {children}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
-
-function SectionHeader({ icon, label }: { icon: ReactNode; label: string }) {
-  return (
-    <h4 className="text-xs font-bold uppercase text-muted-foreground mb-2 px-2 flex items-center gap-1.5">
-      {icon} {label}
-    </h4>
-  );
-}
-
-function MegaItem({ to, label, description, icon }: NavLinkItem) {
-  return (
-    <Link
-      to={to}
-      className="flex items-start gap-3 p-3 rounded-2xl hover:bg-primary-50 transition-colors group"
-    >
-      <div className="h-10 w-10 rounded-xl bg-gradient-primary text-white flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-        {icon}
       </div>
-      <div className="min-w-0">
-        <div className="font-semibold text-sm group-hover:text-primary-700 transition-colors">{label}</div>
-        {description && (
-          <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{description}</div>
-        )}
+    </div>
+  );
+}
+
+function DropLink({ to, title, desc, icon: Icon, color }: DropItem) {
+  return (
+    <Link to={to} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-white/60 dark:hover:bg-slate-800/60 transition-colors group/link">
+      <div className={cn('w-12 h-12 rounded-[1rem] flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover/link:scale-110 group-hover/link:rotate-3', color)}>
+        <Icon size={20} />
+      </div>
+      <div>
+        <h4 className="text-sm font-extrabold text-gray-900 dark:text-white mb-0.5">{title}</h4>
+        <p className="text-xs text-gray-500 dark:text-slate-400 font-medium">{desc}</p>
       </div>
     </Link>
+  );
+}
+
+function MobileLink({ to, label }: { to: string; label: string }) {
+  return (
+    <NavLink to={to} end={to === '/'} className={({ isActive }) => cn(
+      'w-full flex items-center p-4 rounded-3xl font-extrabold text-xl transition-all mb-2',
+      isActive ? 'bg-white dark:bg-slate-800 text-gray-900 dark:text-white shadow-sm'
+               : 'text-gray-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-800/50',
+    )}>
+      {label}
+    </NavLink>
+  );
+}
+
+function MobileGroup({ label, id, expanded, setExpanded, items }: {
+  label: string; id: string; expanded: string | null;
+  setExpanded: (v: string | null) => void; items: DropItem[];
+}) {
+  const open = expanded === id;
+  return (
+    <div className="mb-2">
+      <button onClick={() => setExpanded(open ? null : id)}
+        className="w-full flex items-center justify-between p-4 rounded-3xl font-extrabold text-xl text-gray-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-800/50 transition-all">
+        {label}
+        <ChevronDown size={24} className={cn('transition-transform', open && 'rotate-180')} />
+      </button>
+      {open && (
+        <div className="p-2 grid gap-2 mt-2">
+          {items.map(it => (
+            <Link key={it.to} to={it.to} className="flex items-center gap-4 p-4 bg-white/50 dark:bg-slate-800/50 rounded-3xl">
+              <div className={cn('w-12 h-12 rounded-2xl flex items-center justify-center', it.color)}><it.icon size={20} /></div>
+              <div className="font-bold text-gray-800 dark:text-slate-200">{it.title}</div>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

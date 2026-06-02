@@ -1,251 +1,137 @@
-import { ReactNode } from 'react';
 import { Phone, Mail, MapPin, Clock, Facebook, Instagram, Youtube } from 'lucide-react';
 import { Seo } from '@/components/common/Seo';
-import { PageHero } from '@/components/common/PageHero';
 import { Spinner } from '@/components/common/Spinner';
 import { MapEmbed } from '@/components/common/MapEmbed';
-import { Card, CardContent } from '@/components/ui/card';
 import { useContact } from '@/hooks/useApi';
 
-// ============================================================================
-// Парсимо телефони і графік
-// ============================================================================
-
-/** Розбиває "64-82-55, 64-83-98" або "64-82-55 / 64-83-98" на масив */
+// --- парсинг телефонів і графіку (з реальних даних) ---
 function parsePhones(raw: string): string[] {
-  return raw
-    .split(/[,;/]|\sі\s/i)
-    .map(s => s.trim())
-    .filter(Boolean);
+  return raw.split(/[,;/]|\sі\s/i).map(s => s.trim()).filter(Boolean);
 }
+function telHref(p: string) { return `tel:${p.replace(/[^\d+]/g, '')}`; }
 
-/** Прибирає все що не цифра / + для tel: посилання */
-function telHref(phone: string): string {
-  const digits = phone.replace(/[^\d+]/g, '');
-  return `tel:${digits}`;
+interface SchedRow { label: string; time: string; closed: boolean; }
+function parseSchedule(raw: string): SchedRow[] {
+  return raw.split(/[\n;]+/).map(l => l.trim().replace(/\.$/, '')).filter(Boolean).map(line => {
+    const m = line.match(/^([^:—–]{2,40}?)\s*[:—–]\s*(.+)$/);
+    const closed = /вихідн|закри|не\s*працю/i.test(line);
+    if (m) return { label: m[1].trim(), time: m[2].trim(), closed };
+    return { label: '', time: line, closed };
+  });
 }
-
-interface ScheduleRow {
-  days: string;
-  time: string;
-  isShortTime: boolean;     // true коли час короткий і можна показати красивою бейджкою
-  isClosed: boolean;        // вихідний / закрито
-}
-
-const SHORT_TIME_LIMIT = 28;  // символів — більше цього показуємо як параграф
-
-/** Перевіряє чи це короткий "чистий" час типу "7:00–19:00" або "вихідний" */
-function isShortClean(text: string): boolean {
-  return text.length <= SHORT_TIME_LIMIT && !/[(){}[\]]/.test(text);
-}
-
-/**
- * Розбиває графік на масив рядків.
- * Підтримує розділювачі: \n, ; (крапка з комою) — кожне стає окремим рядком.
- * У кожному рядку шукає шаблон "ярлик: час" або просто час.
- */
-function parseSchedule(raw: string): ScheduleRow[] {
-  return raw
-    .split(/[\n;]+/)                  // нові рядки АБО крапки з комою
-    .map(line => line.trim())
-    .map(line => line.replace(/\.$/, ''))  // прибираємо крапку в кінці
-    .filter(Boolean)
-    .map(line => {
-      // Шукаємо роздільник: ":" або довге тире "—" / "–" (але НЕ дефіс "-",
-      // бо дефіс може бути всередині часу "7-19")
-      const m = line.match(/^([^:—–]{2,40}?)\s*[:—–]\s*(.+)$/);
-      if (m) {
-        const days = m[1].trim();
-        const time = m[2].trim();
-        return {
-          days,
-          time,
-          isShortTime: isShortClean(time),
-          isClosed: /вихідн|закри|не\s*працю/i.test(time),
-        };
-      }
-      return {
-        days: '',
-        time: line,
-        isShortTime: isShortClean(line),
-        isClosed: /вихідн|закри|не\s*працю/i.test(line),
-      };
-    });
-}
-
-// ============================================================================
-// Page
-// ============================================================================
 
 export function ContactsPage() {
   const { data, isLoading } = useContact();
   const contact = data?.[0];
 
   return (
-    <>
-      <Seo title="Контакти" description="Як з нами зв'язатися" />
-      <PageHero
-        title="Контакти"
-        subtitle="Ми завжди раді спілкуванню з вами"
-        icon="📞"
-        variant="sky"
-      />
+    <div className="animate-page-fade-in pb-24 bg-[#f8fafc] dark:bg-slate-950 min-h-screen relative overflow-hidden">
+      <Seo title="Контакти" description="Як з нами звʼязатися — адреса, телефони, карта закладу ЗДО №52" />
 
-      <div className="container py-10 max-w-6xl">
+      {/* Абстрактні плями фону */}
+      <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-blue-100/50 dark:from-blue-900/20 to-transparent pointer-events-none" />
+      <div className="absolute top-40 -left-40 w-96 h-96 bg-cyan-300/20 dark:bg-cyan-600/10 rounded-full blur-[100px] pointer-events-none animate-float-complex" />
+      <div className="absolute top-80 -right-40 w-96 h-96 bg-purple-300/20 dark:bg-purple-600/10 rounded-full blur-[100px] pointer-events-none animate-float-complex" style={{ animationDelay: '2s' }} />
+
+      <div className="container mx-auto px-4 max-w-7xl relative z-10">
+        {/* Заголовок */}
+        <div className="mb-12 md:mb-16 flex items-center gap-6">
+          <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-red-400 to-rose-600 rounded-[1.8rem] flex items-center justify-center text-white shadow-lg shadow-red-500/30 rotate-[-10deg] hover:rotate-0 transition-transform duration-300 shrink-0">
+            <Phone size={36} className="opacity-90" />
+          </div>
+          <div>
+            <h1 className="text-4xl md:text-6xl font-black text-gray-900 dark:text-white tracking-tight mb-1">Контакти</h1>
+            <p className="text-lg md:text-xl text-gray-500 dark:text-slate-400 font-medium">Ми завжди раді спілкуванню з вами</p>
+          </div>
+        </div>
+
         {isLoading ? (
           <Spinner />
         ) : !contact ? (
-          <p className="text-center text-muted-foreground py-12">Контактна інформація поки не додана.</p>
+          <p className="text-center text-gray-400 py-12">Контактна інформація поки не додана.</p>
         ) : (
-          <div className="grid lg:grid-cols-5 gap-6">
-            {/* Ліва колонка — контактна інформація */}
-            <div className="lg:col-span-2 space-y-4">
+          <div className="grid lg:grid-cols-12 gap-8 lg:gap-10">
+            {/* Ліва колонка */}
+            <div className="lg:col-span-5 flex flex-col gap-5 md:gap-6">
               {/* Адреса */}
-              <ContactCard icon={<MapPin />} label="Адреса">
-                <div className="font-display font-bold text-base">{contact.address}</div>
-              </ContactCard>
+              <div className="clay-card p-6 flex gap-5 items-start group !rounded-[2rem]">
+                <div className="w-14 h-14 bg-blue-100 dark:bg-blue-900/40 text-blue-500 dark:text-blue-400 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform"><MapPin size={28} /></div>
+                <div>
+                  <div className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1">Адреса</div>
+                  <div className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">{contact.address}</div>
+                </div>
+              </div>
 
-              {/* Телефони (можуть бути множинні) */}
+              {/* Телефони */}
               {contact.phone && (
-                <ContactCard icon={<Phone />} label="Телефони">
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {parsePhones(contact.phone).map((p, i) => (
-                      <a
-                        key={`${p}-${i}`}
-                        href={telHref(p)}
-                        className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-primary-50 text-primary-700 font-display font-bold hover:bg-primary hover:text-white transition-colors shadow-soft hover:shadow-soft-lg"
-                      >
-                        <Phone className="h-4 w-4" />
-                        {p}
-                      </a>
-                    ))}
+                <div className="clay-card p-6 flex gap-5 items-start group !rounded-[2rem]">
+                  <div className="w-14 h-14 bg-cyan-100 dark:bg-cyan-900/40 text-cyan-500 dark:text-cyan-400 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform"><Phone size={28} /></div>
+                  <div>
+                    <div className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2">Телефони</div>
+                    <div className="flex flex-wrap gap-3">
+                      {parsePhones(contact.phone).map((p, i) => (
+                        <a key={i} href={telHref(p)} className="px-4 py-2 bg-gray-50 dark:bg-slate-800 rounded-xl text-lg font-bold text-gray-900 dark:text-white hover:bg-cyan-50 dark:hover:bg-cyan-900/50 hover:text-cyan-600 transition-colors flex items-center gap-2">
+                          <Phone size={16} className="text-cyan-500" /> {p}
+                        </a>
+                      ))}
+                    </div>
                   </div>
-                </ContactCard>
+                </div>
               )}
 
               {/* Email */}
               {contact.email && (
-                <ContactCard icon={<Mail />} label="Електронна пошта">
-                  <a
-                    href={`mailto:${contact.email}`}
-                    className="inline-flex items-center gap-1.5 font-display font-bold text-primary-700 hover:underline break-all"
-                  >
-                    {contact.email}
-                  </a>
-                </ContactCard>
+                <div className="clay-card p-6 flex gap-5 items-start group !rounded-[2rem]">
+                  <div className="w-14 h-14 bg-purple-100 dark:bg-purple-900/40 text-purple-500 dark:text-purple-400 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform"><Mail size={28} /></div>
+                  <div>
+                    <div className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1">Електронна пошта</div>
+                    <a href={`mailto:${contact.email}`} className="text-lg md:text-xl font-bold text-purple-600 dark:text-purple-400 hover:underline break-all">{contact.email}</a>
+                  </div>
+                </div>
               )}
 
               {/* Режим роботи */}
               {contact.working_hours && (
-                <ContactCard icon={<Clock />} label="Режим роботи">
-                  <div className="mt-2 space-y-3">
-                    {parseSchedule(contact.working_hours).map((row, i) => {
-                      // Випадок 1: короткий час → горизонтально з бейджкою
-                      if (row.days && row.isShortTime) {
-                        return (
-                          <div
-                            key={i}
-                            className="flex items-center justify-between gap-3 py-2 border-b border-border/40 last:border-0"
-                          >
-                            <span className="font-display font-bold text-sm">{row.days}</span>
-                            <span className={`text-xs font-semibold px-3 py-1 rounded-full shrink-0 ${
-                              row.isClosed
-                                ? 'bg-red-100 text-red-700'
-                                : 'bg-green-100 text-green-700'
-                            }`}>
-                              {row.time}
-                            </span>
-                          </div>
-                        );
-                      }
-                      // Випадок 2: довгий час → вертикально з підзаголовком
-                      if (row.days) {
-                        return (
-                          <div
-                            key={i}
-                            className="rounded-2xl bg-primary-50/50 border border-primary-100 p-3"
-                          >
-                            <div className="font-display font-bold text-sm text-primary-700 mb-1 capitalize">
-                              {row.days}
-                            </div>
-                            <div className="text-sm leading-relaxed text-foreground/85">
-                              {row.time}
-                            </div>
-                          </div>
-                        );
-                      }
-                      // Випадок 3: тільки текст без ярлика
-                      return (
-                        <p key={i} className="text-sm leading-relaxed">{row.time}</p>
-                      );
-                    })}
+                <div className="clay-card p-6 flex gap-5 items-start group !rounded-[2rem]">
+                  <div className="w-14 h-14 bg-amber-100 dark:bg-amber-900/40 text-amber-500 dark:text-amber-400 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform"><Clock size={28} /></div>
+                  <div className="w-full">
+                    <div className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-4">Режим роботи</div>
+                    <div className="space-y-3">
+                      {parseSchedule(contact.working_hours).map((row, i) => (
+                        <div key={i} className="bg-gray-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-gray-100 dark:border-slate-700/50">
+                          {row.label && <div className={`text-sm font-bold mb-1 ${row.closed ? 'text-red-500' : 'text-blue-600 dark:text-blue-400'}`}>{row.label}</div>}
+                          <div className="text-gray-900 dark:text-slate-300 font-medium text-sm leading-relaxed">{row.time}</div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </ContactCard>
+                </div>
               )}
 
-              {/* Соціальні мережі */}
+              {/* Соцмережі */}
               {(contact.facebook_url || contact.instagram_url || contact.youtube_url) && (
-                <Card>
-                  <CardContent className="p-5">
-                    <p className="text-xs font-semibold uppercase text-muted-foreground mb-3">
-                      Ми у соціальних мережах
-                    </p>
-                    <div className="flex gap-3">
-                      {contact.facebook_url && (
-                        <a href={contact.facebook_url} target="_blank" rel="noreferrer" aria-label="Facebook"
-                          className="h-12 w-12 rounded-2xl bg-blue-100 text-blue-700 hover:bg-blue-600 hover:text-white flex items-center justify-center transition-all hover:scale-110">
-                          <Facebook className="h-6 w-6" />
-                        </a>
-                      )}
-                      {contact.instagram_url && (
-                        <a href={contact.instagram_url} target="_blank" rel="noreferrer" aria-label="Instagram"
-                          className="h-12 w-12 rounded-2xl bg-pink-100 text-pink-700 hover:bg-gradient-to-br hover:from-pink-500 hover:to-purple-600 hover:text-white flex items-center justify-center transition-all hover:scale-110">
-                          <Instagram className="h-6 w-6" />
-                        </a>
-                      )}
-                      {contact.youtube_url && (
-                        <a href={contact.youtube_url} target="_blank" rel="noreferrer" aria-label="YouTube"
-                          className="h-12 w-12 rounded-2xl bg-red-100 text-red-700 hover:bg-red-600 hover:text-white flex items-center justify-center transition-all hover:scale-110">
-                          <Youtube className="h-6 w-6" />
-                        </a>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+                <div className="clay-card p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 !rounded-[2rem]">
+                  <div className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Ми у соцмережах</div>
+                  <div className="flex gap-3">
+                    {contact.facebook_url && <a href={contact.facebook_url} target="_blank" rel="noreferrer" aria-label="Facebook" className="w-12 h-12 bg-gradient-to-tr from-blue-500 to-blue-400 rounded-xl flex items-center justify-center text-white shadow-md hover:scale-110 hover:-translate-y-1 transition-all"><Facebook size={20} /></a>}
+                    {contact.instagram_url && <a href={contact.instagram_url} target="_blank" rel="noreferrer" aria-label="Instagram" className="w-12 h-12 bg-gradient-to-tr from-pink-500 to-orange-400 rounded-xl flex items-center justify-center text-white shadow-md hover:scale-110 hover:-translate-y-1 transition-all"><Instagram size={20} /></a>}
+                    {contact.youtube_url && <a href={contact.youtube_url} target="_blank" rel="noreferrer" aria-label="YouTube" className="w-12 h-12 bg-gradient-to-tr from-red-600 to-red-500 rounded-xl flex items-center justify-center text-white shadow-md hover:scale-110 hover:-translate-y-1 transition-all"><Youtube size={20} /></a>}
+                  </div>
+                </div>
               )}
             </div>
 
-            {/* Права колонка — карта (на десктопі розтягується на висоту лівої колонки) */}
-            <Card className="overflow-hidden lg:col-span-3 flex flex-col">
-              <div className="aspect-[4/3] sm:aspect-video lg:aspect-auto lg:flex-1 w-full lg:min-h-[640px]">
-                <MapEmbed embed={contact.map_embed} address={contact.address} />
+            {/* Права колонка — карта */}
+            <div className="lg:col-span-7 h-[400px] sm:h-[500px] lg:h-auto lg:min-h-[640px]">
+              <div className="w-full h-full p-2 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-[2.5rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] border border-white/80 dark:border-slate-700">
+                <div className="w-full h-full rounded-[2rem] overflow-hidden [&_iframe]:filter [&_iframe]:dark:invert-[.9] [&_iframe]:dark:hue-rotate-180 [&_iframe]:dark:contrast-125 [&_iframe]:dark:brightness-90">
+                  <MapEmbed embed={contact.map_embed} address={contact.address} />
+                </div>
               </div>
-            </Card>
+            </div>
           </div>
         )}
       </div>
-    </>
-  );
-}
-
-// ============================================================================
-// ContactCard — універсальна картка з іконкою + контентом
-// ============================================================================
-
-function ContactCard({
-  icon, label, children,
-}: { icon: ReactNode; label: string; children: ReactNode }) {
-  return (
-    <Card className="hover:shadow-card-hover transition-shadow">
-      <CardContent className="p-5 flex items-start gap-4">
-        <div className="h-12 w-12 rounded-2xl bg-gradient-primary text-white flex items-center justify-center shrink-0 shadow-soft">
-          {icon}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="text-xs font-semibold uppercase text-muted-foreground mb-1">{label}</div>
-          {children}
-        </div>
-      </CardContent>
-    </Card>
+    </div>
   );
 }

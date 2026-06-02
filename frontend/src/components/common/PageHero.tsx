@@ -10,28 +10,43 @@ interface Props {
   variant?: 'primary' | 'warm' | 'sky' | 'soft';
 }
 
+// Преміум-заголовок сторінки: gradient-бейдж з іконкою + великий font-black заголовок,
+// мʼякі кольорові плями на фоні. Єдиний стиль для всіх внутрішніх сторінок.
 export function PageHero({ title, subtitle, icon, className, children, variant = 'primary' }: Props) {
-  const variants = {
-    primary: 'bg-gradient-primary text-white',
-    warm: 'bg-gradient-warm text-white',
-    sky: 'bg-gradient-sky text-white',
-    soft: 'bg-gradient-soft text-foreground',
-  };
+  const badge = {
+    primary: 'from-blue-500 to-indigo-600 shadow-blue-500/30',
+    warm: 'from-orange-400 to-rose-600 shadow-orange-500/30',
+    sky: 'from-cyan-400 to-blue-600 shadow-cyan-500/30',
+    soft: 'from-slate-500 to-slate-700 shadow-slate-500/20',
+  }[variant];
+
+  const blob = {
+    primary: 'bg-blue-300/30 dark:bg-blue-600/15',
+    warm: 'bg-orange-300/30 dark:bg-orange-600/15',
+    sky: 'bg-cyan-300/30 dark:bg-cyan-600/15',
+    soft: 'bg-slate-300/30 dark:bg-slate-600/15',
+  }[variant];
 
   return (
-    <section className={cn('relative overflow-hidden', variants[variant], className)}>
-      <div className="absolute inset-0 bg-clouds opacity-30" />
-      <div className="container relative py-12 md:py-16">
-        <div className="flex items-center gap-4 mb-3">
+    <section className={cn('relative overflow-hidden', className)}>
+      {/* Декоративні плями */}
+      <div className={cn('absolute -top-20 -left-24 w-96 h-96 rounded-full blur-[100px] pointer-events-none animate-float-complex', blob)} />
+      <div className={cn('absolute -top-10 right-0 w-80 h-80 rounded-full blur-[100px] pointer-events-none animate-float-complex', blob)} style={{ animationDelay: '2s' }} />
+
+      <div className="container relative pt-4 pb-10 md:pb-14">
+        <div className="flex items-center gap-5">
           {icon && (
-            <div className={cn('text-5xl', variant !== 'soft' && 'drop-shadow-md')}>{icon}</div>
+            <div className={cn(
+              'w-16 h-16 md:w-20 md:h-20 rounded-[1.8rem] bg-gradient-to-br text-white text-3xl md:text-4xl flex items-center justify-center shadow-lg shrink-0 rotate-[-8deg] hover:rotate-0 transition-transform duration-300',
+              badge,
+            )}>
+              {icon}
+            </div>
           )}
           <div>
-            <h1 className="font-display font-bold text-3xl md:text-5xl">{title}</h1>
+            <h1 className="font-black text-4xl md:text-6xl tracking-tight text-gray-900 dark:text-white mb-1">{title}</h1>
             {subtitle && (
-              <p className={cn('mt-2 text-base md:text-lg max-w-2xl', variant === 'soft' ? 'text-muted-foreground' : 'text-white/90')}>
-                {subtitle}
-              </p>
+              <p className="text-lg md:text-xl text-gray-500 dark:text-slate-400 font-medium max-w-2xl">{subtitle}</p>
             )}
           </div>
         </div>

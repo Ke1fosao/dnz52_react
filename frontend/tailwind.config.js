@@ -16,8 +16,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Nunito', 'system-ui', 'sans-serif'],
-        display: ['Fredoka', 'Nunito', 'sans-serif'],
+        sans: ['Manrope', 'system-ui', 'sans-serif'],
+        display: ['Manrope', 'system-ui', 'sans-serif'],
+        rounded: ['Nunito', 'sans-serif'],
       },
       colors: {
         border: 'hsl(var(--border))',
