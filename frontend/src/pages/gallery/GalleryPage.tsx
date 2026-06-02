@@ -40,8 +40,8 @@ export function GalleryPage() {
           <p className="text-lg md:text-xl text-gray-500 dark:text-slate-400 font-medium">Моменти, які залишаються в серці</p>
         </div>
 
-        {/* Капсули-фільтри */}
-        <div className="flex overflow-x-auto hide-scrollbar gap-3 mb-10 py-2 md:justify-center px-1">
+        {/* Капсули-фільтри — переносяться на новий рядок, ніколи не вилазять */}
+        <div className="flex flex-wrap justify-center gap-2.5 md:gap-3 mb-10 px-1">
           <FilterPill label="Усі альбоми" count={totalAlbums} active={activeCat === 'all'} onClick={() => selectCat('all')} />
           {categories?.map(cat => (
             <FilterPill key={cat.id} label={cat.name} count={cat.albums_count} active={activeCat === cat.slug} onClick={() => selectCat(cat.slug)} />
