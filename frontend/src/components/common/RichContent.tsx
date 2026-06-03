@@ -1,7 +1,7 @@
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import rehypeRaw from 'rehype-raw';
+import { lazy, Suspense } from 'react';
 import { cn } from '@/lib/utils';
+
+const RichContentInner = lazy(() => import('./RichContentInner'));
 
 interface Props {
   content: string;
@@ -9,19 +9,22 @@ interface Props {
 }
 
 /**
- * Рендерить контент що може бути або Markdown (новий), або HTML (старий, з CKEditor).
- *   • remark-gfm — таблиці, списки задач, автопосилання
- *   • rehype-raw — дозволяє «сирий» HTML усередині (для старих новин з тегами)
- *
- * Замінює небезпечний dangerouslySetInnerHTML — react-markdown санітизує вивід.
+ * Рендерить контент що може бути Markdown (новий) або HTML (старий, з CKEditor).
+ * Важка бібліотека react-markdown підвантажується ЛЕНИВО окремим чанком —
+ * сторінка показується одразу, а контент зʼявляється за мить (зі скелетоном).
+ * react-markdown санітизує вивід (безпечніше за dangerouslySetInnerHTML).
  */
 export function RichContent({ content, className }: Props) {
   if (!content) return null;
   return (
-    <div className={cn('prose-content', className)}>
-      <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
-        {content}
-      </ReactMarkdown>
-    </div>
+    <Suspense fallback={
+      <div className={cn('prose-content space-y-2.5 animate-pulse', className)}>
+        <div className="h-4 w-full rounded bg-gray-200/60 dark:bg-slate-800/60" />
+        <div className="h-4 w-11/12 rounded bg-gray-200/60 dark:bg-slate-800/60" />
+        <div className="h-4 w-2/3 rounded bg-gray-200/60 dark:bg-slate-800/60" />
+      </div>
+    }>
+      <RichContentInner content={content} className={className} />
+    </Suspense>
   );
 }

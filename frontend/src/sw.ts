@@ -1,13 +1,20 @@
 /// <reference lib="webworker" />
-import { precacheAndRoute } from 'workbox-precaching';
-import { registerRoute } from 'workbox-routing';
-import { StaleWhileRevalidate, CacheFirst, NetworkFirst } from 'workbox-strategies';
+import { precacheAndRoute, createHandlerBoundToURL, matchPrecache } from 'workbox-precaching';
+import { registerRoute, NavigationRoute, setCatchHandler } from 'workbox-routing';
+import { StaleWhileRevalidate, CacheFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 
 declare const self: ServiceWorkerGlobalScope;
 
 // 1. Precache усіх зібраних ассетів (offline-доступ до оболонки додатку)
 precacheAndRoute(self.__WB_MANIFEST);
+
+// 1a. SPA-навігації → index.html з precache (будь-який маршрут працює офлайн).
+//     API/адмінка/медіа/RSS не чіпаємо — вони йдуть у мережу.
+const navHandler = createHandlerBoundToURL('index.html');
+registerRoute(new NavigationRoute(navHandler, {
+  denylist: [/^\/api\//, /^\/admin\//, /^\/media\//, /^\/static\//, /^\/markdownx\//, /^\/rss\//, /^\/sitemap/, /^\/robots/],
+}));
 
 // 2. Runtime-кеш для медіа (фото) — CacheFirst, до 60 файлів, 30 днів
 registerRoute(
@@ -20,14 +27,14 @@ registerRoute(
   }),
 );
 
-// 3. API — NetworkFirst (свіжі дані, але fallback на кеш офлайн)
+// 3. API — StaleWhileRevalidate: миттєво з кешу + фонове оновлення; офлайн — з кешу.
+//    (Свіжість на рівні застосунку гарантує react-query через refetch.)
 registerRoute(
   ({ url }) => url.pathname.startsWith('/api/'),
-  new NetworkFirst({
+  new StaleWhileRevalidate({
     cacheName: 'dnz52-api',
-    networkTimeoutSeconds: 5,
     plugins: [
-      new ExpirationPlugin({ maxEntries: 50, maxAgeSeconds: 24 * 60 * 60 }),
+      new ExpirationPlugin({ maxEntries: 60, maxAgeSeconds: 24 * 60 * 60 }),
     ],
   }),
 );
@@ -37,6 +44,15 @@ registerRoute(
   ({ url }) => url.origin === 'https://fonts.googleapis.com' || url.origin === 'https://fonts.gstatic.com',
   new StaleWhileRevalidate({ cacheName: 'google-fonts' }),
 );
+
+// 4a. Офлайн-фолбек: якщо навігацію не вдалось обслужити — показуємо оболонку SPA
+setCatchHandler(async ({ request }) => {
+  if (request.mode === 'navigate') {
+    const fallback = await matchPrecache('index.html');
+    if (fallback) return fallback;
+  }
+  return Response.error();
+});
 
 // 5. Push-сповіщення (нові новини)
 self.addEventListener('push', (event: PushEvent) => {

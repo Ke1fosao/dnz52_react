@@ -121,6 +121,8 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    # ETag/Last-Modified → 304 Not Modified для незмінених відповідей (економія трафіку)
+    'django.middleware.http.ConditionalGetMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -226,6 +228,13 @@ STORAGES = {
     },
 }
 
+# WhiteNoise віддає також файли React SPA (spa/) на рівні кореня:
+#   • хешовані /assets/*.js|css → автоматично Cache-Control: immutable, max-age=1рік;
+#   • /sw.js, /manifest.webmanifest, іконки → сервляться правильно (не через SPA-фолбек).
+if (BASE_DIR / 'spa').exists():
+    WHITENOISE_ROOT = BASE_DIR / 'spa'
+WHITENOISE_MAX_AGE = 60  # не-хешовані (sw.js, index.html) — короткий кеш
+
 
 # ----------------------------------------------------------------------------
 # Медіа файли (фото, документи що завантажують користувачі)
@@ -283,6 +292,13 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
     ],
+    # Захист від зловживань/скрапінгу. Ліміт щедрий — звичайне користування не зачіпає.
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '600/min',
+    },
     # ВАЖЛИВО: вимикаємо SessionAuthentication щоб React міг робити POST
     # без CSRF токена. Для публічного API це нормально (відгуки, лайки).
     # Адмінка Django окремо і має свою CSRF захист.
