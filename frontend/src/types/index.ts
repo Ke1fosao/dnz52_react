@@ -190,11 +190,24 @@ export interface NewsCategory {
   slug: string;
 }
 
+export interface NewsTag {
+  id: number;
+  name: string;
+  slug: string;
+}
+
+export interface NewsArchiveEntry {
+  year: number;
+  month: number;
+  count: number;
+}
+
 export interface NewsListItem {
   id: number;
   title: string;
   slug: string;
   category: NewsCategory | null;
+  tags: NewsTag[];
   image: string | null;
   created_at: string;
   updated_at: string;
@@ -215,6 +228,7 @@ export interface NewsDetail {
   title: string;
   slug: string;
   category: NewsCategory | null;
+  tags: NewsTag[];
   content: string;
   image: string | null;
   created_at: string;

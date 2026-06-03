@@ -17,6 +17,20 @@ class NewsCategory(models.Model):
         return self.name
 
 
+class NewsTag(models.Model):
+    """Теги новин — для тематичної фільтрації (напр. «безпека», «свято», «харчування»)."""
+    name = models.CharField('Назва', max_length=60)
+    slug = models.SlugField('URL', unique=True)
+
+    class Meta:
+        verbose_name = 'Тег новин'
+        verbose_name_plural = 'Теги новин'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
 class News(models.Model):
     """Новини та оголошення"""
 
@@ -28,6 +42,7 @@ class News(models.Model):
     title = models.CharField('Заголовок', max_length=200)
     slug = models.SlugField('URL', unique=True)
     category = models.ForeignKey(NewsCategory, on_delete=models.SET_NULL, null=True, verbose_name='Категорія')
+    tags = models.ManyToManyField('NewsTag', blank=True, related_name='news', verbose_name='Теги')
     content = MarkdownxField('Контент')
     image = models.ImageField('Зображення', upload_to='news/', blank=True, null=True)
     created_at = models.DateTimeField('Дата публікації', auto_now_add=True)

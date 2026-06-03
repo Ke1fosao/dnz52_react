@@ -7,7 +7,7 @@ import type {
   StaffMember,
   AttestationDocument, AttestationStep, AttestationCategory,
   AttestationLaw, AttestationSettings,
-  NewsCategory, NewsListItem, NewsDetail,
+  NewsCategory, NewsListItem, NewsDetail, NewsArchiveEntry,
   GalleryCategory, GalleryAlbumListItem, GalleryAlbumDetail,
   GroupListItem, GroupDetail,
   SpecialistPage, SpecialistPageType,
@@ -60,12 +60,13 @@ export const attestationApi = {
 // News
 // ============================================================================
 export const newsApi = {
-  list: (params?: { page?: number; category__slug?: string; search?: string }) =>
+  list: (params?: { page?: number; category__slug?: string; search?: string; tags__slug?: string; year?: number; month?: number }) =>
     api.get<PaginatedResponse<NewsListItem>>('/news/', { params }).then(r => r.data),
   // count=true → бек збільшить лічильник переглядів (фронт просить про це лише раз на людину)
   detail: (slug: string, count = false) =>
     api.get<NewsDetail>(`/news/${slug}/`, { params: count ? { count: 1 } : undefined }).then(r => r.data),
   categories: () => api.get<NewsCategory[]>('/news-categories/').then(r => r.data),
+  archive: () => api.get<NewsArchiveEntry[]>('/news/archive/').then(r => r.data),
 };
 
 // ============================================================================

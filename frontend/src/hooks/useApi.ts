@@ -55,8 +55,11 @@ export const useAttestationLaws = () =>
   useQuery({ queryKey: ['attestation', 'laws'], queryFn: attestationApi.laws });
 
 // News
-export const useNewsList = (params?: { page?: number; category__slug?: string; search?: string }) =>
+export const useNewsList = (params?: { page?: number; category__slug?: string; search?: string; tags__slug?: string; year?: number; month?: number }) =>
   useQuery({ queryKey: ['news', params], queryFn: () => newsApi.list(params) });
+
+export const useNewsArchive = () =>
+  useQuery({ queryKey: ['news', 'archive'], queryFn: newsApi.archive });
 
 // Один перегляд на людину: запам'ятовуємо переглянуті новини у localStorage,
 // і просимо бек рахувати перегляд лише при ПЕРШОМУ відкритті цієї новини в цьому браузері.

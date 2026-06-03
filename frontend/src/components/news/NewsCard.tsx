@@ -36,6 +36,13 @@ export function NewsCard({ item }: { item: NewsListItem }) {
       {item.excerpt && (
         <p className="text-sm text-gray-500 dark:text-slate-400 font-medium line-clamp-2 mb-3">{item.excerpt}</p>
       )}
+      {item.tags && item.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {item.tags.slice(0, 3).map(t => (
+            <span key={t.id} className="text-[11px] font-bold text-blue-600 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 px-2.5 py-1 rounded-full">#{t.name}</span>
+          ))}
+        </div>
+      )}
       <span className="inline-flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-bold text-sm group-hover:gap-2.5 transition-all">
         Читати далі <ArrowRight size={16} />
       </span>

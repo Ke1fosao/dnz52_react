@@ -2,13 +2,20 @@ from django.contrib import admin
 from django.utils import timezone
 from django.utils.html import format_html
 from simple_history.admin import SimpleHistoryAdmin
-from .models import NewsCategory, News
+from .models import NewsCategory, News, NewsTag
 
 
 @admin.register(NewsCategory)
 class NewsCategoryAdmin(admin.ModelAdmin):
     list_display = ['name', 'slug']
     prepopulated_fields = {'slug': ('name',)}
+
+
+@admin.register(NewsTag)
+class NewsTagAdmin(admin.ModelAdmin):
+    list_display = ['name', 'slug']
+    prepopulated_fields = {'slug': ('name',)}
+    search_fields = ['name']
 
 
 @admin.register(News)
@@ -19,11 +26,12 @@ class NewsAdmin(SimpleHistoryAdmin):
     prepopulated_fields = {'slug': ('title',)}
     list_editable = []
     readonly_fields = ['views', 'created_at', 'updated_at']
+    filter_horizontal = ['tags']
     save_on_top = True
 
     fieldsets = (
         ('Основне', {
-            'fields': ('title', 'slug', 'category', 'image'),
+            'fields': ('title', 'slug', 'category', 'tags', 'image'),
         }),
         ('Контент', {
             'fields': ('content',),

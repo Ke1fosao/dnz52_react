@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import News, NewsCategory
+from .models import News, NewsCategory, NewsTag
 
 
 class NewsCategorySerializer(serializers.ModelSerializer):
@@ -9,16 +9,23 @@ class NewsCategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'slug']
 
 
+class NewsTagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NewsTag
+        fields = ['id', 'name', 'slug']
+
+
 class NewsListSerializer(serializers.ModelSerializer):
     """Полегшений серіалізатор для списку (без повного content)."""
     image = serializers.ImageField(use_url=True, allow_null=True)
     category = NewsCategorySerializer(read_only=True)
+    tags = NewsTagSerializer(many=True, read_only=True)
     excerpt = serializers.SerializerMethodField()
 
     class Meta:
         model = News
         fields = [
-            'id', 'title', 'slug', 'category', 'image',
+            'id', 'title', 'slug', 'category', 'tags', 'image',
             'created_at', 'updated_at', 'views', 'excerpt',
         ]
 
@@ -32,12 +39,13 @@ class NewsListSerializer(serializers.ModelSerializer):
 class NewsDetailSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(use_url=True, allow_null=True)
     category = NewsCategorySerializer(read_only=True)
+    tags = NewsTagSerializer(many=True, read_only=True)
     related = serializers.SerializerMethodField()
 
     class Meta:
         model = News
         fields = [
-            'id', 'title', 'slug', 'category', 'content', 'image',
+            'id', 'title', 'slug', 'category', 'tags', 'content', 'image',
             'created_at', 'updated_at', 'is_published', 'views', 'related',
         ]
 

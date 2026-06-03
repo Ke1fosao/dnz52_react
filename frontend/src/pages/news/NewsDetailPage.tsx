@@ -40,9 +40,19 @@ export function NewsDetailPage() {
           <span className="flex items-center gap-1.5 text-sm font-medium text-gray-500 dark:text-slate-400"><Eye size={15} /> {data.views} переглядів</span>
         </div>
 
-        <h1 className="text-3xl md:text-5xl font-black tracking-tight text-gray-900 dark:text-white mb-7 leading-[1.1]">
+        <h1 className="text-3xl md:text-5xl font-black tracking-tight text-gray-900 dark:text-white mb-4 leading-[1.1]">
           {data.title}
         </h1>
+
+        {data.tags && data.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-7">
+            {data.tags.map(t => (
+              <Link key={t.id} to={`/news?tag=${t.slug}`} className="text-xs font-bold text-blue-600 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 px-3 py-1.5 rounded-full transition-colors">
+                #{t.name}
+              </Link>
+            ))}
+          </div>
+        )}
 
         {data.image && (
           <ZoomableImage src={data.image} alt={data.title} zoomTitle={data.title}

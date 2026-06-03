@@ -1,7 +1,9 @@
 from django.core.cache import cache
-from django.db.models import F, Q
+from django.db.models import Count, F, Q
+from django.db.models.functions import TruncMonth
 from django.utils import timezone
 from rest_framework import viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from .models import News, NewsCategory
@@ -29,7 +31,7 @@ class NewsCategoryViewSet(viewsets.ReadOnlyModelViewSet):
 
 class NewsViewSet(viewsets.ReadOnlyModelViewSet):
     lookup_field = 'slug'
-    filterset_fields = ['category__slug']
+    filterset_fields = ['category__slug', 'tags__slug']
     search_fields = ['title', 'content']
     ordering_fields = ['created_at', 'views']
     ordering = ['-created_at']
@@ -37,10 +39,33 @@ class NewsViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         # detail (retrieve) — дозволяємо відкрити будь-яку новину за прямим slug
         # (для попереднього перегляду чернеток адміністратором).
-        # list — лише live новини.
+        # list — лише live новини (+ опційний фільтр архіву ?year=&month=).
         if self.action == 'retrieve':
-            return News.objects.all().select_related('category')
-        return live_news_qs()
+            return News.objects.all().select_related('category').prefetch_related('tags')
+        qs = live_news_qs().prefetch_related('tags')
+        year = self.request.query_params.get('year')
+        month = self.request.query_params.get('month')
+        if year and month:
+            try:
+                qs = qs.filter(created_at__year=int(year), created_at__month=int(month))
+            except (TypeError, ValueError):
+                pass
+        return qs
+
+    @action(detail=False)
+    def archive(self, request):
+        """Архів: список місяців з кількістю новин (для бічної навігації)."""
+        rows = (
+            live_news_qs()
+            .annotate(m=TruncMonth('created_at'))
+            .values('m')
+            .annotate(count=Count('id'))
+            .order_by('-m')
+        )
+        return Response([
+            {'year': r['m'].year, 'month': r['m'].month, 'count': r['count']}
+            for r in rows if r['m']
+        ])
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
