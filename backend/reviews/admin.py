@@ -23,6 +23,9 @@ class ReviewAdmin(admin.ModelAdmin):
         ('Відгук', {
             'fields': ('rating', 'text'),
         }),
+        ('Відповідь адміністрації (показується публічно)', {
+            'fields': ('admin_reply',),
+        }),
         ('Модерація', {
             'fields': ('is_approved', 'created_at'),
         }),

@@ -62,6 +62,28 @@ export function NewsDetailPage() {
             <ArrowLeft size={16} /> Усі новини
           </Link>
         </div>
+
+        {/* Схожі новини */}
+        {data.related && data.related.length > 0 && (
+          <section className="mt-10">
+            <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-5">Схожі новини</h2>
+            <div className="grid sm:grid-cols-3 gap-5">
+              {data.related.map(r => (
+                <Link key={r.id} to={`/news/${r.slug}`} className="group block rounded-[1.5rem] overflow-hidden bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
+                  {r.image ? (
+                    <img src={r.image} alt={r.title} loading="lazy" className="w-full aspect-video object-cover dark:brightness-90" />
+                  ) : (
+                    <div className="w-full aspect-video bg-gradient-to-br from-blue-500 to-cyan-500" />
+                  )}
+                  <div className="p-4">
+                    <div className="text-xs text-gray-400 dark:text-slate-500 font-medium mb-1">{formatDate(r.created_at)}</div>
+                    <h3 className="font-black text-gray-900 dark:text-white text-sm leading-snug line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{r.title}</h3>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
       </article>
     </>
   );

@@ -20,6 +20,7 @@ from django.views.generic import TemplateView
 from main.sitemaps import (
     StaticViewSitemap, PageSitemap, NewsSitemap, GroupSitemap,
 )
+from news.feeds import LatestNewsFeed
 from dnz52_site.spa_views import spa_index
 
 
@@ -39,6 +40,7 @@ urlpatterns = [
 
     # 3. SEO
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap'),
+    path('rss/', LatestNewsFeed(), name='news-rss'),
     path('robots.txt', TemplateView.as_view(
         template_name='robots.txt', content_type='text/plain'
     )),

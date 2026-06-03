@@ -202,6 +202,14 @@ export interface NewsListItem {
   excerpt: string;
 }
 
+export interface NewsRelated {
+  id: number;
+  title: string;
+  slug: string;
+  image: string | null;
+  created_at: string;
+}
+
 export interface NewsDetail {
   id: number;
   title: string;
@@ -213,6 +221,7 @@ export interface NewsDetail {
   updated_at: string;
   is_published: boolean;
   views: number;
+  related: NewsRelated[];
 }
 
 // ============================================================================
@@ -434,6 +443,7 @@ export interface Review {
   created_at: string;
   likes: number;
   dislikes: number;
+  admin_reply: string;
 }
 
 export interface ReviewCreate {

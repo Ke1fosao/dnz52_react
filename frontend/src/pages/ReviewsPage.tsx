@@ -136,6 +136,14 @@ export function ReviewsPage() {
                         </div>
                       </div>
                       <p className="text-sm text-gray-700 dark:text-slate-300 whitespace-pre-line mb-4 leading-relaxed">{review.text}</p>
+                      {review.admin_reply && (
+                        <div className="mb-4 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-400 dark:border-blue-500 p-4">
+                          <div className="flex items-center gap-1.5 mb-1 text-[11px] font-black uppercase tracking-wide text-blue-600 dark:text-blue-300">
+                            <MessageSquare size={13} /> Відповідь адміністрації
+                          </div>
+                          <p className="text-sm text-gray-700 dark:text-slate-300 whitespace-pre-line leading-relaxed">{review.admin_reply}</p>
+                        </div>
+                      )}
                       <div className="flex items-center justify-between gap-3">
                         <span className="text-xs text-gray-400 dark:text-slate-500 font-medium">{formatDate(review.created_at)}</span>
                         <div className="flex items-center gap-1">

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Newspaper } from 'lucide-react';
+import { Newspaper, Rss } from 'lucide-react';
 import { Seo } from '@/components/common/Seo';
 import { PageHero } from '@/components/common/PageHero';
 import { EmptyState } from '@/components/common/EmptyState';
@@ -32,7 +32,13 @@ export function NewsListPage() {
         subtitle="Будьте в курсі того, що відбувається у нашому садочку"
         icon="📰"
       >
-        <div className="mt-5"><PushSubscribeButton /></div>
+        <div className="mt-5 flex flex-wrap items-center gap-3">
+          <PushSubscribeButton />
+          <a href="/rss/" target="_blank" rel="noreferrer"
+            className="inline-flex items-center gap-2 text-sm font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/40 px-4 py-2.5 rounded-full transition-colors">
+            <Rss size={16} /> RSS-стрічка
+          </a>
+        </div>
       </PageHero>
 
       {/* Капсули-фільтри категорій */}

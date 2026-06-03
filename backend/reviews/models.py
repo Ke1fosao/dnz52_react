@@ -15,6 +15,12 @@ class Review(models.Model):
     likes    = models.PositiveIntegerField('👍 Лайків',    default=0)
     dislikes = models.PositiveIntegerField('👎 Дизлайків', default=0)
 
+    # Офіційна відповідь закладу — якщо заповнено, показується під відгуком
+    admin_reply = models.TextField(
+        'Відповідь адміністрації', blank=True,
+        help_text='Якщо заповнено — публічно показується під відгуком як офіційна відповідь закладу.',
+    )
+
     class Meta:
         verbose_name = 'Відгук'
         verbose_name_plural = 'Відгуки'
