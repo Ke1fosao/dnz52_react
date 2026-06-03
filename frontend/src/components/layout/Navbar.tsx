@@ -4,6 +4,7 @@ import {
   MapPin, Search, Menu as MenuIcon, X, ChevronDown, Sun, Moon,
   Info, Users, GraduationCap, Utensils, Heart, FileText, MessageSquare,
   Brain, Music, Activity, Star, Zap, Phone, BookOpen, Stethoscope, Palette, Image as ImageIcon, HelpCircle, CalendarDays,
+  Home, Newspaper,
 } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useGroups } from '@/hooks/useApi';
@@ -16,7 +17,6 @@ const ABOUT_ITEMS: DropItem[] = [
   { title: 'Про заклад', desc: 'Історія та місія', icon: Info, to: '/about', color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400' },
   { title: 'Керівництво', desc: 'Адміністрація', icon: Users, to: '/staff', color: 'bg-purple-100 text-purple-600 dark:bg-purple-900/40 dark:text-purple-400' },
   { title: 'Атестація', desc: 'Документи комісії', icon: GraduationCap, to: '/attestation', color: 'bg-pink-100 text-pink-600 dark:bg-pink-900/40 dark:text-pink-400' },
-  { title: 'Контакти', desc: 'Адреса, телефони, карта', icon: Phone, to: '/contacts', color: 'bg-rose-100 text-rose-600 dark:bg-rose-900/40 dark:text-rose-400' },
 ];
 
 const SERVICE_ITEMS: DropItem[] = [
@@ -216,18 +216,20 @@ export function Navbar() {
           <div className="fixed inset-0 z-[105] bg-black/30 backdrop-blur-sm animate-page-fade-in" onClick={() => setSearchOpen(false)} />
           <div className="fixed top-0 left-0 right-0 z-[110] pt-4">
             <div className="container mx-auto px-4">
-              <form onSubmit={handleSearch} className="mx-auto max-w-3xl glass-dropdown rounded-[2rem] p-2 flex items-center gap-2 shadow-2xl">
-                <div className="pl-4 text-gray-400"><Search size={22} /></div>
+              <form onSubmit={handleSearch} className="mx-auto max-w-3xl glass-dropdown rounded-[1.5rem] sm:rounded-[2rem] p-2 flex items-center gap-1.5 sm:gap-2 shadow-2xl">
+                <div className="pl-2 sm:pl-4 text-gray-400 shrink-0"><Search size={20} /></div>
                 <input
                   autoFocus
                   value={query}
                   onChange={e => setQuery(e.target.value)}
-                  placeholder="Що ви шукаєте? Новини, групи, документи…"
-                  className="flex-1 h-14 bg-transparent outline-none text-lg font-bold text-gray-800 dark:text-slate-100 placeholder:text-gray-400 placeholder:font-medium"
+                  placeholder="Пошук: новини, групи…"
+                  className="flex-1 min-w-0 h-12 sm:h-14 bg-transparent outline-none text-base sm:text-lg font-bold text-gray-800 dark:text-slate-100 placeholder:text-gray-400 placeholder:font-medium"
                 />
-                <button type="submit" className="h-12 px-6 rounded-full bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors shrink-0">Знайти</button>
-                <button type="button" onClick={() => setSearchOpen(false)} className="w-12 h-12 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-800 shrink-0" aria-label="Закрити">
-                  <X size={22} />
+                <button type="submit" className="h-11 sm:h-12 px-4 sm:px-6 rounded-full bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors shrink-0 flex items-center gap-2" aria-label="Знайти">
+                  <Search size={18} /><span className="hidden sm:inline">Знайти</span>
+                </button>
+                <button type="button" onClick={() => setSearchOpen(false)} className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-800 shrink-0" aria-label="Закрити">
+                  <X size={20} />
                 </button>
               </form>
             </div>
@@ -248,15 +250,17 @@ export function Navbar() {
           </button>
         </div>
         <div className="flex flex-col h-[calc(100%-5rem)] px-6 pt-6 pb-10 overflow-y-auto">
-          <MobileLink to="/" label="Головна" onClick={closeMobile} />
-          <MobileGroup label="Про заклад" id="about" expanded={expandedMobile} setExpanded={setExpandedMobile} items={ABOUT_ITEMS} onNav={closeMobile} />
-          <MobileLink to="/groups" label="Групи" onClick={closeMobile} />
-          <MobileGroup label="Спеціалісти" id="spec" expanded={expandedMobile} setExpanded={setExpandedMobile}
+          <MobileLink to="/" label="Головна" icon={Home} color="bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400" onClick={closeMobile} />
+          <MobileGroup label="Про заклад" id="about" icon={Info} color="bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400" expanded={expandedMobile} setExpanded={setExpandedMobile} items={ABOUT_ITEMS} onNav={closeMobile} />
+          <MobileLink to="/groups" label="Групи" icon={Users} color="bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400" onClick={closeMobile} />
+          <MobileGroup label="Спеціалісти" id="spec" icon={Zap} color="bg-purple-100 text-purple-600 dark:bg-purple-900/40 dark:text-purple-400" expanded={expandedMobile} setExpanded={setExpandedMobile}
             items={SPECIALISTS.map(s => ({ title: s.title, desc: '', icon: s.icon, to: s.to, color: 'bg-purple-100 text-purple-600 dark:bg-purple-900/40 dark:text-purple-400' }))} onNav={closeMobile} />
-          <MobileLink to="/circles" label="Гуртки" onClick={closeMobile} />
-          <MobileLink to="/news" label="Новини" onClick={closeMobile} />
-          <MobileLink to="/gallery" label="Галерея" onClick={closeMobile} />
-          <MobileGroup label="Сервіси" id="services" expanded={expandedMobile} setExpanded={setExpandedMobile} items={SERVICE_ITEMS} onNav={closeMobile} />
+          <MobileLink to="/circles" label="Гуртки" icon={Palette} color="bg-pink-100 text-pink-600 dark:bg-pink-900/40 dark:text-pink-400" onClick={closeMobile} />
+          <MobileLink to="/news" label="Новини" icon={Newspaper} color="bg-cyan-100 text-cyan-600 dark:bg-cyan-900/40 dark:text-cyan-400" onClick={closeMobile} />
+          <MobileLink to="/gallery" label="Галерея" icon={ImageIcon} color="bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400" onClick={closeMobile} />
+          <MobileGroup label="Сервіси" id="services" icon={Star} color="bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400" expanded={expandedMobile} setExpanded={setExpandedMobile} items={SERVICE_ITEMS} onNav={closeMobile} />
+
+          <NotificationBell inline />
 
           <Link to="/contacts" onClick={closeMobile} className="w-full mt-4 bg-blue-600 text-white py-4 rounded-3xl font-extrabold text-xl shadow-lg text-center">
             Контакти
@@ -310,28 +314,30 @@ function DropLink({ to, title, desc, icon: Icon, color }: DropItem) {
   );
 }
 
-function MobileLink({ to, label, onClick }: { to: string; label: string; onClick: () => void }) {
+function MobileLink({ to, label, icon: Icon, color, onClick }: { to: string; label: string; icon: typeof Info; color: string; onClick: () => void }) {
   return (
     <NavLink to={to} end={to === '/'} onClick={onClick} className={({ isActive }) => cn(
-      'w-full flex items-center p-4 rounded-3xl font-extrabold text-xl transition-all mb-2',
+      'w-full flex items-center gap-4 p-3 rounded-3xl font-extrabold text-xl transition-all mb-2',
       isActive ? 'bg-white dark:bg-slate-800 text-gray-900 dark:text-white shadow-sm'
                : 'text-gray-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-800/50',
     )}>
+      <div className={cn('w-11 h-11 rounded-2xl flex items-center justify-center shrink-0', color)}><Icon size={20} /></div>
       {label}
     </NavLink>
   );
 }
 
-function MobileGroup({ label, id, expanded, setExpanded, items, onNav }: {
-  label: string; id: string; expanded: string | null;
+function MobileGroup({ label, id, icon: Icon, color, expanded, setExpanded, items, onNav }: {
+  label: string; id: string; icon: typeof Info; color: string; expanded: string | null;
   setExpanded: (v: string | null) => void; items: DropItem[]; onNav: () => void;
 }) {
   const open = expanded === id;
   return (
     <div className="mb-2">
       <button onClick={() => setExpanded(open ? null : id)}
-        className="w-full flex items-center justify-between p-4 rounded-3xl font-extrabold text-xl text-gray-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-800/50 transition-all">
-        {label}
+        className="w-full flex items-center gap-4 p-3 rounded-3xl font-extrabold text-xl text-gray-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-800/50 transition-all">
+        <div className={cn('w-11 h-11 rounded-2xl flex items-center justify-center shrink-0', color)}><Icon size={20} /></div>
+        <span className="flex-1 text-left">{label}</span>
         <ChevronDown size={24} className={cn('transition-transform', open && 'rotate-180')} />
       </button>
       {open && (

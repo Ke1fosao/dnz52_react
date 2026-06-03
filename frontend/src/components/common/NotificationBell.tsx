@@ -17,8 +17,12 @@ function writeTopics(t: string[]) {
   try { localStorage.setItem(TOPICS_KEY, JSON.stringify(t)); } catch { /* ignore */ }
 }
 
-/** Дзвіночок у навбарі: підписка на push-сповіщення за темами. */
-export function NotificationBell() {
+/**
+ * Дзвіночок підписки на push-сповіщення за темами.
+ *  • за замовчуванням — кнопка-дзвіночок із випадаючою панеллю (десктоп-навбар);
+ *  • inline — одразу показує перемикачі тем (для мобільного меню).
+ */
+export function NotificationBell({ inline = false }: { inline?: boolean }) {
   const { status, loading, subscribe, unsubscribe, isSupported } = usePush();
   const [open, setOpen] = useState(false);
   const [topics, setTopics] = useState<string[]>(() => readTopics());
@@ -48,6 +52,50 @@ export function NotificationBell() {
     }
   };
 
+  const toggles = (
+    <div className="space-y-1.5">
+      {TOPICS.map(t => {
+        const on = topics.includes(t.key);
+        return (
+          <button key={t.key} onClick={() => toggle(t.key)} disabled={loading}
+            className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-white/60 dark:hover:bg-slate-800/60 transition-colors text-left disabled:opacity-60">
+            <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors',
+              on ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300' : 'bg-gray-100 text-gray-400 dark:bg-slate-800 dark:text-slate-500')}>
+              <t.icon size={18} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-bold text-sm text-gray-900 dark:text-white">{t.label}</div>
+              <div className="text-xs text-gray-400 dark:text-slate-500">{t.desc}</div>
+            </div>
+            <span className={cn('relative w-11 h-6 rounded-full transition-colors shrink-0', on ? 'bg-blue-500' : 'bg-gray-200 dark:bg-slate-700')}>
+              <span className={cn('absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all duration-200', on ? 'left-[22px]' : 'left-0.5')} />
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+
+  const deniedNote = status === 'denied' && (
+    <p className="text-xs text-amber-600 dark:text-amber-400 mt-3 font-medium px-1">⚠️ Дозвіл заблоковано в браузері — увімкніть його в налаштуваннях сайту.</p>
+  );
+
+  // Inline-режим — для мобільного меню
+  if (inline) {
+    return (
+      <div className="bg-white/50 dark:bg-slate-800/50 rounded-3xl p-4 mt-2">
+        <div className="flex items-center gap-2 mb-1 px-1">
+          <Bell size={18} className="text-blue-500" />
+          <h4 className="font-black text-gray-900 dark:text-white">Сповіщення</h4>
+        </div>
+        <p className="text-xs text-gray-500 dark:text-slate-400 mb-3 px-1 font-medium">Оберіть, про що повідомляти у браузері</p>
+        {toggles}
+        {deniedNote}
+      </div>
+    );
+  }
+
+  // Дефолт — кнопка-дзвіночок із панеллю (десктоп)
   return (
     <div className="relative">
       <button onClick={() => setOpen(o => !o)} aria-label="Сповіщення"
@@ -65,30 +113,8 @@ export function NotificationBell() {
               <h4 className="font-black text-gray-900 dark:text-white">Сповіщення</h4>
             </div>
             <p className="text-xs text-gray-500 dark:text-slate-400 mb-3 font-medium">Оберіть, про що повідомляти у браузері</p>
-            <div className="space-y-1.5">
-              {TOPICS.map(t => {
-                const on = topics.includes(t.key);
-                return (
-                  <button key={t.key} onClick={() => toggle(t.key)} disabled={loading}
-                    className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-white/60 dark:hover:bg-slate-800/60 transition-colors text-left disabled:opacity-60">
-                    <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors',
-                      on ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300' : 'bg-gray-100 text-gray-400 dark:bg-slate-800 dark:text-slate-500')}>
-                      <t.icon size={18} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-bold text-sm text-gray-900 dark:text-white">{t.label}</div>
-                      <div className="text-xs text-gray-400 dark:text-slate-500">{t.desc}</div>
-                    </div>
-                    <span className={cn('relative w-11 h-6 rounded-full transition-colors shrink-0', on ? 'bg-blue-500' : 'bg-gray-200 dark:bg-slate-700')}>
-                      <span className={cn('absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all duration-200', on ? 'left-[22px]' : 'left-0.5')} />
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-            {status === 'denied' && (
-              <p className="text-xs text-amber-600 dark:text-amber-400 mt-3 font-medium">⚠️ Дозвіл заблоковано в браузері — увімкніть його в налаштуваннях сайту.</p>
-            )}
+            {toggles}
+            {deniedNote}
           </div>
         </>
       )}
