@@ -93,7 +93,7 @@ export function GroupDetailPage() {
               <ImageIcon className="h-10 w-10 mx-auto mb-3" />
               <h3 className="font-black text-lg mb-2">Фотоальбом групи</h3>
               <p className="text-sm text-white/85 mb-4">Подивіться фото з життя нашої групи</p>
-              <Link to={`/gallery/album/${data.album_slug}`} className="inline-block bg-white text-gray-900 font-bold text-sm px-6 py-3 rounded-full hover:scale-105 transition-transform">
+              <Link to={`/gallery/album/${data.album_slug}`} className="inline-block bg-white dark:bg-white text-gray-900 font-bold text-sm px-6 py-3 rounded-full hover:scale-105 transition-transform">
                 Відкрити альбом
               </Link>
             </div>

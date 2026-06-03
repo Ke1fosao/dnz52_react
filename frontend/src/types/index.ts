@@ -354,22 +354,46 @@ export interface SpecialistPage {
 // Circles
 // ============================================================================
 
+export interface CircleBenefit {
+  id: number;
+  icon: string;
+  title: string;
+  text: string;
+  order: number;
+}
+
+export interface CircleSession {
+  id: number;
+  day: string;
+  time: string;
+  note: string;
+  order: number;
+}
+
 export interface CircleListItem {
   id: number;
   name: string;
   slug: string;
+  tagline: string;
   leader: string;
   age_group: string;
   schedule: string;
+  duration: string;
+  format: string;
+  price: string;
   icon: string;
   color: string;
+  cover: string | null;
   album_slug: string | null;
+  is_featured: boolean;
   order: number;
 }
 
 export interface CircleDetail extends CircleListItem {
   goal: string;
   description: string;
+  benefits: CircleBenefit[];
+  sessions: CircleSession[];
   is_published: boolean;
 }
 

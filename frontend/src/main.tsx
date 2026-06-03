@@ -6,6 +6,7 @@ import { HelmetProvider } from 'react-helmet-async';
 
 import App from './App';
 import { ThemeProvider } from './hooks/useTheme';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 import './styles/globals.css';
 
 const queryClient = new QueryClient({
