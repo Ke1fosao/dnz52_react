@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useGroups } from '@/hooks/useApi';
+import { NotificationBell } from '@/components/common/NotificationBell';
 import { cn } from '@/lib/utils';
 
 interface DropItem { title: string; desc: string; icon: typeof Info; to: string; color: string; }
@@ -179,6 +180,7 @@ export function Navbar() {
 
           {/* Right actions */}
           <div className="hidden xl:flex items-center gap-3 shrink-0">
+            <NotificationBell />
             <button onClick={toggleTheme} className="w-12 h-12 rounded-full flex items-center justify-center text-gray-900 dark:text-white shadow-sm hover:scale-105 transition-transform bg-white dark:bg-slate-800 border border-white dark:border-slate-700" aria-label="Тема">
               {isDark ? <Sun size={20} /> : <Moon size={20} />}
             </button>

@@ -392,6 +392,10 @@ class PushSubscription(models.Model):
     p256dh = models.CharField('Ключ p256dh', max_length=200)
     auth = models.CharField('Ключ auth', max_length=100)
     user_agent = models.CharField('User-Agent', max_length=300, blank=True)
+    topics = models.JSONField(
+        'Теми підписки', default=list, blank=True,
+        help_text='Список тем (news, events). Порожній список = отримує всі сповіщення.',
+    )
     created_at = models.DateTimeField('Підписано', auto_now_add=True)
     is_active = models.BooleanField('Активна', default=True)
 

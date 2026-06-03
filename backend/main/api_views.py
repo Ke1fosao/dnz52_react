@@ -236,12 +236,18 @@ def push_subscribe(request):
     if not endpoint or not p256dh or not auth:
         return Response({'detail': 'Некоректні дані підписки'}, status=400)
 
+    raw_topics = data.get('topics')
+    if not isinstance(raw_topics, list):
+        raw_topics = ['news']
+    topics = [t for t in raw_topics if t in ('news', 'events', 'menu')]
+
     PushSubscription.objects.update_or_create(
         endpoint=endpoint,
         defaults={
             'p256dh': p256dh,
             'auth': auth,
             'user_agent': request.META.get('HTTP_USER_AGENT', '')[:300],
+            'topics': topics,
             'is_active': True,
         },
     )

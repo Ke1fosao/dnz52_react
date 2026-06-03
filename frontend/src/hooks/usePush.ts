@@ -43,7 +43,7 @@ export function usePush() {
       .catch(() => setStatus(Notification.permission as PushStatus));
   }, []);
 
-  const subscribe = useCallback(async () => {
+  const subscribe = useCallback(async (topics: string[] = ['news']) => {
     if (!isSupported()) return;
     setLoading(true);
     try {
@@ -71,8 +71,8 @@ export function usePush() {
         applicationServerKey: urlBase64ToUint8Array(vapidKey) as BufferSource,
       });
 
-      // 4. Відправляємо на бекенд
-      await api.post('/push/subscribe/', sub.toJSON());
+      // 4. Відправляємо на бекенд (разом з обраними темами)
+      await api.post('/push/subscribe/', { ...sub.toJSON(), topics });
       setStatus('subscribed');
       return true;
     } catch (e) {

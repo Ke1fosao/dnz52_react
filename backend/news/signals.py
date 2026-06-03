@@ -17,11 +17,12 @@ def notify_subscribers_on_news(sender, instance: News, created, **kwargs):
     if not created or not instance.is_published:
         return
     try:
-        from main.push import send_to_all
+        from main.push import send_to_topic
         from django.utils.html import strip_tags
 
         body = strip_tags(instance.content or '')[:120]
-        send_to_all(
+        send_to_topic(
+            'news',
             title=f'📰 {instance.title}',
             body=body or 'Нова новина у ЗДО №52',
             url=f'/news/{instance.slug}',

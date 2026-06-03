@@ -69,3 +69,21 @@ def send_to_all(title: str, body: str, url: str = '/news') -> int:
             sent += 1
     logger.info('Push надіслано %s підписникам', sent)
     return sent
+
+
+def send_to_topic(topic: str, title: str, body: str, url: str = '/') -> int:
+    """Надсилає лише тим, хто підписаний на тему `topic`.
+    Підписки з порожнім списком тем отримують усі сповіщення (зворотна сумісність).
+    """
+    from .models import PushSubscription
+
+    payload = {'title': title, 'body': body, 'url': url, 'icon': '/pwa-192.png'}
+    sent = 0
+    for sub in PushSubscription.objects.filter(is_active=True):
+        topics = sub.topics or []
+        if topics and topic not in topics:
+            continue
+        if send_push(sub, payload):
+            sent += 1
+    logger.info('Push (тема «%s») надіслано %s підписникам', topic, sent)
+    return sent
