@@ -60,7 +60,9 @@ export const attestationApi = {
 export const newsApi = {
   list: (params?: { page?: number; category__slug?: string; search?: string }) =>
     api.get<PaginatedResponse<NewsListItem>>('/news/', { params }).then(r => r.data),
-  detail: (slug: string) => api.get<NewsDetail>(`/news/${slug}/`).then(r => r.data),
+  // count=true → бек збільшить лічильник переглядів (фронт просить про це лише раз на людину)
+  detail: (slug: string, count = false) =>
+    api.get<NewsDetail>(`/news/${slug}/`, { params: count ? { count: 1 } : undefined }).then(r => r.data),
   categories: () => api.get<NewsCategory[]>('/news-categories/').then(r => r.data),
 };
 

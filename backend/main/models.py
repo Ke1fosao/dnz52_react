@@ -51,6 +51,10 @@ class Slider(models.Model):
     title = models.CharField('Заголовок', max_length=200)
     description = models.TextField('Опис', blank=True)
     image = models.ImageField('Зображення', upload_to='slider/')
+    video = models.FileField(
+        'Відео-фон (необовʼязково)', upload_to='slider/videos/', blank=True,
+        help_text='MP4/WebM. Якщо задано — програється замість зображення (зображення стає постером).',
+    )
     link = models.CharField('Посилання', max_length=200, blank=True)
     order = models.IntegerField('Порядок', default=0)
     is_active = models.BooleanField('Активний', default=True)

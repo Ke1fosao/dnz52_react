@@ -58,8 +58,27 @@ export const useAttestationLaws = () =>
 export const useNewsList = (params?: { page?: number; category__slug?: string; search?: string }) =>
   useQuery({ queryKey: ['news', params], queryFn: () => newsApi.list(params) });
 
+// Один перегляд на людину: запам'ятовуємо переглянуті новини у localStorage,
+// і просимо бек рахувати перегляд лише при ПЕРШОМУ відкритті цієї новини в цьому браузері.
+const VIEWED_NEWS_KEY = 'dnz52:viewedNews';
+function takeNewsView(slug: string): boolean {
+  try {
+    const viewed: string[] = JSON.parse(localStorage.getItem(VIEWED_NEWS_KEY) || '[]');
+    if (viewed.includes(slug)) return false;
+    localStorage.setItem(VIEWED_NEWS_KEY, JSON.stringify([...viewed, slug].slice(-300)));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export const useNewsDetail = (slug: string) =>
-  useQuery({ queryKey: ['news', slug], queryFn: () => newsApi.detail(slug), enabled: !!slug });
+  useQuery({
+    queryKey: ['news', slug],
+    queryFn: () => newsApi.detail(slug, takeNewsView(slug)),
+    enabled: !!slug,
+    staleTime: 5 * 60 * 1000,
+  });
 
 export const useNewsCategories = () =>
   useQuery({ queryKey: ['news', 'categories'], queryFn: newsApi.categories });

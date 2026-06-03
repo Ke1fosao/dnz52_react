@@ -1,4 +1,6 @@
 import { ReactNode } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -10,9 +12,27 @@ interface Props {
   variant?: 'primary' | 'warm' | 'sky' | 'soft';
 }
 
-// Преміум-заголовок сторінки: gradient-бейдж з іконкою + великий font-black заголовок,
-// мʼякі кольорові плями на фоні. Єдиний стиль для всіх внутрішніх сторінок.
+// Сегменти шляху → людські назви для хлібних крихт
+const SEG_LABELS: Record<string, string> = {
+  about: 'Про заклад', staff: 'Керівництво', attestation: 'Атестація', contacts: 'Контакти',
+  groups: 'Групи', circles: 'Гуртки', menu: 'Меню', gallery: 'Галерея', news: 'Новини',
+  documents: 'Документи', reviews: 'Відгуки', parents: 'Батькам', specialists: 'Спеціалісти',
+  search: 'Пошук', admin: 'Адмінпанель',
+};
+
+// Преміум-заголовок сторінки: хлібні крихти + gradient-бейдж з іконкою + великий
+// font-black заголовок, мʼякі кольорові плями на фоні. Єдиний стиль для внутрішніх сторінок.
 export function PageHero({ title, subtitle, icon, className, children, variant = 'primary' }: Props) {
+  const location = useLocation();
+  const segments = location.pathname.split('/').filter(Boolean);
+  // Крихти-предки (без останнього сегмента — це поточна сторінка, її назва вже у заголовку).
+  // Структурні префікси без власних сторінок (category/album) пропускаємо.
+  const crumbs = segments
+    .slice(0, -1)
+    .map((seg, i) => ({ seg, to: '/' + segments.slice(0, i + 1).join('/') }))
+    .filter(c => c.seg !== 'category' && c.seg !== 'album')
+    .map(c => ({ label: SEG_LABELS[c.seg] || decodeURIComponent(c.seg), to: c.to }));
+
   const badge = {
     primary: 'from-blue-500 to-indigo-600 shadow-blue-500/30',
     warm: 'from-orange-400 to-rose-600 shadow-orange-500/30',
@@ -34,6 +54,17 @@ export function PageHero({ title, subtitle, icon, className, children, variant =
       <div className={cn('absolute -top-10 right-0 w-80 h-80 rounded-full blur-[100px] pointer-events-none animate-float-complex', blob)} style={{ animationDelay: '2s' }} />
 
       <div className="container relative pt-4 pb-10 md:pb-14">
+        {/* Хлібні крихти */}
+        <nav className="flex items-center flex-wrap gap-x-1.5 gap-y-1 text-sm font-semibold text-gray-400 dark:text-slate-500 mb-4" aria-label="Навігація сторінкою">
+          <Link to="/" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Головна</Link>
+          {crumbs.map(c => (
+            <span key={c.to} className="flex items-center gap-1.5">
+              <ChevronRight size={14} className="opacity-50" />
+              <Link to={c.to} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{c.label}</Link>
+            </span>
+          ))}
+        </nav>
+
         <div className="flex items-center gap-5">
           {icon && (
             <div className={cn(

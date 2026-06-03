@@ -45,6 +45,7 @@ export interface Slider {
   title: string;
   description: string;
   image: string;
+  video?: string | null;
   link: string;
   order: number;
   is_active: boolean;

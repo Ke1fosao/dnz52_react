@@ -16,7 +16,8 @@ function getInitialTheme(): Theme {
   try {
     const saved = localStorage.getItem(STORAGE_KEY) as Theme | null;
     if (saved === 'light' || saved === 'dark') return saved;
-    // За замовчуванням — світла (дитячий садок, яскраво)
+    // Немає збереженого вибору — поважаємо системну тему ОС
+    if (window.matchMedia?.('(prefers-color-scheme: dark)').matches) return 'dark';
     return 'light';
   } catch {
     return 'light';

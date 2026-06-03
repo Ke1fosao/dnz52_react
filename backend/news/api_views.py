@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from django.db.models import F, Q
 from django.utils import timezone
 from rest_framework import viewsets
@@ -46,12 +47,27 @@ class NewsViewSet(viewsets.ReadOnlyModelViewSet):
             return NewsDetailSerializer
         return NewsListSerializer
 
+    @staticmethod
+    def _client_ip(request):
+        xff = request.META.get('HTTP_X_FORWARDED_FOR')
+        if xff:
+            return xff.split(',')[0].strip()
+        return request.META.get('REMOTE_ADDR', '') or 'unknown'
+
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        # Лічильник переглядів рахуємо лише для live новин (не для preview чернеток)
-        if instance.is_live:
-            News.objects.filter(pk=instance.pk).update(views=F('views') + 1)
-            instance.refresh_from_db()
+        # Перегляд рахуємо лише коли виконані ВСІ умови:
+        #   1) новина live (не чернетка-прев'ю),
+        #   2) фронт явно попросив (?count=1) — він робить це лише ОДИН раз на людину
+        #      (через localStorage), тож перезавантаження/повторні заходи не накручують,
+        #   3) для цього IP перегляд цієї новини ще не рахували останні 6 годин
+        #      (захист від накрутки в обхід localStorage).
+        if instance.is_live and request.query_params.get('count') in ('1', 'true'):
+            cache_key = f'newsview:{instance.pk}:{self._client_ip(request)}'
+            if not cache.get(cache_key):
+                News.objects.filter(pk=instance.pk).update(views=F('views') + 1)
+                cache.set(cache_key, 1, 6 * 60 * 60)
+                instance.refresh_from_db()
         serializer = self.get_serializer(instance)
         data = serializer.data
         # Позначка для фронтенду що це чернетка/прев'ю

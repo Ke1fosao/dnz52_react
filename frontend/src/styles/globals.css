@@ -136,6 +136,15 @@
   .dark .prose-content h2 { @apply text-primary-300; }
   .dark .prose-content a { @apply text-primary-300 hover:text-primary-200; }
 
+  /* CKEditor .alert-боксы мають inline СВІТЛИЙ фон (style="background:#e8f4fd").
+     У темній темі це світла пляма з невидимим текстом — перебиваємо !important. */
+  .dark .prose-content .alert {
+    background: rgba(148, 163, 184, 0.12) !important;
+    color: hsl(var(--foreground));
+  }
+  .dark .prose-content .alert strong,
+  .dark .prose-content .alert b { color: hsl(var(--foreground)); }
+
   /* Світлі pastel-градієнти QuickLinks/value cards приглушуємо прозорістю */
   .dark .from-cream { --tw-gradient-from: hsl(var(--card)) var(--tw-gradient-from-position); }
   .dark .to-white { --tw-gradient-to: hsl(var(--background)) var(--tw-gradient-to-position); }

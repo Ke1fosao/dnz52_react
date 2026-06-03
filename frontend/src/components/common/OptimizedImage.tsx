@@ -42,7 +42,7 @@ export function OptimizedImage({ src, alt, webp = WEBP_ENABLED, className, ...pr
         decoding="async"
         onLoad={() => setLoaded(true)}
         className={cn(
-          'transition-[filter,opacity] duration-500',
+          'transition-[filter,opacity] duration-500 dark:brightness-90',
           loaded ? 'blur-0 opacity-100' : 'blur-md opacity-70 scale-[1.02]',
           className,
         )}

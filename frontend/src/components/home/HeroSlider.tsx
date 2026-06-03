@@ -50,7 +50,17 @@ export function HeroSlider() {
         <div key={slide.id} className={cn('absolute inset-0 transition-opacity duration-1000 ease-in-out', i === current ? 'opacity-100 z-10' : 'opacity-0 z-0')}>
           <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/50 to-transparent z-10" />
           <div className="absolute inset-0 bg-black/20 z-10" />
-          {slide.image ? (
+          {(slide as { video?: string | null }).video ? (
+            <video
+              src={(slide as { video?: string | null }).video || undefined}
+              poster={slide.image || undefined}
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="w-full h-full object-cover"
+            />
+          ) : slide.image ? (
             <img
               src={slide.image}
               alt={slide.title}

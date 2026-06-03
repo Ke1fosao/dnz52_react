@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import { Users, ArrowRight } from 'lucide-react';
 import { Seo } from '@/components/common/Seo';
 import { PageHero } from '@/components/common/PageHero';
-import { Spinner } from '@/components/common/Spinner';
 import { EmptyState } from '@/components/common/EmptyState';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { useGroups } from '@/hooks/useApi';
@@ -21,7 +20,17 @@ export function GroupsListPage() {
 
       <div className="pb-12">
         {isLoading ? (
-          <Spinner />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="rounded-[2rem] overflow-hidden bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 shadow-md">
+                <div className="aspect-[16/10] bg-gray-200/60 dark:bg-slate-800/60 animate-pulse" />
+                <div className="p-6 space-y-3">
+                  <div className="h-6 w-2/3 bg-gray-200/60 dark:bg-slate-800/60 rounded-full animate-pulse" />
+                  <div className="h-4 w-1/2 bg-gray-200/60 dark:bg-slate-800/60 rounded-full animate-pulse" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : !groups || groups.length === 0 ? (
           <EmptyState icon={<Users className="h-16 w-16" />} title="Поки немає інформації про групи" />
         ) : (

@@ -28,6 +28,7 @@ export function ZoomableImage({
   ...props
 }: Props) {
   const [open, setOpen] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const fullSrc = zoomSrc || src;
 
   return (
@@ -36,12 +37,17 @@ export function ZoomableImage({
         <img
           src={src}
           alt={alt}
-          className={cn('transition-transform duration-300', className)}
+          onLoad={() => setLoaded(true)}
+          className={cn(
+            'transition-[transform,filter,opacity] duration-500 dark:brightness-90',
+            loaded ? 'blur-0 opacity-100' : 'blur-[3px] opacity-80',
+            className,
+          )}
           {...props}
         />
         {showHint && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-colors rounded-[inherit] pointer-events-none">
-            <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/95 text-foreground rounded-full p-3 shadow-soft-lg">
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/95 text-gray-900 rounded-full p-3 shadow-soft-lg">
               <ZoomIn className="h-5 w-5" />
             </div>
           </div>

@@ -40,10 +40,11 @@ class PageListSerializer(serializers.ModelSerializer):
 
 class SliderSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(use_url=True)
+    video = serializers.FileField(use_url=True, required=False, allow_null=True)
 
     class Meta:
         model = Slider
-        fields = ['id', 'title', 'description', 'image', 'link', 'order', 'is_active']
+        fields = ['id', 'title', 'description', 'image', 'video', 'link', 'order', 'is_active']
 
 
 class ContactSerializer(serializers.ModelSerializer):
