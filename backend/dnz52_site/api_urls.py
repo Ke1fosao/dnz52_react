@@ -25,6 +25,7 @@ from documents.api_views import DocumentViewSet, DocumentCategoryViewSet
 from reviews.api_views import ReviewViewSet
 from menu.api_views import DailyMenuViewSet
 from faq.api_views import faq_list, faq_like, faq_ask
+from events.api_views import EventViewSet, event_ical
 
 
 router = DefaultRouter()
@@ -84,6 +85,9 @@ router.register(r'reviews', ReviewViewSet, basename='review')
 # Menu
 router.register(r'menu', DailyMenuViewSet, basename='menu')
 
+# Events
+router.register(r'events', EventViewSet, basename='event')
+
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -96,6 +100,9 @@ urlpatterns = [
     path('faq/', faq_list, name='api-faq'),
     path('faq/ask/', faq_ask, name='api-faq-ask'),
     path('faq/items/<int:pk>/like/', faq_like, name='api-faq-like'),
+
+    # Events — завантаження .ics
+    path('events/<slug:slug>/ical/', event_ical, name='api-event-ical'),
 
     # Web-push
     path('push/vapid-key/', push_vapid_key, name='api-push-vapid'),

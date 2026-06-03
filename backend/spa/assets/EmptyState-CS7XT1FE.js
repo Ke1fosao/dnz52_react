@@ -1,6 +1,0 @@
-import{j as t}from"./vendor-query-i4C3fMtf.js";import{n as o}from"./index-ccrBAp90.js";/**
- * @license lucide-react v0.469.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */const n=o("Inbox",[["polyline",{points:"22 12 16 12 14 15 10 15 8 12 2 12",key:"o97t9d"}],["path",{d:"M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z",key:"oot6mr"}]]);function i({title:a="Поки нічого немає",description:e,icon:r,action:s}){return t.jsxs("div",{className:"flex flex-col items-center justify-center py-16 md:py-20 text-center animate-scale-in",children:[t.jsx("div",{className:"mb-5 w-24 h-24 rounded-[2rem] bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-slate-800 dark:to-slate-800/40 flex items-center justify-center text-blue-500 dark:text-blue-300 shadow-sm rotate-[-6deg] hover:rotate-0 transition-transform duration-300",children:r||t.jsx(n,{className:"h-12 w-12"})}),t.jsx("h3",{className:"text-2xl font-black text-gray-900 dark:text-white mb-2",children:a}),e&&t.jsx("p",{className:"text-gray-500 dark:text-slate-400 max-w-md mb-5 font-medium",children:e}),s]})}export{i as E};

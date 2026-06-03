@@ -15,6 +15,7 @@ import type {
   DocumentCategory, DocumentItem,
   Review, ReviewCreate,
   FAQGroup, FAQAsk,
+  EventItem,
   DailyMenu, MenuWeekResponse,
   SearchResponse,
 } from '@/types';
@@ -147,4 +148,13 @@ export const faqApi = {
   list: () => api.get<FAQGroup[]>('/faq/').then(r => r.data),
   like: (id: number) => api.post(`/faq/items/${id}/like/`),
   ask: (data: FAQAsk) => api.post('/faq/ask/', data),
+};
+
+// ============================================================================
+// Events (календар)
+// ============================================================================
+export const eventsApi = {
+  list: (params?: { year?: number; month?: number }) =>
+    api.get<EventItem[]>('/events/', { params }).then(r => r.data),
+  detail: (slug: string) => api.get<EventItem>(`/events/${slug}/`).then(r => r.data),
 };

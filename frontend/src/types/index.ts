@@ -473,6 +473,24 @@ export interface FAQAsk {
   website?: string;
 }
 
+// ============================================================================
+// Events (календар)
+// ============================================================================
+export interface EventItem {
+  id: number;
+  title: string;
+  slug: string;
+  event_type: string;
+  event_type_display: string;
+  description: string;
+  start_date: string;
+  end_date: string | null;
+  location: string;
+  image: string | null;
+  color: string;
+  is_multiday: boolean;
+}
+
 export interface ReviewCreate {
   author: string;
   child_group?: string;

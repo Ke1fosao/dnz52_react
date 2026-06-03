@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   pagesApi, slidersApi, contactApi, staffApi, parentsApi, attestationApi,
   newsApi, galleryApi, groupsApi, specialistsApi, circlesApi,
-  documentsApi, reviewsApi, menuApi, searchApi, faqApi,
+  documentsApi, reviewsApi, menuApi, searchApi, faqApi, eventsApi,
 } from '@/api/endpoints';
 import type { ReviewCreate, SpecialistPageType, FAQAsk } from '@/types';
 
@@ -187,3 +187,7 @@ export const useLikeFaqItem = () => {
 
 export const useAskQuestion = () =>
   useMutation({ mutationFn: (data: FAQAsk) => faqApi.ask(data) });
+
+// Events (календар)
+export const useEvents = (year: number, month: number) =>
+  useQuery({ queryKey: ['events', year, month], queryFn: () => eventsApi.list({ year, month }) });
