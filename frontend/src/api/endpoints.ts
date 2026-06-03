@@ -14,6 +14,7 @@ import type {
   CircleListItem, CircleDetail,
   DocumentCategory, DocumentItem,
   Review, ReviewCreate,
+  FAQGroup, FAQAsk,
   DailyMenu, MenuWeekResponse,
   SearchResponse,
 } from '@/types';
@@ -137,4 +138,13 @@ export const menuApi = {
 // ============================================================================
 export const searchApi = {
   query: (q: string) => api.get<SearchResponse>('/search/', { params: { q } }).then(r => r.data),
+};
+
+// ============================================================================
+// FAQ
+// ============================================================================
+export const faqApi = {
+  list: () => api.get<FAQGroup[]>('/faq/').then(r => r.data),
+  like: (id: number) => api.post(`/faq/items/${id}/like/`),
+  ask: (data: FAQAsk) => api.post('/faq/ask/', data),
 };

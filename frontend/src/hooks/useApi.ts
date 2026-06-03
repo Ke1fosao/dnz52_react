@@ -2,9 +2,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   pagesApi, slidersApi, contactApi, staffApi, parentsApi, attestationApi,
   newsApi, galleryApi, groupsApi, specialistsApi, circlesApi,
-  documentsApi, reviewsApi, menuApi, searchApi,
+  documentsApi, reviewsApi, menuApi, searchApi, faqApi,
 } from '@/api/endpoints';
-import type { ReviewCreate, SpecialistPageType } from '@/types';
+import type { ReviewCreate, SpecialistPageType, FAQAsk } from '@/types';
 
 // Main
 export const usePages = () =>
@@ -172,3 +172,18 @@ export const useSearch = (q: string) =>
     queryFn: () => searchApi.query(q),
     enabled: q.trim().length >= 2,
   });
+
+// FAQ
+export const useFaq = () =>
+  useQuery({ queryKey: ['faq'], queryFn: faqApi.list });
+
+export const useLikeFaqItem = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => faqApi.like(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['faq'] }),
+  });
+};
+
+export const useAskQuestion = () =>
+  useMutation({ mutationFn: (data: FAQAsk) => faqApi.ask(data) });

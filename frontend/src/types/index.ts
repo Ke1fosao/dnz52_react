@@ -446,6 +446,33 @@ export interface Review {
   admin_reply: string;
 }
 
+// ============================================================================
+// FAQ
+// ============================================================================
+export interface FAQItem {
+  id: number;
+  question: string;
+  answer: string;
+  likes: number;
+  order: number;
+}
+
+export interface FAQGroup {
+  id: number;
+  name: string;
+  slug: string;
+  icon: string;
+  color: string;
+  items: FAQItem[];
+}
+
+export interface FAQAsk {
+  name: string;
+  phone: string;
+  question: string;
+  website?: string;
+}
+
 export interface ReviewCreate {
   author: string;
   child_group?: string;

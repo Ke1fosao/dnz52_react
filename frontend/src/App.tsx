@@ -30,6 +30,7 @@ const CircleDetailPage = lazy(() => import('@/pages/circles/CircleDetailPage').t
 
 const DocumentsPage = lazy(() => import('@/pages/DocumentsPage').then(m => ({ default: m.DocumentsPage })));
 const ReviewsPage = lazy(() => import('@/pages/ReviewsPage').then(m => ({ default: m.ReviewsPage })));
+const FAQPage = lazy(() => import('@/pages/FAQPage').then(m => ({ default: m.FAQPage })));
 const MenuPage = lazy(() => import('@/pages/MenuPage').then(m => ({ default: m.MenuPage })));
 const SearchPage = lazy(() => import('@/pages/SearchPage').then(m => ({ default: m.SearchPage })));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
@@ -66,6 +67,7 @@ export default function App() {
 
         <Route element={<Suspense fallback={<PageSpinner />}><DocumentsPage /></Suspense>} path="documents" />
         <Route element={<Suspense fallback={<PageSpinner />}><ReviewsPage /></Suspense>} path="reviews" />
+        <Route element={<Suspense fallback={<PageSpinner />}><FAQPage /></Suspense>} path="faq" />
         <Route element={<Suspense fallback={<PageSpinner />}><MenuPage /></Suspense>} path="menu" />
         <Route element={<Suspense fallback={<PageSpinner />}><SearchPage /></Suspense>} path="search" />
         <Route element={<Suspense fallback={<PageSpinner />}><AdminRedirectPage /></Suspense>} path="admin" />

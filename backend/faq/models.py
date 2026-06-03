@@ -33,6 +33,8 @@ class FAQItem(models.Model):
         related_name='items',
         verbose_name='Категорія',
     )
+    likes = models.PositiveIntegerField('👍 Корисно', default=0,
+                                        help_text='Скільки відвідувачів позначили це питання корисним.')
     order = models.IntegerField('Порядок', default=0)
     is_published = models.BooleanField('Опубліковано', default=True)
     created_at = models.DateTimeField(auto_now_add=True)

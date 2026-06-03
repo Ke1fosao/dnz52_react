@@ -3,7 +3,7 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   MapPin, Search, Menu as MenuIcon, X, ChevronDown, Sun, Moon,
   Info, Users, GraduationCap, Utensils, Heart, FileText, MessageSquare,
-  Brain, Music, Activity, Star, Zap, Phone, BookOpen, Stethoscope, Palette, Image as ImageIcon,
+  Brain, Music, Activity, Star, Zap, Phone, BookOpen, Stethoscope, Palette, Image as ImageIcon, HelpCircle,
 } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useGroups } from '@/hooks/useApi';
@@ -23,6 +23,7 @@ const SERVICE_ITEMS: DropItem[] = [
   { title: 'Документи', desc: 'Офіційні папери', icon: FileText, to: '/documents', color: 'bg-cyan-100 text-cyan-600 dark:bg-cyan-900/40 dark:text-cyan-400' },
   { title: 'Відгуки', desc: 'Думки батьків', icon: MessageSquare, to: '/reviews', color: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400' },
   { title: 'Батькам', desc: 'Корисна інформація', icon: Heart, to: '/parents', color: 'bg-rose-100 text-rose-600 dark:bg-rose-900/40 dark:text-rose-400' },
+  { title: 'Питання-відповіді', desc: 'Часті запитання батьків', icon: HelpCircle, to: '/faq', color: 'bg-violet-100 text-violet-600 dark:bg-violet-900/40 dark:text-violet-400' },
 ];
 
 const SPECIALISTS = [

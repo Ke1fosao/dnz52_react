@@ -24,6 +24,7 @@ from circles.api_views import CircleViewSet
 from documents.api_views import DocumentViewSet, DocumentCategoryViewSet
 from reviews.api_views import ReviewViewSet
 from menu.api_views import DailyMenuViewSet
+from faq.api_views import faq_list, faq_like, faq_ask
 
 
 router = DefaultRouter()
@@ -90,6 +91,11 @@ urlpatterns = [
     # Окремі endpoints (menu/today/ та menu/week/ тепер як @action в DailyMenuViewSet)
     path('search/', global_search, name='api-search'),
     path('attestation/settings/', attestation_settings, name='api-attestation-settings'),
+
+    # FAQ
+    path('faq/', faq_list, name='api-faq'),
+    path('faq/ask/', faq_ask, name='api-faq-ask'),
+    path('faq/items/<int:pk>/like/', faq_like, name='api-faq-like'),
 
     # Web-push
     path('push/vapid-key/', push_vapid_key, name='api-push-vapid'),
