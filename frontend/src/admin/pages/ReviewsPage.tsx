@@ -1,0 +1,131 @@
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Check, X, Reply, Trash2, Clock } from 'lucide-react';
+import { toast } from 'sonner';
+import { adminReviewsApi } from '../lib/adminApi';
+import { Stars, FilterTabs, ActButton, ListSkeleton, EmptyBox } from '../components/AdminUI';
+import { formatDate, cn } from '@/lib/utils';
+import type { AdminReview } from '../types';
+
+type Filter = 'pending' | 'approved' | 'all';
+
+export function ReviewsPage() {
+  const [filter, setFilter] = useState<Filter>('pending');
+  const qc = useQueryClient();
+  const { data: reviews, isLoading } = useQuery({
+    queryKey: ['admin-reviews', filter],
+    queryFn: () => adminReviewsApi.list(filter),
+  });
+
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ['admin-reviews'] });
+    qc.invalidateQueries({ queryKey: ['admin-stats'] });
+  };
+
+  const approve = useMutation({ mutationFn: adminReviewsApi.approve, onSuccess: () => { toast.success('Опубліковано'); invalidate(); }, onError: () => toast.error('Помилка') });
+  const unpublish = useMutation({ mutationFn: adminReviewsApi.unpublish, onSuccess: () => { toast.success('Знято з публікації'); invalidate(); }, onError: () => toast.error('Помилка') });
+  const remove = useMutation({ mutationFn: adminReviewsApi.remove, onSuccess: () => { toast.success('Видалено'); invalidate(); }, onError: () => toast.error('Помилка') });
+  const reply = useMutation({
+    mutationFn: ({ id, text }: { id: number; text: string }) => adminReviewsApi.reply(id, text),
+    onSuccess: () => { toast.success('Відповідь збережено'); invalidate(); }, onError: () => toast.error('Помилка'),
+  });
+
+  return (
+    <div className="space-y-5 animate-page-fade-in">
+      <div>
+        <h1 className="text-3xl font-black text-gray-900 dark:text-white">Відгуки</h1>
+        <p className="text-gray-500 dark:text-slate-400 font-medium">Модерація відгуків відвідувачів</p>
+      </div>
+
+      <FilterTabs value={filter} onChange={setFilter} tabs={[
+        { value: 'pending', label: 'На модерації', count: reviews && filter === 'pending' ? reviews.length : undefined },
+        { value: 'approved', label: 'Опубліковані' },
+        { value: 'all', label: 'Усі' },
+      ]} />
+
+      {isLoading ? <ListSkeleton /> : !reviews?.length ? (
+        <EmptyBox text="Немає відгуків у цьому фільтрі" />
+      ) : (
+        <div className="space-y-4">
+          {reviews.map(r => (
+            <ReviewCard
+              key={r.id}
+              review={r}
+              onApprove={() => approve.mutate(r.id)}
+              onUnpublish={() => unpublish.mutate(r.id)}
+              onRemove={() => { if (window.confirm('Видалити відгук назавжди?')) remove.mutate(r.id); }}
+              onReply={text => reply.mutate({ id: r.id, text })}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ReviewCard({ review, onApprove, onUnpublish, onRemove, onReply }: {
+  review: AdminReview;
+  onApprove: () => void;
+  onUnpublish: () => void;
+  onRemove: () => void;
+  onReply: (text: string) => void;
+}) {
+  const [replyOpen, setReplyOpen] = useState(false);
+  const [text, setText] = useState(review.admin_reply || '');
+
+  return (
+    <div className="premium-glass rounded-[1.5rem] p-5">
+      <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="font-black text-gray-900 dark:text-white">{review.author}</span>
+            {review.child_group && <span className="text-xs text-gray-400 dark:text-slate-500">· {review.child_group}</span>}
+          </div>
+          <Stars rating={review.rating} />
+        </div>
+        <span className={cn('text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap',
+          review.is_approved
+            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+            : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300')}>
+          {review.is_approved ? '● Опубліковано' : '● На модерації'}
+        </span>
+      </div>
+
+      <p className="text-gray-600 dark:text-slate-300 mb-2 whitespace-pre-wrap">{review.text}</p>
+      <p className="text-xs text-gray-400 dark:text-slate-500 flex items-center gap-1.5 mb-3">
+        <Clock size={12} /> {formatDate(review.created_at)} · 👍 {review.likes} · 👎 {review.dislikes}
+      </p>
+
+      {review.admin_reply && !replyOpen && (
+        <div className="bg-blue-50/60 dark:bg-blue-900/15 border-l-4 border-blue-500 rounded-r-xl p-3 mb-3 text-sm">
+          <span className="font-bold text-blue-700 dark:text-blue-300">Відповідь закладу: </span>
+          <span className="text-gray-600 dark:text-slate-300">{review.admin_reply}</span>
+        </div>
+      )}
+
+      {replyOpen && (
+        <div className="mb-3">
+          <textarea
+            value={text} onChange={e => setText(e.target.value)} rows={3}
+            placeholder="Офіційна відповідь закладу (показується під відгуком на сайті)…"
+            className="w-full px-4 py-3 rounded-2xl bg-white/70 dark:bg-slate-800/70 border border-white/60 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-400 text-sm text-gray-900 dark:text-white"
+          />
+          <div className="flex gap-2 mt-2">
+            <ActButton color="blue" onClick={() => { onReply(text); setReplyOpen(false); }}>Зберегти відповідь</ActButton>
+            <ActButton color="slate" onClick={() => { setReplyOpen(false); setText(review.admin_reply || ''); }}>Скасувати</ActButton>
+          </div>
+        </div>
+      )}
+
+      <div className="flex flex-wrap gap-2">
+        {review.is_approved
+          ? <ActButton color="amber" icon={X} onClick={onUnpublish}>Зняти з публікації</ActButton>
+          : <ActButton color="emerald" icon={Check} onClick={onApprove}>Опублікувати</ActButton>}
+        <ActButton color="blue" icon={Reply} onClick={() => setReplyOpen(o => !o)}>
+          {review.admin_reply ? 'Змінити відповідь' : 'Відповісти'}
+        </ActButton>
+        <ActButton color="rose" icon={Trash2} onClick={onRemove}>Видалити</ActButton>
+      </div>
+    </div>
+  );
+}

@@ -40,9 +40,15 @@ const SearchPage = lazy(() => import('@/pages/SearchPage').then(m => ({ default:
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 const AdminRedirectPage = lazy(() => import('@/pages/AdminRedirectPage').then(m => ({ default: m.AdminRedirectPage })));
 
+// Нова React-адмінка (/manage) — власний layout, поза RootLayout
+const AdminApp = lazy(() => import('@/admin/AdminApp'));
+
 export default function App() {
   return (
     <Routes>
+      {/* Адмінпанель — окремий layout (без публічного навбару/футера) */}
+      <Route path="/manage/*" element={<Suspense fallback={<PageSpinner />}><AdminApp /></Suspense>} />
+
       <Route element={<RootLayout />}>
         <Route index element={<HomePage />} />
 
