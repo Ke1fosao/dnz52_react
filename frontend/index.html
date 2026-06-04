@@ -12,6 +12,10 @@
         if (t === 'dark' || (!t && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
           document.documentElement.classList.add('dark');
         }
+        // Розмір шрифту (режим доступності) — застосувати до першого рендера
+        if (localStorage.getItem('dnz52:fontScale') === 'large') {
+          document.documentElement.style.fontSize = '112.5%';
+        }
       } catch (e) {}
     </script>
     <meta name="theme-color" content="#4A90E2" />

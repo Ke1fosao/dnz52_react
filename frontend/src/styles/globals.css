@@ -283,6 +283,29 @@
 }
 .dark .text-outline { -webkit-text-stroke: 2px rgba(255,255,255,0.3); }
 
+/* Доступність: видиме виділення фокуса при навігації з клавіатури */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible,
+[role="button"]:focus-visible {
+  outline: 3px solid #2674C9;
+  outline-offset: 2px;
+}
+.dark a:focus-visible,
+.dark button:focus-visible,
+.dark input:focus-visible,
+.dark textarea:focus-visible,
+.dark select:focus-visible,
+.dark [tabindex]:focus-visible,
+.dark [role="button"]:focus-visible {
+  outline-color: #87B7EC;
+}
+/* Прибираємо outline для миші/тача (focus без -visible) — лише для focus-visible вище */
+:focus:not(:focus-visible) { outline: none; }
+
 /* Кастомний скролбар */
 ::-webkit-scrollbar { width: 10px; }
 ::-webkit-scrollbar-track { background: #f1f5f9; }

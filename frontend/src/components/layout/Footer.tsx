@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Facebook, Instagram, Youtube } from 'lucide-react';
 import { useContact } from '@/hooks/useApi';
+import { FontSizeControl } from '@/components/common/FontSizeControl';
 
 const FOOTER_LINKS = [
   { title: 'Заклад', links: [
@@ -88,10 +89,11 @@ export function Footer() {
       </div>
 
       <div className="container mx-auto px-4 border-t border-white/10 pt-8">
-        <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 mb-5 text-sm">
+        <div className="flex flex-wrap justify-center items-center gap-x-5 gap-y-3 mb-5 text-sm">
           <Link to="/privacy" className="text-gray-400 hover:text-white font-medium transition-colors">Політика конфіденційності</Link>
           <Link to="/terms" className="text-gray-400 hover:text-white font-medium transition-colors">Умови використання</Link>
           <Link to="/accessibility" className="text-gray-400 hover:text-white font-medium transition-colors">Декларація доступності</Link>
+          <FontSizeControl />
         </div>
         <div className="flex flex-col md:flex-row justify-between items-center text-gray-500 font-medium text-sm gap-3">
           <p>© {year} ЗДО №52, м. Рівне. Усі права захищено.</p>

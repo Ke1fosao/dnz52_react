@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useGroups } from '@/hooks/useApi';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { NotificationBell } from '@/components/common/NotificationBell';
 import { cn } from '@/lib/utils';
 
@@ -63,13 +64,19 @@ export function Navbar() {
     setQuery('');
   }, [location.pathname]);
 
-  // Esc закриває пошук
+  // Esc закриває пошук та мобільне меню
   useEffect(() => {
-    if (!searchOpen) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setSearchOpen(false); };
+    if (!searchOpen && !mobileOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { setSearchOpen(false); setMobileOpen(false); }
+    };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [searchOpen]);
+  }, [searchOpen, mobileOpen]);
+
+  // Фокус-пастки для модалок (пошук, мобільне меню)
+  const searchTrapRef = useFocusTrap<HTMLDivElement>(searchOpen);
+  const mobileTrapRef = useFocusTrap<HTMLDivElement>(mobileOpen);
 
   // Блокуємо скрол коли відкрите мобільне меню
   useEffect(() => {
@@ -214,7 +221,7 @@ export function Navbar() {
       {searchOpen && (
         <>
           <div className="fixed inset-0 z-[105] bg-black/30 backdrop-blur-sm animate-page-fade-in" onClick={() => setSearchOpen(false)} />
-          <div className="fixed top-0 left-0 right-0 z-[110] pt-4">
+          <div ref={searchTrapRef} className="fixed top-0 left-0 right-0 z-[110] pt-4">
             <div className="container mx-auto px-4">
               <form onSubmit={handleSearch} className="mx-auto max-w-3xl glass-dropdown rounded-[1.5rem] sm:rounded-[2rem] p-2 flex items-center gap-1.5 sm:gap-2 shadow-2xl">
                 <div className="pl-2 sm:pl-4 text-gray-400 shrink-0"><Search size={20} /></div>
@@ -238,7 +245,7 @@ export function Navbar() {
       )}
 
       {/* Mobile menu */}
-      <div className={cn('xl:hidden fixed inset-0 z-[120] bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl transition-all duration-500', mobileOpen ? 'opacity-100 visible' : 'opacity-0 invisible')}>
+      <div ref={mobileTrapRef} className={cn('xl:hidden fixed inset-0 z-[120] bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl transition-all duration-500', mobileOpen ? 'opacity-100 visible' : 'opacity-0 invisible')}>
         {/* Власний хедер меню з логотипом і кнопкою закриття (завжди видима) */}
         <div className="flex items-center justify-between px-6 h-20 border-b border-gray-100 dark:border-slate-800">
           <Link to="/" onClick={closeMobile} className="flex items-center gap-3">

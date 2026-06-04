@@ -9,6 +9,7 @@ import { StructuredData } from '@/components/common/StructuredData';
 import { Analytics } from '@/components/common/Analytics';
 import { CookieConsent } from '@/components/common/CookieConsent';
 import { PWAInstallPrompt } from '@/components/common/PWAInstallPrompt';
+import { cn } from '@/lib/utils';
 
 export function RootLayout() {
   const location = useLocation();
@@ -20,12 +21,20 @@ export function RootLayout() {
 
   return (
     <div className="flex min-h-screen flex-col bg-[#f8fafc] dark:bg-slate-950 text-gray-900 dark:text-slate-200 transition-colors duration-500 selection:bg-blue-300 dark:selection:bg-blue-900 selection:text-gray-900 dark:selection:text-white">
+      {/* Skip-link — для навігації з клавіатури / скрінрідерів */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[200] focus:px-5 focus:py-3 focus:rounded-full focus:bg-blue-600 focus:text-white focus:font-bold focus:shadow-lg"
+      >
+        Перейти до основного вмісту
+      </a>
+
       <StructuredData />
       <Analytics />
       <Navbar />
 
       {/* Home керує власним hero на весь екран; інші сторінки — відступ під fixed navbar */}
-      <main className={isHome ? 'flex-1' : 'flex-1 pt-24 md:pt-28'}>
+      <main id="main-content" tabIndex={-1} className={cn('outline-none', isHome ? 'flex-1' : 'flex-1 pt-24 md:pt-28')}>
         <motion.div
           key={location.pathname}
           initial={{ opacity: 0, y: 16, filter: 'blur(6px)' }}
