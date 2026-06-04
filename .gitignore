@@ -73,6 +73,7 @@ backend/set_map_embed.py
 !.vscode/settings.json.example
 !.vscode/extensions.json
 .idea/
+.claude/
 *.swp
 *.swo
 *~
