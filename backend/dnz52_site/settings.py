@@ -94,6 +94,12 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_filters',
 
+    # Безпека
+    'axes',                            # захист від брутфорсу входу в адмінку
+    'django_otp',                      # 2FA-каркас (вмикається через ENFORCE_ADMIN_2FA)
+    'django_otp.plugins.otp_totp',     # TOTP (Google Authenticator / Authy тощо)
+    'django_otp.plugins.otp_static',   # резервні одноразові коди
+
     # Наші
     'main',
     'news',
@@ -114,6 +120,8 @@ INSTALLED_APPS = [
 # ----------------------------------------------------------------------------
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # CSP — заголовок Content-Security-Policy (django-csp). Одразу після Security.
+    'csp.middleware.CSPMiddleware',
     # WhiteNoise — роздає статичні файли у продакшені (CSS/JS/SVG)
     # Має йти ОДРАЗУ після SecurityMiddleware
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -125,10 +133,14 @@ MIDDLEWARE = [
     'django.middleware.http.ConditionalGetMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    # django-otp — ОДРАЗУ після AuthenticationMiddleware (додає request.user.is_verified)
+    'django_otp.middleware.OTPMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # simple_history — відстежує користувача що зробив зміну
     'simple_history.middleware.HistoryRequestMiddleware',
+    # django-axes — МАЄ бути ОСТАННІМ (перехоплює відповідь на спробу входу)
+    'axes.middleware.AxesMiddleware',
 ]
 
 # Markdownx — налаштування редактора
@@ -330,6 +342,62 @@ CORS_ALLOW_CREDENTIALS = True
 VAPID_PUBLIC_KEY = os.environ.get('VAPID_PUBLIC_KEY', '')
 VAPID_PRIVATE_KEY = os.environ.get('VAPID_PRIVATE_KEY', '')
 VAPID_ADMIN_EMAIL = os.environ.get('VAPID_ADMIN_EMAIL', 'admin@dnz52.rv.ua')
+
+
+# ----------------------------------------------------------------------------
+# Бекенд-безпека: брутфорс-захист (axes), CSP, 2FA для адмінки (otp)
+# ----------------------------------------------------------------------------
+# Порядок важливий: AxesStandaloneBackend має бути ПЕРШИМ.
+AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesStandaloneBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+# django-axes — блокування після кількох невдалих спроб входу.
+AXES_FAILURE_LIMIT = 5                 # дозволено стільки невдалих спроб
+AXES_COOLOFF_TIME = 1                  # блокування на 1 годину
+AXES_RESET_ON_SUCCESS = True           # успішний вхід обнуляє лічильник
+# Блокуємо за комбінацією (логін + IP), а не лише за IP — щоб не залочити всіх
+# користувачів, які виходять з-під одного IP/проксі.
+AXES_LOCKOUT_PARAMETERS = [['username', 'ip_address']]
+# Коректне визначення реального IP за проксі PythonAnywhere (X-Forwarded-For).
+AXES_IPWARE_PROXY_COUNT = 1
+AXES_IPWARE_META_PRECEDENCE_ORDER = ['HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR']
+
+# Content-Security-Policy (django-csp 4.x).
+# 'unsafe-inline' ОБОВʼЯЗКОВИЙ: у index.html є inline-скрипт теми/шрифту (anti-FOUC)
+# та inline-стилі (React style={{}}) — без нього сайт зламається.
+CONTENT_SECURITY_POLICY = {
+    'DIRECTIVES': {
+        'default-src': ["'self'"],
+        'script-src': [
+            "'self'", "'unsafe-inline'",
+            'https://www.googletagmanager.com',   # Google Analytics (gtag)
+            'https://plausible.io',                # Plausible
+        ],
+        'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        'font-src': ["'self'", 'https://fonts.gstatic.com', 'data:'],
+        'img-src': ["'self'", 'data:', 'blob:', 'https:'],
+        'connect-src': [
+            "'self'",
+            'https://www.google-analytics.com',
+            'https://*.google-analytics.com',
+            'https://www.googletagmanager.com',
+            'https://plausible.io',
+        ],
+        'frame-src': ['https://www.google.com'],   # вбудована Google-карта (Контакти)
+        'frame-ancestors': ["'none'"],             # анти-clickjacking (як X-Frame-Options: DENY)
+        'base-uri': ["'self'"],
+        'object-src': ["'none'"],
+        'form-action': ["'self'"],
+    },
+}
+
+# 2FA для адмінки. За замовчуванням ВИМКНЕНО (нуль ризику блокування).
+# Як увімкнути БЕЗПЕЧНО: 1) залогінься в /admin; 2) у розділі «TOTP devices»
+# додай свій пристрій (відскануй QR у Google Authenticator); 3) ЛИШЕ ПОТІМ
+# постав ENFORCE_ADMIN_2FA=True у .env і перезапусти сайт.
+ENFORCE_ADMIN_2FA = os.environ.get('ENFORCE_ADMIN_2FA', 'False').lower() in ('true', '1', 'yes')
 
 
 # ----------------------------------------------------------------------------

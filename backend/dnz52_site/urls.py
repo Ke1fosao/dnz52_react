@@ -24,6 +24,13 @@ from news.feeds import LatestNewsFeed
 from dnz52_site.spa_views import spa_index
 
 
+# 2FA для адмінки (env-gated). Коли ENFORCE_ADMIN_2FA=True — адмінка вимагає TOTP.
+# За замовчуванням вимкнено, тож звичайний вхід у /admin працює як завжди.
+if getattr(settings, 'ENFORCE_ADMIN_2FA', False):
+    from django_otp.admin import OTPAdminSite
+    admin.site.__class__ = OTPAdminSite
+
+
 sitemaps = {
     'static': StaticViewSitemap,
     'pages':  PageSitemap,
