@@ -7,6 +7,7 @@ import { Footer } from './Footer';
 import { ScrollToTopButton } from '@/components/common/ScrollToTopButton';
 import { StructuredData } from '@/components/common/StructuredData';
 import { Analytics } from '@/components/common/Analytics';
+import { CookieConsent } from '@/components/common/CookieConsent';
 import { PWAInstallPrompt } from '@/components/common/PWAInstallPrompt';
 
 export function RootLayout() {
@@ -39,6 +40,7 @@ export function RootLayout() {
 
       <ScrollToTopButton />
       <PWAInstallPrompt />
+      <CookieConsent />
 
       <Toaster
         position="top-center"

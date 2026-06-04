@@ -32,6 +32,9 @@ const DocumentsPage = lazy(() => import('@/pages/DocumentsPage').then(m => ({ de
 const ReviewsPage = lazy(() => import('@/pages/ReviewsPage').then(m => ({ default: m.ReviewsPage })));
 const FAQPage = lazy(() => import('@/pages/FAQPage').then(m => ({ default: m.FAQPage })));
 const EventsPage = lazy(() => import('@/pages/EventsPage').then(m => ({ default: m.EventsPage })));
+const PrivacyPolicyPage = lazy(() => import('@/pages/legal/PrivacyPolicyPage').then(m => ({ default: m.PrivacyPolicyPage })));
+const TermsPage = lazy(() => import('@/pages/legal/TermsPage').then(m => ({ default: m.TermsPage })));
+const AccessibilityPage = lazy(() => import('@/pages/legal/AccessibilityPage').then(m => ({ default: m.AccessibilityPage })));
 const MenuPage = lazy(() => import('@/pages/MenuPage').then(m => ({ default: m.MenuPage })));
 const SearchPage = lazy(() => import('@/pages/SearchPage').then(m => ({ default: m.SearchPage })));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
@@ -70,6 +73,9 @@ export default function App() {
         <Route element={<Suspense fallback={<PageSpinner />}><ReviewsPage /></Suspense>} path="reviews" />
         <Route element={<Suspense fallback={<PageSpinner />}><FAQPage /></Suspense>} path="faq" />
         <Route element={<Suspense fallback={<PageSpinner />}><EventsPage /></Suspense>} path="events" />
+        <Route element={<Suspense fallback={<PageSpinner />}><PrivacyPolicyPage /></Suspense>} path="privacy" />
+        <Route element={<Suspense fallback={<PageSpinner />}><TermsPage /></Suspense>} path="terms" />
+        <Route element={<Suspense fallback={<PageSpinner />}><AccessibilityPage /></Suspense>} path="accessibility" />
         <Route element={<Suspense fallback={<PageSpinner />}><MenuPage /></Suspense>} path="menu" />
         <Route element={<Suspense fallback={<PageSpinner />}><SearchPage /></Suspense>} path="search" />
         <Route element={<Suspense fallback={<PageSpinner />}><AdminRedirectPage /></Suspense>} path="admin" />

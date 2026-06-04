@@ -87,9 +87,16 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center text-gray-500 font-medium text-sm gap-3">
-        <p>© {year} ЗДО №52, м. Рівне. Усі права захищено.</p>
-        <p className="opacity-80">Made by Kovtunovych Dmytro Valeriyovych</p>
+      <div className="container mx-auto px-4 border-t border-white/10 pt-8">
+        <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 mb-5 text-sm">
+          <Link to="/privacy" className="text-gray-400 hover:text-white font-medium transition-colors">Політика конфіденційності</Link>
+          <Link to="/terms" className="text-gray-400 hover:text-white font-medium transition-colors">Умови використання</Link>
+          <Link to="/accessibility" className="text-gray-400 hover:text-white font-medium transition-colors">Декларація доступності</Link>
+        </div>
+        <div className="flex flex-col md:flex-row justify-between items-center text-gray-500 font-medium text-sm gap-3">
+          <p>© {year} ЗДО №52, м. Рівне. Усі права захищено.</p>
+          <p className="opacity-80">Made by Kovtunovych Dmytro Valeriyovych</p>
+        </div>
       </div>
     </footer>
   );

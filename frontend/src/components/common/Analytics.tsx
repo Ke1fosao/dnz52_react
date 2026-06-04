@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { getCookieConsent, COOKIE_ACCEPTED_EVENT } from '@/lib/cookieConsent';
 
 /**
  * Опціональна аналітика — вмикається лише якщо задано env-змінні:
@@ -53,8 +54,18 @@ export function Analytics() {
   const location = useLocation();
 
   useEffect(() => {
-    if (GA_ID) initGA();
-    else if (PLAUSIBLE_DOMAIN) initPlausible();
+    // Plausible — без cookie, не потребує згоди
+    if (PLAUSIBLE_DOMAIN) {
+      initPlausible();
+      return;
+    }
+    // Google Analytics (cookie) — вмикаємо лише після згоди користувача
+    if (GA_ID) {
+      if (getCookieConsent() === 'accepted') initGA();
+      const onAccept = () => initGA();
+      window.addEventListener(COOKIE_ACCEPTED_EVENT, onAccept);
+      return () => window.removeEventListener(COOKIE_ACCEPTED_EVENT, onAccept);
+    }
   }, []);
 
   // Трекаємо перегляд при зміні URL
