@@ -543,17 +543,22 @@ export interface MenuWeekResponse {
 // ============================================================================
 
 export type SearchResultType =
-  | 'news' | 'page' | 'group' | 'circle' | 'specialist' | 'document';
+  | 'news' | 'page' | 'group' | 'circle' | 'specialist' | 'document'
+  | 'event' | 'faq' | 'album';
 
 export interface SearchResult {
   type: SearchResultType;
   title: string;
   slug: string;
   excerpt: string;
+  /** Слова контенту, що збіглися із запитом — для підсвічування */
+  matched?: string[];
 }
 
 export interface SearchResponse {
   query: string;
+  /** «Можливо, ви мали на увазі» — виправлений запит (друкарські помилки) */
+  suggestion?: string | null;
   count?: number;
   results: SearchResult[];
 }
