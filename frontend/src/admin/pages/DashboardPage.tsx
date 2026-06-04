@@ -10,13 +10,13 @@ import { useAdminAuth } from '../lib/adminAuth';
 
 const DJANGO = import.meta.env.DEV ? 'http://localhost:8000/admin' : '/admin';
 
-const TOTALS: { key: string; label: string; icon: typeof Newspaper; add?: string }[] = [
-  { key: 'news', label: 'Новини', icon: Newspaper, add: `${DJANGO}/news/news/add/` },
-  { key: 'events', label: 'Події', icon: CalendarDays, add: `${DJANGO}/events/event/add/` },
-  { key: 'albums', label: 'Альбоми', icon: ImageIcon, add: `${DJANGO}/gallery/galleryalbum/add/` },
+const TOTALS: { key: string; label: string; icon: typeof Newspaper; to?: string; ext?: string }[] = [
+  { key: 'news', label: 'Новини', icon: Newspaper, to: '/manage/news/new' },
+  { key: 'events', label: 'Події', icon: CalendarDays, to: '/manage/events/new' },
+  { key: 'faq', label: 'FAQ', icon: HelpCircle, to: '/manage/faq/new' },
+  { key: 'albums', label: 'Альбоми', icon: ImageIcon, ext: `${DJANGO}/gallery/galleryalbum/add/` },
   { key: 'groups', label: 'Групи', icon: Users },
   { key: 'circles', label: 'Гуртки', icon: Sparkles },
-  { key: 'documents', label: 'Документи', icon: FileText },
 ];
 
 export function DashboardPage() {
@@ -60,9 +60,13 @@ export function DashboardPage() {
                 <p className="text-2xl font-black text-gray-900 dark:text-white leading-none">{data?.totals?.[t.key] ?? '—'}</p>
                 <p className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase">{t.label}</p>
               </div>
-              {t.add && (
-                <a href={t.add} target="_blank" rel="noreferrer" title="Додати у Django-адмінці"
-                  className="w-8 h-8 grid place-items-center rounded-lg bg-white/60 dark:bg-slate-800/60 text-gray-500 hover:text-blue-600 hover:bg-white dark:hover:bg-slate-700 transition-colors shrink-0">
+              {t.to && (
+                <Link to={t.to} title="Додати" className="w-8 h-8 grid place-items-center rounded-lg bg-white/60 dark:bg-slate-800/60 text-gray-500 hover:text-blue-600 hover:bg-white dark:hover:bg-slate-700 transition-colors shrink-0">
+                  <Plus size={16} />
+                </Link>
+              )}
+              {t.ext && (
+                <a href={t.ext} target="_blank" rel="noreferrer" title="Додати у Django-адмінці" className="w-8 h-8 grid place-items-center rounded-lg bg-white/60 dark:bg-slate-800/60 text-gray-500 hover:text-blue-600 hover:bg-white dark:hover:bg-slate-700 transition-colors shrink-0">
                   <Plus size={16} />
                 </a>
               )}
@@ -70,7 +74,7 @@ export function DashboardPage() {
           ))}
         </div>
         <p className="text-xs text-gray-400 dark:text-slate-500 mt-3">
-          Редагування цих розділів поки що у Django-адмінці (кнопка «+»). Зручне редагування в новій адмінці — наступним кроком.
+          Новини, події та FAQ редагуються тут (кнопка «+» або розділи зліва). Альбоми/групи/гуртки — поки що в Django-адмінці.
         </p>
       </div>
     </div>

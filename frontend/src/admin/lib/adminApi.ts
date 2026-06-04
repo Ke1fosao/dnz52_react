@@ -1,5 +1,8 @@
 import axios from 'axios';
-import type { AdminStats, AdminReview, AdminQuestion, AdminUser, QuestionStatus } from '../types';
+import type {
+  AdminStats, AdminReview, AdminQuestion, AdminUser, QuestionStatus,
+  AdminMeta, AdminNews, AdminEvent, AdminFAQItem,
+} from '../types';
 
 const TOKEN_KEY = 'dnz52:adminToken';
 export const getToken = () => localStorage.getItem(TOKEN_KEY);
@@ -55,3 +58,22 @@ export const adminQuestionsApi = {
     http.patch<AdminQuestion>(`/questions/${id}/`, data).then(r => r.data),
   remove: (id: number) => http.delete(`/questions/${id}/`).then(r => r.data),
 };
+
+export const adminMetaApi = {
+  get: () => http.get<AdminMeta>('/meta/').then(r => r.data),
+};
+
+// Універсальний CRUD-клієнт для контенту (FormData або JSON)
+function crud<T>(path: string) {
+  return {
+    list: () => http.get<T[]>(`/${path}/`).then(r => r.data),
+    get: (id: number | string) => http.get<T>(`/${path}/${id}/`).then(r => r.data),
+    create: (data: FormData | object) => http.post<T>(`/${path}/`, data).then(r => r.data),
+    update: (id: number | string, data: FormData | object) => http.patch<T>(`/${path}/${id}/`, data).then(r => r.data),
+    remove: (id: number | string) => http.delete(`/${path}/${id}/`).then(r => r.data),
+  };
+}
+
+export const adminNewsApi = crud<AdminNews>('news');
+export const adminEventsApi = crud<AdminEvent>('events');
+export const adminFaqItemsApi = crud<AdminFAQItem>('faq-items');

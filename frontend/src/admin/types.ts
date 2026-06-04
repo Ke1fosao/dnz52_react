@@ -41,3 +41,60 @@ export interface AdminQuestion {
   handled_by_name: string | null;
   admin_note: string;
 }
+
+// --- Контент ---
+export interface IdName { id: number; name: string }
+export interface ValueLabel { value: string; label: string }
+
+export interface AdminMeta {
+  news_categories: IdName[];
+  news_tags: IdName[];
+  faq_categories: IdName[];
+  event_types: ValueLabel[];
+  groups: IdName[];
+  news_statuses: ValueLabel[];
+}
+
+export interface AdminNews {
+  id: number;
+  title: string;
+  slug: string;
+  category: number | null;
+  category_name: string | null;
+  tags: number[];
+  content: string;
+  image: string | null;
+  status: string;
+  status_display: string;
+  publish_at: string | null;
+  is_published: boolean;
+  views: number;
+  created_at: string;
+}
+
+export interface AdminEvent {
+  id: number;
+  title: string;
+  slug: string;
+  event_type: string;
+  event_type_display: string;
+  start_date: string;
+  end_date: string | null;
+  location: string;
+  description: string;
+  image: string | null;
+  group: number | null;
+  is_published: boolean;
+  created_at: string;
+}
+
+export interface AdminFAQItem {
+  id: number;
+  question: string;
+  answer: string;
+  category: number | null;
+  category_name: string | null;
+  order: number;
+  is_published: boolean;
+  likes: number;
+}

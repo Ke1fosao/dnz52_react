@@ -8,6 +8,7 @@ API адмінпанелі (React, /manage) — захищений namespace `/a
 from django.contrib.auth import authenticate
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
+from django.utils.text import slugify
 
 from rest_framework import viewsets, serializers, mixins
 from rest_framework.authentication import TokenAuthentication
@@ -15,11 +16,15 @@ from rest_framework.authtoken.models import Token
 from rest_framework.decorators import (
     api_view, authentication_classes, permission_classes, action,
 )
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
 
 from reviews.models import Review
-from faq.models import FAQQuestionSubmission
+from faq.models import FAQQuestionSubmission, FAQItem, FAQCategory
+from news.models import News, NewsCategory, NewsTag
+from events.models import Event
+from groups.models import Group
 
 
 # ============================================================================
@@ -225,3 +230,122 @@ class AdminQuestionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             obj.handled_at = timezone.now()
             obj.handled_by = self.request.user
             obj.save(update_fields=['handled_at', 'handled_by'])
+
+
+# ============================================================================
+# Редагування контенту (Новини, Події, FAQ-питання-відповіді)
+# ============================================================================
+
+# Транслітерація укр → латиниця для ASCII-слагів (SlugField не приймає кирилицю)
+_TRANSLIT = {
+    'а': 'a', 'б': 'b', 'в': 'v', 'г': 'h', 'ґ': 'g', 'д': 'd', 'е': 'e', 'є': 'ie',
+    'ж': 'zh', 'з': 'z', 'и': 'y', 'і': 'i', 'ї': 'i', 'й': 'i', 'к': 'k', 'л': 'l',
+    'м': 'm', 'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u',
+    'ф': 'f', 'х': 'kh', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'shch', 'ь': '',
+    'ю': 'iu', 'я': 'ia', "'": '', '’': '', 'ʼ': '',
+}
+
+
+def _translit(text):
+    return ''.join(_TRANSLIT.get(ch, ch) for ch in (text or '').lower())
+
+
+def _unique_slug(model, title, instance=None):
+    base = slugify(_translit(title))[:45] or 'item'
+    slug = base
+    i = 2
+    qs = model.objects.exclude(pk=instance.pk) if instance else model.objects.all()
+    while qs.filter(slug=slug).exists():
+        slug = f'{base}-{i}'
+        i += 1
+    return slug
+
+
+class _AutoSlugMixin:
+    """Автоматично генерує slug із title, якщо його не задано."""
+    slug_source = 'title'
+
+    def validate(self, attrs):
+        model = self.Meta.model
+        creating = self.instance is None
+        title = attrs.get(self.slug_source) or (getattr(self.instance, self.slug_source, '') if self.instance else '')
+        if (creating and not attrs.get('slug')) or ('slug' in attrs and not attrs['slug']):
+            attrs['slug'] = _unique_slug(model, title, self.instance)
+        return attrs
+
+
+class AdminNewsSerializer(_AutoSlugMixin, serializers.ModelSerializer):
+    image = serializers.ImageField(use_url=True, required=False, allow_null=True)
+    category = serializers.PrimaryKeyRelatedField(queryset=NewsCategory.objects.all(), required=False, allow_null=True)
+    category_name = serializers.CharField(source='category.name', read_only=True, default=None)
+    tags = serializers.PrimaryKeyRelatedField(many=True, queryset=NewsTag.objects.all(), required=False)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+
+    class Meta:
+        model = News
+        fields = ['id', 'title', 'slug', 'category', 'category_name', 'tags', 'content',
+                  'image', 'status', 'status_display', 'publish_at', 'is_published',
+                  'views', 'created_at']
+        read_only_fields = ['is_published', 'views', 'created_at']
+        extra_kwargs = {'slug': {'required': False}}
+
+
+class AdminEventSerializer(_AutoSlugMixin, serializers.ModelSerializer):
+    image = serializers.ImageField(use_url=True, required=False, allow_null=True)
+    group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all(), required=False, allow_null=True)
+    event_type_display = serializers.CharField(source='get_event_type_display', read_only=True)
+
+    class Meta:
+        model = Event
+        fields = ['id', 'title', 'slug', 'event_type', 'event_type_display', 'start_date',
+                  'end_date', 'location', 'description', 'image', 'group', 'is_published', 'created_at']
+        read_only_fields = ['created_at']
+        extra_kwargs = {'slug': {'required': False}}
+
+
+class AdminFAQItemSerializer(serializers.ModelSerializer):
+    category = serializers.PrimaryKeyRelatedField(queryset=FAQCategory.objects.all(), required=False, allow_null=True)
+    category_name = serializers.CharField(source='category.name', read_only=True, default=None)
+
+    class Meta:
+        model = FAQItem
+        fields = ['id', 'question', 'answer', 'category', 'category_name', 'order', 'is_published', 'likes']
+        read_only_fields = ['likes']
+
+
+class _ContentViewSet(viewsets.ModelViewSet):
+    """Спільна база для CRUD контенту: TokenAuth + IsAdminUser + multipart."""
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAdminUser]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+    pagination_class = None
+
+
+class AdminNewsViewSet(_ContentViewSet):
+    serializer_class = AdminNewsSerializer
+    queryset = News.objects.all().order_by('-created_at').prefetch_related('tags')
+
+
+class AdminEventViewSet(_ContentViewSet):
+    serializer_class = AdminEventSerializer
+    queryset = Event.objects.all().order_by('-start_date')
+
+
+class AdminFAQItemViewSet(_ContentViewSet):
+    serializer_class = AdminFAQItemSerializer
+    queryset = FAQItem.objects.all().order_by('order', 'id')
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAdminUser])
+def admin_meta(request):
+    """Дані для випадаючих списків у формах контенту."""
+    return Response({
+        'news_categories': [{'id': c.id, 'name': c.name} for c in NewsCategory.objects.all()],
+        'news_tags': [{'id': t.id, 'name': t.name} for t in NewsTag.objects.all()],
+        'faq_categories': [{'id': c.id, 'name': c.name} for c in FAQCategory.objects.all()],
+        'event_types': [{'value': v, 'label': lbl} for v, lbl in Event.EVENT_TYPE_CHOICES],
+        'groups': [{'id': g.id, 'name': g.name} for g in Group.objects.filter(is_published=True)],
+        'news_statuses': [{'value': v, 'label': lbl} for v, lbl in News.Status.choices],
+    })

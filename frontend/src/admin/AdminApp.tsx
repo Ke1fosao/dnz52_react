@@ -5,6 +5,12 @@ import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { ReviewsPage } from './pages/ReviewsPage';
 import { QuestionsPage } from './pages/QuestionsPage';
+import { NewsListPage } from './pages/NewsListPage';
+import { NewsFormPage } from './pages/NewsFormPage';
+import { EventsListPage } from './pages/EventsListPage';
+import { EventFormPage } from './pages/EventFormPage';
+import { FaqItemsListPage } from './pages/FaqItemsListPage';
+import { FaqItemFormPage } from './pages/FaqItemFormPage';
 
 function Guarded() {
   const { user, loading } = useAdminAuth();
@@ -28,6 +34,15 @@ export default function AdminApp() {
           <Route index element={<DashboardPage />} />
           <Route path="reviews" element={<ReviewsPage />} />
           <Route path="questions" element={<QuestionsPage />} />
+          <Route path="news" element={<NewsListPage />} />
+          <Route path="news/new" element={<NewsFormPage />} />
+          <Route path="news/:id/edit" element={<NewsFormPage />} />
+          <Route path="events" element={<EventsListPage />} />
+          <Route path="events/new" element={<EventFormPage />} />
+          <Route path="events/:id/edit" element={<EventFormPage />} />
+          <Route path="faq" element={<FaqItemsListPage />} />
+          <Route path="faq/new" element={<FaqItemFormPage />} />
+          <Route path="faq/:id/edit" element={<FaqItemFormPage />} />
           <Route path="*" element={<Navigate to="/manage" replace />} />
         </Route>
       </Routes>

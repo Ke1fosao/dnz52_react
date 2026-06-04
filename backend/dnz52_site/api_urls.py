@@ -27,8 +27,9 @@ from menu.api_views import DailyMenuViewSet
 from faq.api_views import faq_list, faq_like, faq_ask
 from events.api_views import EventViewSet, event_ical
 from main.admin_api import (
-    admin_login, admin_logout, admin_me, admin_stats,
+    admin_login, admin_logout, admin_me, admin_stats, admin_meta,
     AdminReviewViewSet, AdminQuestionViewSet,
+    AdminNewsViewSet, AdminEventViewSet, AdminFAQItemViewSet,
 )
 
 
@@ -95,6 +96,9 @@ router.register(r'events', EventViewSet, basename='event')
 # Адмінпанель (React /manage) — захищені TokenAuth + IsAdminUser
 router.register(r'admin/reviews', AdminReviewViewSet, basename='admin-review')
 router.register(r'admin/questions', AdminQuestionViewSet, basename='admin-question')
+router.register(r'admin/news', AdminNewsViewSet, basename='admin-news')
+router.register(r'admin/events', AdminEventViewSet, basename='admin-event')
+router.register(r'admin/faq-items', AdminFAQItemViewSet, basename='admin-faq-item')
 
 
 urlpatterns = [
@@ -105,6 +109,7 @@ urlpatterns = [
     path('admin/auth/logout/', admin_logout, name='api-admin-logout'),
     path('admin/auth/me/', admin_me, name='api-admin-me'),
     path('admin/stats/', admin_stats, name='api-admin-stats'),
+    path('admin/meta/', admin_meta, name='api-admin-meta'),
 
     # Окремі endpoints (menu/today/ та menu/week/ тепер як @action в DailyMenuViewSet)
     path('search/', global_search, name='api-search'),
