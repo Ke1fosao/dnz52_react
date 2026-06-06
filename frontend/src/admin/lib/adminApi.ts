@@ -7,6 +7,7 @@ import type {
   AdminDailyMenu, AdminMenuTemplate, AdminGalleryAlbum, AdminGalleryPhoto,
   AdminFlatRow, AdminAttestationSettings, AdminSpecialistPage, AdminSpecialist,
   AdminSpecialistSection, AdminSpecialistSectionPhoto,
+  AdminAccount, AdminHistoryItem, AdminPushStats,
 } from '../types';
 
 const TOKEN_KEY = 'dnz52:adminToken';
@@ -172,3 +173,18 @@ export const adminSpecialistPeopleApi = childApi<AdminSpecialist>('specialist-pe
 export const adminSpecialistAlbumsApi = childApi<AdminFlatRow>('specialist-albums', 'specialist');
 export const adminSpecialistSectionsApi = childApi<AdminSpecialistSection>('specialist-sections', 'page');
 export const adminSpecialistSectionPhotosApi = childApi<AdminSpecialistSectionPhoto>('specialist-section-photos', 'section');
+
+// Системне (Фаза 9): користувачі, історія, push-розсилка
+export const adminUsersApi = {
+  ...crud<AdminAccount>('users'),
+  setPassword: (id: number, password: string) =>
+    http.post<{ detail: string }>(`/users/${id}/set_password/`, { password }).then(r => r.data),
+};
+export const adminHistoryApi = {
+  list: () => http.get<{ items: AdminHistoryItem[] }>('/history/').then(r => r.data.items),
+};
+export const adminPushApi = {
+  subscriptions: () => http.get<AdminPushStats>('/push/subscriptions/').then(r => r.data),
+  send: (data: { title: string; body: string; topic: string; url?: string }) =>
+    http.post<{ sent: number }>('/push/send/', data).then(r => r.data),
+};

@@ -46,6 +46,7 @@ from main.admin_api import (
     admin_attestation_settings,
     AdminSpecialistPageViewSet, AdminSpecialistViewSet, AdminSpecialistAlbumViewSet,
     AdminSpecialistPageSectionViewSet, AdminSpecialistPagePhotoViewSet,
+    AdminUserViewSet, admin_history, admin_push_subscriptions, admin_push_send,
 )
 
 
@@ -147,6 +148,7 @@ router.register(r'admin/specialist-people', AdminSpecialistViewSet, basename='ad
 router.register(r'admin/specialist-albums', AdminSpecialistAlbumViewSet, basename='admin-specialist-album')
 router.register(r'admin/specialist-sections', AdminSpecialistPageSectionViewSet, basename='admin-specialist-section')
 router.register(r'admin/specialist-section-photos', AdminSpecialistPagePhotoViewSet, basename='admin-specialist-section-photo')
+router.register(r'admin/users', AdminUserViewSet, basename='admin-user')
 
 
 urlpatterns = [
@@ -161,6 +163,9 @@ urlpatterns = [
     path('admin/contact/', admin_contact, name='api-admin-contact'),
     path('admin/menu-templates/', admin_menu_templates, name='api-admin-menu-templates'),
     path('admin/attestation-settings/', admin_attestation_settings, name='api-admin-attestation-settings'),
+    path('admin/history/', admin_history, name='api-admin-history'),
+    path('admin/push/subscriptions/', admin_push_subscriptions, name='api-admin-push-subs'),
+    path('admin/push/send/', admin_push_send, name='api-admin-push-send'),
 
     # Окремі endpoints (menu/today/ та menu/week/ тепер як @action в DailyMenuViewSet)
     path('search/', global_search, name='api-search'),

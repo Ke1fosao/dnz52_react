@@ -7,7 +7,7 @@ API адмінпанелі (React, /manage) — захищений namespace `/a
 """
 from datetime import timedelta
 
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, get_user_model
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 from django.utils.text import slugify
@@ -181,12 +181,23 @@ def admin_stats(request):
          'value': News.objects.filter(created_at__year=yy, created_at__month=mm).count()}
         for (yy, mm) in buckets
     ]
+    reviews_chart = [
+        {'label': _UA_MONTHS[mm - 1],
+         'value': Review.objects.filter(created_at__year=yy, created_at__month=mm).count()}
+        for (yy, mm) in buckets
+    ]
+
+    from .models import PushSubscription
+    subscriptions = PushSubscription.objects.filter(is_active=True).count()
 
     return Response({
         'pending_reviews': pending_reviews,
         'new_questions': new_questions,
+        'subscriptions': subscriptions,
         'totals': totals,
         'chart': chart,
+        'reviews_chart': reviews_chart,
+        'recent': _history_feed(8),
     })
 
 
@@ -977,3 +988,151 @@ class AdminSpecialistPagePhotoViewSet(_ContentViewSet):
         qs = SpecialistPagePhoto.objects.all().order_by('order', 'id')
         section = self.request.query_params.get('section')
         return qs.filter(section_id=section) if section else qs
+
+
+# ============================================================================
+# СИСТЕМНЕ (Фаза 9): користувачі/права, історія змін, push-розсилка
+# ============================================================================
+User = get_user_model()
+
+
+class IsSuperUser(IsAdminUser):
+    """Доступ лише суперкористувачам (керування акаунтами)."""
+    def has_permission(self, request, view):
+        u = request.user
+        return bool(u and u.is_active and u.is_staff and u.is_superuser)
+
+
+class AdminUserSerializer(serializers.ModelSerializer):
+    full_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'first_name', 'last_name', 'full_name', 'email',
+                  'is_staff', 'is_superuser', 'is_active', 'last_login', 'date_joined']
+        read_only_fields = ['last_login', 'date_joined']
+
+    def get_full_name(self, obj):
+        return obj.get_full_name() or obj.username
+
+
+def _is_false(data, key):
+    return key in data and data[key] in (False, 'false', 'False', '0', 0)
+
+
+class AdminUserViewSet(viewsets.ModelViewSet):
+    """Керування акаунтами (лише суперкористувачі). Хеші паролів не віддаються;
+    пароль задається окремою дією set_password. Захист від самоблокування."""
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsSuperUser]
+    serializer_class = AdminUserSerializer
+    pagination_class = None
+    http_method_names = ['get', 'post', 'patch', 'delete']
+    queryset = User.objects.all().order_by('-is_superuser', '-is_staff', 'username')
+
+    def create(self, request, *args, **kwargs):
+        pwd = request.data.get('password') or ''
+        if len(pwd) < 6:
+            return Response({'detail': 'Пароль має містити щонайменше 6 символів.'}, status=400)
+        ser = self.get_serializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        user = ser.save()
+        user.set_password(pwd)
+        user.save(update_fields=['password'])
+        return Response(self.get_serializer(user).data, status=201)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.pk == request.user.pk:
+            if _is_false(request.data, 'is_superuser'):
+                return Response({'detail': 'Не можна зняти власні права суперкористувача.'}, status=400)
+            if _is_false(request.data, 'is_active'):
+                return Response({'detail': 'Не можна деактивувати власний акаунт.'}, status=400)
+            if _is_false(request.data, 'is_staff'):
+                return Response({'detail': 'Не можна зняти власний доступ до адмінпанелі.'}, status=400)
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        if self.get_object().pk == request.user.pk:
+            return Response({'detail': 'Не можна видалити власний акаунт.'}, status=400)
+        return super().destroy(request, *args, **kwargs)
+
+    @action(detail=True, methods=['post'])
+    def set_password(self, request, pk=None):
+        pwd = request.data.get('password') or ''
+        if len(pwd) < 6:
+            return Response({'detail': 'Пароль має містити щонайменше 6 символів.'}, status=400)
+        user = self.get_object()
+        user.set_password(pwd)
+        user.save(update_fields=['password'])
+        return Response({'detail': 'Пароль змінено.'})
+
+
+# --- Історія змін (simple_history, read-only) ---
+_HISTORY_TYPE = {'+': 'створено', '~': 'змінено', '-': 'видалено'}
+
+
+def _history_feed(limit=40):
+    """Об'єднана стрічка останніх змін по моделях із HistoricalRecords."""
+    items = []
+
+    def collect(qs, label, repr_fn):
+        for h in qs.select_related('history_user')[:limit]:
+            items.append({
+                'model': label,
+                'repr': repr_fn(h),
+                'type': h.history_type,
+                'type_display': _HISTORY_TYPE.get(h.history_type, h.history_type),
+                'user': (h.history_user.get_full_name() or h.history_user.username) if h.history_user else 'Система',
+                'date': h.history_date,
+            })
+
+    try:
+        collect(News.history.all(), 'Новина', lambda h: h.title)
+        collect(Page.history.all(), 'Сторінка', lambda h: h.title)
+        collect(DailyMenu.history.all(), 'Меню', lambda h: f"Меню на {h.date.strftime('%d.%m.%Y')}")
+    except Exception:
+        pass
+    items.sort(key=lambda x: x['date'], reverse=True)
+    return items[:limit]
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAdminUser])
+def admin_history(request):
+    return Response({'items': _history_feed(50)})
+
+
+# --- Push-розсилка ---
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAdminUser])
+def admin_push_subscriptions(request):
+    from urllib.parse import urlparse
+    from .models import PushSubscription
+    qs = PushSubscription.objects.all().order_by('-created_at')
+    items = [{
+        'id': s.id,
+        'user_agent': s.user_agent or '—',
+        'topics': s.topics or [],
+        'is_active': s.is_active,
+        'created_at': s.created_at,
+        'host': urlparse(s.endpoint).netloc if s.endpoint else '',
+    } for s in qs[:50]]
+    return Response({'total': qs.count(), 'active': qs.filter(is_active=True).count(), 'items': items})
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAdminUser])
+def admin_push_send(request):
+    title = (request.data.get('title') or '').strip()
+    body = (request.data.get('body') or '').strip()
+    topic = (request.data.get('topic') or '').strip()
+    url = (request.data.get('url') or '').strip() or {'news': '/news', 'events': '/events'}.get(topic, '/')
+    if not title or not body:
+        return Response({'detail': 'Вкажіть заголовок і текст сповіщення.'}, status=400)
+    from .push import send_to_all, send_to_topic
+    sent = send_to_topic(topic, title, body, url) if topic else send_to_all(title, body, url)
+    return Response({'sent': sent})

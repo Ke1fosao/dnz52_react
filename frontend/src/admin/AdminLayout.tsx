@@ -7,7 +7,7 @@ import {
   ExternalLink, Menu as MenuIcon, X, Newspaper, CalendarDays, FileText,
   Files, Tags, BookOpen, Images, Phone, UsersRound, Baby, Sparkles,
   UtensilsCrossed, CalendarRange, Camera, UserCog, GraduationCap, HeartHandshake,
-  type LucideIcon,
+  BellRing, History, Users, type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/hooks/useTheme';
@@ -16,7 +16,7 @@ import { adminStatsApi } from './lib/adminApi';
 
 const DJANGO_ADMIN = import.meta.env.DEV ? 'http://localhost:8000/admin/' : '/admin/';
 
-interface NavItem { to: string; label: string; icon: LucideIcon; end?: boolean; badge?: 'pending_reviews' | 'new_questions' }
+interface NavItem { to: string; label: string; icon: LucideIcon; end?: boolean; badge?: 'pending_reviews' | 'new_questions'; superOnly?: boolean }
 const SECTIONS: { title?: string; items: NavItem[] }[] = [
   { items: [{ to: '/manage', label: 'Дашборд', icon: LayoutDashboard, end: true }] },
   { title: 'Модерація', items: [
@@ -42,6 +42,11 @@ const SECTIONS: { title?: string; items: NavItem[] }[] = [
     { to: '/manage/sliders', label: 'Слайдер', icon: Images },
     { to: '/manage/staff', label: 'Штат', icon: UsersRound },
     { to: '/manage/contact', label: 'Контакти', icon: Phone },
+  ] },
+  { title: 'Система', items: [
+    { to: '/manage/push', label: 'Push-розсилка', icon: BellRing },
+    { to: '/manage/history', label: 'Історія змін', icon: History },
+    { to: '/manage/users', label: 'Користувачі', icon: Users, superOnly: true },
   ] },
   { title: 'Налаштування', items: [
     { to: '/manage/directories', label: 'Довідники', icon: Tags },
@@ -86,7 +91,7 @@ export function AdminLayout() {
                   {section.title && (
                     <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-slate-600 px-4 mt-3 mb-1">{section.title}</p>
                   )}
-                  {section.items.map(n => {
+                  {section.items.filter(n => !n.superOnly || user?.is_superuser).map(n => {
                     const count = n.badge && stats ? stats[n.badge] : 0;
                     return (
                       <NavLink

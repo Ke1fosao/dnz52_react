@@ -36,6 +36,10 @@ import { SpecialistsListPage } from './pages/SpecialistsListPage';
 import { SpecialistPageFormPage } from './pages/SpecialistPageFormPage';
 import { SpecialistPersonFormPage } from './pages/SpecialistPersonFormPage';
 import { SpecialistSectionFormPage } from './pages/SpecialistSectionFormPage';
+import { UsersListPage } from './pages/UsersListPage';
+import { UserFormPage } from './pages/UserFormPage';
+import { PushPage } from './pages/PushPage';
+import { HistoryPage } from './pages/HistoryPage';
 
 function Guarded() {
   const { user, loading } = useAdminAuth();
@@ -103,6 +107,11 @@ export default function AdminApp() {
           <Route path="specialists/:pageId/people/:personId" element={<SpecialistPersonFormPage />} />
           <Route path="specialists/:pageId/sections/new" element={<SpecialistSectionFormPage />} />
           <Route path="specialists/:pageId/sections/:sectionId" element={<SpecialistSectionFormPage />} />
+          <Route path="users" element={<UsersListPage />} />
+          <Route path="users/new" element={<UserFormPage />} />
+          <Route path="users/:id/edit" element={<UserFormPage />} />
+          <Route path="push" element={<PushPage />} />
+          <Route path="history" element={<HistoryPage />} />
           <Route path="*" element={<Navigate to="/manage" replace />} />
         </Route>
       </Routes>

@@ -6,11 +6,54 @@ export interface AdminUser {
   is_superuser: boolean;
 }
 
+export interface ChartPoint { label: string; value: number }
+
+export interface AdminHistoryItem {
+  model: string;
+  repr: string;
+  type: '+' | '~' | '-';
+  type_display: string;
+  user: string;
+  date: string;
+}
+
 export interface AdminStats {
   pending_reviews: number;
   new_questions: number;
+  subscriptions?: number;
   totals: Record<string, number>;
-  chart: { label: string; value: number }[];
+  chart: ChartPoint[];
+  reviews_chart?: ChartPoint[];
+  recent?: AdminHistoryItem[];
+}
+
+export interface AdminAccount {
+  id: number;
+  username: string;
+  first_name: string;
+  last_name: string;
+  full_name: string;
+  email: string;
+  is_staff: boolean;
+  is_superuser: boolean;
+  is_active: boolean;
+  last_login: string | null;
+  date_joined: string;
+}
+
+export interface AdminPushSub {
+  id: number;
+  user_agent: string;
+  topics: string[];
+  is_active: boolean;
+  created_at: string;
+  host: string;
+}
+
+export interface AdminPushStats {
+  total: number;
+  active: number;
+  items: AdminPushSub[];
 }
 
 export interface AdminReview {
