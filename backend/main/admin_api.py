@@ -31,7 +31,25 @@ from circles.models import Circle, CircleBenefit, CircleSession
 from gallery.models import GalleryCategory, GalleryAlbum, GalleryPhoto
 from documents.models import Document, DocumentCategory
 from menu.models import DailyMenu, MenuTemplate
-from .models import Page, PageImage, Slider, Contact, StaffMember
+from specialists.models import (
+    SpecialistPage, Specialist, SpecialistAlbum,
+    SpecialistPageSection, SpecialistPagePhoto,
+)
+from .models import (
+    Page, PageImage, Slider, Contact, StaffMember,
+    ParentsAnnouncement, ParentsDocument, ParentsAdaptationPhoto,
+    ParentsEnrollmentDoc, ParentsApplicationSample,
+    AttestationDocument, AttestationStep, AttestationCategory,
+    AttestationLaw, AttestationSettings,
+)
+from .serializers import (
+    ParentsAnnouncementSerializer, ParentsDocumentSerializer,
+    ParentsAdaptationPhotoSerializer, ParentsEnrollmentDocSerializer,
+    ParentsApplicationSampleSerializer,
+    AttestationDocumentSerializer, AttestationStepSerializer,
+    AttestationCategorySerializer, AttestationLawSerializer,
+    AttestationSettingsSerializer,
+)
 
 
 _WEEKDAYS_UK = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', "П'ятниця", 'Субота', 'Неділя']
@@ -801,3 +819,161 @@ class AdminGalleryPhotoViewSet(_ContentViewSet):
         except Exception as e:
             return Response({'detail': f'Не вдалося повернути: {e}'}, status=400)
         return Response(self.get_serializer(photo).data)
+
+
+# ============================================================================
+# Батькам — 5 пласких моделей (реюз публічних серіалізаторів)
+# ============================================================================
+class AdminParentsAnnouncementViewSet(_ContentViewSet):
+    serializer_class = ParentsAnnouncementSerializer
+    queryset = ParentsAnnouncement.objects.all().order_by('order', '-id')
+
+
+class AdminParentsDocumentViewSet(_ContentViewSet):
+    serializer_class = ParentsDocumentSerializer
+    queryset = ParentsDocument.objects.all().order_by('order', 'title')
+
+
+class AdminParentsAdaptationPhotoViewSet(_ContentViewSet):
+    serializer_class = ParentsAdaptationPhotoSerializer
+    queryset = ParentsAdaptationPhoto.objects.all().order_by('order', '-id')
+
+
+class AdminParentsEnrollmentDocViewSet(_ContentViewSet):
+    serializer_class = ParentsEnrollmentDocSerializer
+    queryset = ParentsEnrollmentDoc.objects.all().order_by('order', 'id')
+
+
+class AdminParentsApplicationSampleViewSet(_ContentViewSet):
+    serializer_class = ParentsApplicationSampleSerializer
+    queryset = ParentsApplicationSample.objects.all().order_by('order', '-id')
+
+
+# ============================================================================
+# Атестація — 4 списки + налаштування (singleton)
+# ============================================================================
+class AdminAttestationDocumentViewSet(_ContentViewSet):
+    serializer_class = AttestationDocumentSerializer
+    queryset = AttestationDocument.objects.all().order_by('order', 'id')
+
+
+class AdminAttestationStepViewSet(_ContentViewSet):
+    serializer_class = AttestationStepSerializer
+    queryset = AttestationStep.objects.all().order_by('order', 'id')
+
+
+class AdminAttestationCategoryViewSet(_ContentViewSet):
+    serializer_class = AttestationCategorySerializer
+    queryset = AttestationCategory.objects.all().order_by('order', 'id')
+
+
+class AdminAttestationLawViewSet(_ContentViewSet):
+    serializer_class = AttestationLawSerializer
+    queryset = AttestationLaw.objects.all().order_by('order', 'id')
+
+
+@api_view(['GET', 'PATCH'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAdminUser])
+def admin_attestation_settings(request):
+    """Єдиний запис налаштувань сторінки атестації (singleton)."""
+    obj = AttestationSettings.get_solo()
+    if request.method == 'PATCH':
+        ser = AttestationSettingsSerializer(obj, data=request.data, partial=True)
+        ser.is_valid(raise_exception=True)
+        ser.save()
+        return Response(ser.data)
+    return Response(AttestationSettingsSerializer(obj).data)
+
+
+# ============================================================================
+# Спеціалісти — master-detail: сторінка → спеціалісти(+альбоми), розділи(+фото)
+# ============================================================================
+class AdminSpecialistPageSerializer(serializers.ModelSerializer):
+    page_type_display = serializers.CharField(source='get_page_type_display', read_only=True)
+    specialists_count = serializers.IntegerField(source='specialists.count', read_only=True)
+    sections_count = serializers.IntegerField(source='sections.count', read_only=True)
+
+    class Meta:
+        model = SpecialistPage
+        fields = ['id', 'page_type', 'page_type_display', 'title', 'intro', 'description',
+                  'theme_title', 'theme_period', 'theme_text',
+                  'specialists_count', 'sections_count']
+
+
+class AdminSpecialistSerializer(serializers.ModelSerializer):
+    photo = serializers.ImageField(use_url=True, required=False, allow_null=True)
+
+    class Meta:
+        model = Specialist
+        fields = ['id', 'page', 'full_name', 'position', 'photo', 'birth_date',
+                  'education', 'experience', 'category', 'motto', 'bio', 'order']
+
+
+class AdminSpecialistAlbumSerializer(serializers.ModelSerializer):
+    album_title = serializers.CharField(source='album.title', read_only=True)
+    album_cover = serializers.ImageField(source='album.cover', use_url=True, read_only=True)
+
+    class Meta:
+        model = SpecialistAlbum
+        fields = ['id', 'specialist', 'album', 'album_title', 'album_cover', 'description', 'order']
+
+
+class AdminSpecialistPageSectionSerializer(serializers.ModelSerializer):
+    photos_count = serializers.IntegerField(source='photos.count', read_only=True)
+    kind_display = serializers.CharField(source='get_kind_display', read_only=True)
+
+    class Meta:
+        model = SpecialistPageSection
+        fields = ['id', 'page', 'title', 'subtitle', 'description', 'icon', 'accent', 'kind',
+                  'kind_display', 'link_album', 'link_news_slug', 'link_external_url',
+                  'link_label', 'order', 'is_active', 'photos_count']
+
+
+class AdminSpecialistPagePhotoSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(use_url=True)
+
+    class Meta:
+        model = SpecialistPagePhoto
+        fields = ['id', 'section', 'image', 'caption', 'order', 'is_active']
+
+
+class AdminSpecialistPageViewSet(_ContentViewSet):
+    serializer_class = AdminSpecialistPageSerializer
+    queryset = SpecialistPage.objects.all().order_by('id')
+
+
+class AdminSpecialistViewSet(_ContentViewSet):
+    serializer_class = AdminSpecialistSerializer
+
+    def get_queryset(self):
+        qs = Specialist.objects.all().order_by('order', 'id')
+        page = self.request.query_params.get('page')
+        return qs.filter(page_id=page) if page else qs
+
+
+class AdminSpecialistAlbumViewSet(_ContentViewSet):
+    serializer_class = AdminSpecialistAlbumSerializer
+
+    def get_queryset(self):
+        qs = SpecialistAlbum.objects.all().select_related('album').order_by('order', 'id')
+        sp = self.request.query_params.get('specialist')
+        return qs.filter(specialist_id=sp) if sp else qs
+
+
+class AdminSpecialistPageSectionViewSet(_ContentViewSet):
+    serializer_class = AdminSpecialistPageSectionSerializer
+
+    def get_queryset(self):
+        qs = SpecialistPageSection.objects.all().order_by('order', 'id')
+        page = self.request.query_params.get('page')
+        return qs.filter(page_id=page) if page else qs
+
+
+class AdminSpecialistPagePhotoViewSet(_ContentViewSet):
+    serializer_class = AdminSpecialistPagePhotoSerializer
+
+    def get_queryset(self):
+        qs = SpecialistPagePhoto.objects.all().order_by('order', 'id')
+        section = self.request.query_params.get('section')
+        return qs.filter(section_id=section) if section else qs

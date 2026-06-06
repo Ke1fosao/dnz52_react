@@ -38,6 +38,14 @@ from main.admin_api import (
     AdminCircleViewSet, AdminCircleBenefitViewSet, AdminCircleSessionViewSet,
     AdminDailyMenuViewSet, admin_menu_templates,
     AdminGalleryAlbumViewSet, AdminGalleryPhotoViewSet,
+    AdminParentsAnnouncementViewSet, AdminParentsDocumentViewSet,
+    AdminParentsAdaptationPhotoViewSet, AdminParentsEnrollmentDocViewSet,
+    AdminParentsApplicationSampleViewSet,
+    AdminAttestationDocumentViewSet, AdminAttestationStepViewSet,
+    AdminAttestationCategoryViewSet, AdminAttestationLawViewSet,
+    admin_attestation_settings,
+    AdminSpecialistPageViewSet, AdminSpecialistViewSet, AdminSpecialistAlbumViewSet,
+    AdminSpecialistPageSectionViewSet, AdminSpecialistPagePhotoViewSet,
 )
 
 
@@ -125,6 +133,20 @@ router.register(r'admin/circle-sessions', AdminCircleSessionViewSet, basename='a
 router.register(r'admin/menu', AdminDailyMenuViewSet, basename='admin-menu')
 router.register(r'admin/gallery-albums', AdminGalleryAlbumViewSet, basename='admin-gallery-album')
 router.register(r'admin/gallery-photos', AdminGalleryPhotoViewSet, basename='admin-gallery-photo')
+router.register(r'admin/parents-announcements', AdminParentsAnnouncementViewSet, basename='admin-parents-announcement')
+router.register(r'admin/parents-documents', AdminParentsDocumentViewSet, basename='admin-parents-document')
+router.register(r'admin/parents-adaptation', AdminParentsAdaptationPhotoViewSet, basename='admin-parents-adaptation')
+router.register(r'admin/parents-enrollment', AdminParentsEnrollmentDocViewSet, basename='admin-parents-enrollment')
+router.register(r'admin/parents-samples', AdminParentsApplicationSampleViewSet, basename='admin-parents-sample')
+router.register(r'admin/attestation-documents', AdminAttestationDocumentViewSet, basename='admin-attestation-document')
+router.register(r'admin/attestation-steps', AdminAttestationStepViewSet, basename='admin-attestation-step')
+router.register(r'admin/attestation-categories', AdminAttestationCategoryViewSet, basename='admin-attestation-category')
+router.register(r'admin/attestation-laws', AdminAttestationLawViewSet, basename='admin-attestation-law')
+router.register(r'admin/specialist-pages', AdminSpecialistPageViewSet, basename='admin-specialist-page')
+router.register(r'admin/specialist-people', AdminSpecialistViewSet, basename='admin-specialist-person')
+router.register(r'admin/specialist-albums', AdminSpecialistAlbumViewSet, basename='admin-specialist-album')
+router.register(r'admin/specialist-sections', AdminSpecialistPageSectionViewSet, basename='admin-specialist-section')
+router.register(r'admin/specialist-section-photos', AdminSpecialistPagePhotoViewSet, basename='admin-specialist-section-photo')
 
 
 urlpatterns = [
@@ -138,6 +160,7 @@ urlpatterns = [
     path('admin/meta/', admin_meta, name='api-admin-meta'),
     path('admin/contact/', admin_contact, name='api-admin-contact'),
     path('admin/menu-templates/', admin_menu_templates, name='api-admin-menu-templates'),
+    path('admin/attestation-settings/', admin_attestation_settings, name='api-admin-attestation-settings'),
 
     # Окремі endpoints (menu/today/ та menu/week/ тепер як @action в DailyMenuViewSet)
     path('search/', global_search, name='api-search'),

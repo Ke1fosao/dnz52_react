@@ -290,3 +290,77 @@ export interface AdminGalleryPhoto {
   description: string;
   order: number;
 }
+
+// Узагальнений рядок для FlatCrudManager (батьки, списки атестації, альбоми спеціалістів)
+export interface AdminFlatRow {
+  id: number;
+  order?: number;
+  is_active?: boolean;
+  [key: string]: unknown;
+}
+
+export interface AdminAttestationSettings {
+  id: number;
+  hero_lead: string;
+  intro_html: string;
+  docs_section_subtitle: string;
+  contact_title: string;
+  contact_html: string;
+}
+
+export interface AdminSpecialistPage {
+  id: number;
+  page_type: string;
+  page_type_display: string;
+  title: string;
+  intro: string;
+  description: string;
+  theme_title: string;
+  theme_period: string;
+  theme_text: string;
+  specialists_count: number;
+  sections_count: number;
+}
+
+export interface AdminSpecialist {
+  id: number;
+  page: number;
+  full_name: string;
+  position: string;
+  photo: string | null;
+  birth_date: string | null;
+  education: string;
+  experience: string;
+  category: string;
+  motto: string;
+  bio: string;
+  order: number;
+}
+
+export interface AdminSpecialistSection {
+  id: number;
+  page: number;
+  title: string;
+  subtitle: string;
+  description: string;
+  icon: string;
+  accent: string;
+  kind: string;
+  kind_display: string;
+  link_album: number | null;
+  link_news_slug: string;
+  link_external_url: string;
+  link_label: string;
+  order: number;
+  is_active: boolean;
+  photos_count: number;
+}
+
+export interface AdminSpecialistSectionPhoto {
+  id: number;
+  section: number;
+  image: string;
+  caption: string;
+  order: number;
+  is_active: boolean;
+}

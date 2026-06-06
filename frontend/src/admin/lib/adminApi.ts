@@ -5,6 +5,8 @@ import type {
   AdminContact, AdminSlider, AdminStaffMember, AdminPage, AdminPageImage,
   AdminGroup, AdminGroupStaff, AdminCircle, AdminCircleBenefit, AdminCircleSession,
   AdminDailyMenu, AdminMenuTemplate, AdminGalleryAlbum, AdminGalleryPhoto,
+  AdminFlatRow, AdminAttestationSettings, AdminSpecialistPage, AdminSpecialist,
+  AdminSpecialistSection, AdminSpecialistSectionPhoto,
 } from '../types';
 
 const TOKEN_KEY = 'dnz52:adminToken';
@@ -146,3 +148,27 @@ export const adminGalleryPhotosApi = {
   rotate: (id: number, direction: 'cw' | 'ccw') =>
     http.post<AdminGalleryPhoto>(`/gallery-photos/${id}/rotate/`, { direction }).then(r => r.data),
 };
+
+// Батькам — 5 пласких списків
+export const adminParentsAnnouncementsApi = crud<AdminFlatRow>('parents-announcements');
+export const adminParentsDocumentsApi = crud<AdminFlatRow>('parents-documents');
+export const adminParentsAdaptationApi = crud<AdminFlatRow>('parents-adaptation');
+export const adminParentsEnrollmentApi = crud<AdminFlatRow>('parents-enrollment');
+export const adminParentsSamplesApi = crud<AdminFlatRow>('parents-samples');
+
+// Атестація — 4 списки + налаштування (singleton)
+export const adminAttestationDocumentsApi = crud<AdminFlatRow>('attestation-documents');
+export const adminAttestationStepsApi = crud<AdminFlatRow>('attestation-steps');
+export const adminAttestationCategoriesApi = crud<AdminFlatRow>('attestation-categories');
+export const adminAttestationLawsApi = crud<AdminFlatRow>('attestation-laws');
+export const adminAttestationSettingsApi = {
+  get: () => http.get<AdminAttestationSettings>('/attestation-settings/').then(r => r.data),
+  update: (data: FormData | object) => http.patch<AdminAttestationSettings>('/attestation-settings/', data).then(r => r.data),
+};
+
+// Спеціалісти — master-detail
+export const adminSpecialistPagesApi = crud<AdminSpecialistPage>('specialist-pages');
+export const adminSpecialistPeopleApi = childApi<AdminSpecialist>('specialist-people', 'page');
+export const adminSpecialistAlbumsApi = childApi<AdminFlatRow>('specialist-albums', 'specialist');
+export const adminSpecialistSectionsApi = childApi<AdminSpecialistSection>('specialist-sections', 'page');
+export const adminSpecialistSectionPhotosApi = childApi<AdminSpecialistSectionPhoto>('specialist-section-photos', 'section');

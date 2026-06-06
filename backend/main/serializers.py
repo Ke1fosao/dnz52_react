@@ -65,7 +65,7 @@ class ParentsAnnouncementSerializer(serializers.ModelSerializer):
 
 
 class ParentsDocumentSerializer(serializers.ModelSerializer):
-    file = serializers.FileField(use_url=True, allow_null=True)
+    file = serializers.FileField(use_url=True, allow_null=True, required=False)
     url = serializers.SerializerMethodField()
 
     class Meta:

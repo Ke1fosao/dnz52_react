@@ -30,6 +30,12 @@ import { DailyMenuFormPage } from './pages/DailyMenuFormPage';
 import { MenuTemplatesPage } from './pages/MenuTemplatesPage';
 import { AlbumsListPage } from './pages/AlbumsListPage';
 import { AlbumFormPage } from './pages/AlbumFormPage';
+import { ParentsPage } from './pages/ParentsPage';
+import { AttestationPage } from './pages/AttestationPage';
+import { SpecialistsListPage } from './pages/SpecialistsListPage';
+import { SpecialistPageFormPage } from './pages/SpecialistPageFormPage';
+import { SpecialistPersonFormPage } from './pages/SpecialistPersonFormPage';
+import { SpecialistSectionFormPage } from './pages/SpecialistSectionFormPage';
 
 function Guarded() {
   const { user, loading } = useAdminAuth();
@@ -89,6 +95,14 @@ export default function AdminApp() {
           <Route path="albums" element={<AlbumsListPage />} />
           <Route path="albums/new" element={<AlbumFormPage />} />
           <Route path="albums/:id/edit" element={<AlbumFormPage />} />
+          <Route path="parents" element={<ParentsPage />} />
+          <Route path="attestation" element={<AttestationPage />} />
+          <Route path="specialists" element={<SpecialistsListPage />} />
+          <Route path="specialists/:id/edit" element={<SpecialistPageFormPage />} />
+          <Route path="specialists/:pageId/people/new" element={<SpecialistPersonFormPage />} />
+          <Route path="specialists/:pageId/people/:personId" element={<SpecialistPersonFormPage />} />
+          <Route path="specialists/:pageId/sections/new" element={<SpecialistSectionFormPage />} />
+          <Route path="specialists/:pageId/sections/:sectionId" element={<SpecialistSectionFormPage />} />
           <Route path="*" element={<Navigate to="/manage" replace />} />
         </Route>
       </Routes>
