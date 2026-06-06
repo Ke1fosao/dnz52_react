@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Trash2, CalendarPlus, CalendarRange } from 'lucide-react';
+import { Plus, Pencil, Trash2, CalendarPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { adminDailyMenuApi } from '../lib/adminApi';
 import { MEALS, localDate } from '../lib/menuMeals';
@@ -14,7 +14,7 @@ function monthLabel(ym: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-export function DailyMenuListPage() {
+export function DailyMenuListPage({ embedded = false }: { embedded?: boolean } = {}) {
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({ queryKey: ['admin-menu'], queryFn: adminDailyMenuApi.list });
 
@@ -46,20 +46,24 @@ export function DailyMenuListPage() {
 
   return (
     <div className="space-y-5 animate-page-fade-in">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div>
-          <h1 className="text-3xl font-black text-gray-900 dark:text-white">Меню на день</h1>
-          <p className="text-gray-500 dark:text-slate-400 font-medium">Денні меню за датами (мають пріоритет над шаблоном тижня)</p>
-        </div>
-        <div className="flex gap-2">
-          <Link to="/manage/menu-templates" className="inline-flex items-center gap-2 premium-glass hover:-translate-y-0.5 text-gray-700 dark:text-slate-200 font-bold px-4 py-2.5 rounded-xl transition-transform">
-            <CalendarRange size={18} /> Шаблон тижня
-          </Link>
+      {!embedded && (
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div>
+            <h1 className="text-3xl font-black text-gray-900 dark:text-white">Меню на день</h1>
+            <p className="text-gray-500 dark:text-slate-400 font-medium">Денні меню за датами (мають пріоритет над шаблоном тижня)</p>
+          </div>
           <Link to="/manage/menu/new" className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl transition-colors">
             <Plus size={18} /> Додати день
           </Link>
         </div>
-      </div>
+      )}
+      {embedded && (
+        <div className="flex justify-end">
+          <Link to="/manage/menu/new" className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl transition-colors">
+            <Plus size={18} /> Додати день
+          </Link>
+        </div>
+      )}
 
       {isLoading ? <ListSkeleton /> : !data?.length ? (
         <EmptyBox text="Ще немає денних меню. Створіть шаблон тижня або додайте окремий день." />

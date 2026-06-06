@@ -12,7 +12,7 @@ import type { AdminMenuTemplate } from '../types';
 const mealCls =
   'w-full px-3 py-2 rounded-xl bg-white/70 dark:bg-slate-800/70 border border-white/60 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-400 text-gray-900 dark:text-white text-sm resize-y placeholder:text-gray-400 dark:placeholder:text-slate-500';
 
-export function MenuTemplatesPage() {
+export function MenuTemplatesPage({ embedded = false }: { embedded?: boolean } = {}) {
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({ queryKey: ['admin-menu-templates'], queryFn: adminMenuTemplatesApi.get });
   const [rows, setRows] = useState<AdminMenuTemplate[]>([]);
@@ -42,16 +42,20 @@ export function MenuTemplatesPage() {
 
   return (
     <div className="space-y-5 animate-page-fade-in">
-      <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div className="flex items-start gap-3">
-          <span className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-400 text-white grid place-items-center shrink-0"><CalendarRange size={24} /></span>
-          <div>
-            <h1 className="text-3xl font-black text-gray-900 dark:text-white">Шаблон тижня</h1>
-            <p className="text-gray-500 dark:text-slate-400 font-medium">Меню-основа за днями тижня</p>
+      {embedded ? (
+        <div className="flex justify-end"><SaveBtn /></div>
+      ) : (
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div className="flex items-start gap-3">
+            <span className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-400 text-white grid place-items-center shrink-0"><CalendarRange size={24} /></span>
+            <div>
+              <h1 className="text-3xl font-black text-gray-900 dark:text-white">Шаблон тижня</h1>
+              <p className="text-gray-500 dark:text-slate-400 font-medium">Меню-основа за днями тижня</p>
+            </div>
           </div>
+          <SaveBtn />
         </div>
-        <SaveBtn />
-      </div>
+      )}
 
       <div className="premium-glass rounded-2xl p-4 flex gap-3 text-sm text-gray-600 dark:text-slate-300">
         <Info size={18} className="text-blue-500 shrink-0 mt-0.5" />

@@ -6,7 +6,7 @@ import {
   LayoutDashboard, MessageSquare, HelpCircle, LogOut, Sun, Moon,
   ExternalLink, Menu as MenuIcon, X, Newspaper, CalendarDays, FileText,
   Files, Tags, BookOpen, Images, Phone, UsersRound, Baby, Sparkles,
-  UtensilsCrossed, CalendarRange, Camera, UserCog, GraduationCap, HeartHandshake,
+  UtensilsCrossed, Camera, UserCog, GraduationCap, HeartHandshake,
   BellRing, History, Users, type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -30,7 +30,6 @@ const SECTIONS: { title?: string; items: NavItem[] }[] = [
     { to: '/manage/documents', label: 'Документи', icon: Files },
     { to: '/manage/albums', label: 'Галерея', icon: Camera },
     { to: '/manage/menu', label: 'Меню', icon: UtensilsCrossed },
-    { to: '/manage/menu-templates', label: 'Шаблон тижня', icon: CalendarRange },
   ] },
   { title: 'Сайт', items: [
     { to: '/manage/pages', label: 'Сторінки', icon: BookOpen },

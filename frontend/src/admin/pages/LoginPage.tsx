@@ -30,9 +30,10 @@ export function LoginPage() {
   const field = 'w-full px-4 py-3 rounded-2xl bg-white/70 dark:bg-slate-800/70 border border-white/60 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-400 text-gray-900 dark:text-white';
 
   return (
-    <div className="mesh-bg-gallery min-h-screen grid place-items-center p-4">
+    <>
       <Toaster position="top-center" richColors />
-      <form onSubmit={submit} className="premium-glass rounded-[2rem] p-8 md:p-10 w-full max-w-md animate-scale-in">
+      <div className="mesh-bg-gallery min-h-[100dvh] flex items-center justify-center p-4">
+        <form onSubmit={submit} className="premium-glass rounded-[2rem] p-8 md:p-10 w-full max-w-md animate-scale-in">
         <div className="w-16 h-16 mx-auto rounded-[1.5rem] bg-gradient-to-br from-blue-600 to-cyan-500 text-white grid place-items-center mb-5 shadow-lg shadow-blue-500/30">
           <ShieldCheck size={30} />
         </div>
@@ -49,7 +50,8 @@ export function LoginPage() {
           className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-bold py-3 rounded-2xl flex items-center justify-center gap-2 transition-colors">
           {busy ? <Loader2 className="animate-spin" size={20} /> : <LogIn size={20} />} Увійти
         </button>
-      </form>
-    </div>
+        </form>
+      </div>
+    </>
   );
 }
