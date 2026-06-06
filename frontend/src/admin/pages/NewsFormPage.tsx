@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { adminNewsApi, adminMetaApi } from '../lib/adminApi';
+import { adminNewsApi, adminMetaApi, adminNewsCategoriesApi, adminNewsTagsApi } from '../lib/adminApi';
 import { Field, inputCls, MarkdownEditor, ImageField, FormHeader, FormActions } from '../components/FormControls';
-import { cn } from '@/lib/utils';
+import { InlineCreateSelect, InlineCreateTags } from '../components/InlineCreate';
 
 export function NewsFormPage() {
   const { id } = useParams();
@@ -79,10 +79,7 @@ export function NewsFormPage() {
 
         <div className="grid sm:grid-cols-2 gap-5">
           <Field label="Категорія">
-            <select className={inputCls} value={form.category} onChange={e => set('category', e.target.value)}>
-              <option value="">— без категорії —</option>
-              {meta?.news_categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
+            <InlineCreateSelect value={form.category} onChange={v => set('category', v)} options={meta?.news_categories || []} placeholder="— без категорії —" createApi={adminNewsCategoriesApi} />
           </Field>
           <Field label="Статус">
             <select className={inputCls} value={form.status} onChange={e => set('status', e.target.value)}>
@@ -97,23 +94,9 @@ export function NewsFormPage() {
           </Field>
         )}
 
-        {meta && meta.news_tags.length > 0 && (
-          <Field label="Теги">
-            <div className="flex flex-wrap gap-2">
-              {meta.news_tags.map(t => {
-                const on = form.tags.includes(t.id);
-                return (
-                  <button type="button" key={t.id}
-                    onClick={() => set('tags', on ? form.tags.filter(x => x !== t.id) : [...form.tags, t.id])}
-                    className={cn('px-3 py-1.5 rounded-full text-sm font-bold transition-colors',
-                      on ? 'bg-blue-600 text-white' : 'bg-white/60 dark:bg-slate-800/60 text-gray-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700')}>
-                    {t.name}
-                  </button>
-                );
-              })}
-            </div>
-          </Field>
-        )}
+        <Field label="Теги">
+          <InlineCreateTags all={meta?.news_tags || []} selected={form.tags} onChange={v => set('tags', v)} createApi={adminNewsTagsApi} />
+        </Field>
 
         <Field label="Зображення">
           <ImageField url={imageUrl} file={imageFile} onPick={setImageFile} />

@@ -1,6 +1,39 @@
-import { type ReactNode } from 'react';
-import { Star, Inbox, type LucideIcon } from 'lucide-react';
+import { type ReactNode, useState } from 'react';
+import { Star, Inbox, Search, X, ChevronDown, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+// Поле пошуку (клієнтська фільтрація списків)
+export function SearchInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
+  return (
+    <div className="relative max-w-sm">
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" size={16} />
+      <input
+        value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder || 'Пошук…'}
+        className="w-full pl-9 pr-8 py-2.5 rounded-xl bg-white/70 dark:bg-slate-800/70 border border-white/60 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-400 text-sm text-gray-900 dark:text-white"
+      />
+      {value && (
+        <button onClick={() => onChange('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-slate-300" aria-label="Очистити"><X size={15} /></button>
+      )}
+    </div>
+  );
+}
+
+// Згортна панель (для менеджерів категорій усередині сторінок контенту)
+export function CollapsiblePanel({ title, icon: Icon, children, defaultOpen = false }: {
+  title: string; icon?: LucideIcon; children: ReactNode; defaultOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="premium-glass rounded-2xl overflow-hidden">
+      <button onClick={() => setOpen(o => !o)} className="w-full flex items-center gap-2 px-4 py-3 font-bold text-gray-700 dark:text-slate-200 hover:bg-white/40 dark:hover:bg-slate-800/40 transition-colors">
+        {Icon && <Icon size={17} className="text-blue-500" />}
+        <span className="flex-1 text-left">{title}</span>
+        <ChevronDown className={cn('transition-transform text-gray-400', open && 'rotate-180')} size={18} />
+      </button>
+      {open && <div className="px-4 pb-4 pt-1">{children}</div>}
+    </div>
+  );
+}
 
 // Простий стовпчиковий графік (без зовнішніх залежностей)
 export function BarChart({ data }: { data: { label: string; value: number }[] }) {

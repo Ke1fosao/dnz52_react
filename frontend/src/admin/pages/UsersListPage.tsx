@@ -1,11 +1,11 @@
-import { type ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Pencil, Trash2, ShieldCheck, Shield, UserX } from 'lucide-react';
 import { toast } from 'sonner';
 import { adminUsersApi } from '../lib/adminApi';
 import { useAdminAuth } from '../lib/adminAuth';
-import { ListSkeleton, EmptyBox } from '../components/AdminUI';
+import { ListSkeleton, EmptyBox, SearchInput } from '../components/AdminUI';
 
 function initials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -15,6 +15,7 @@ function initials(name: string) {
 export function UsersListPage() {
   const qc = useQueryClient();
   const { user: me } = useAdminAuth();
+  const [q, setQ] = useState('');
   const { data, isLoading } = useQuery({ queryKey: ['admin-users'], queryFn: adminUsersApi.list });
   const remove = useMutation({
     mutationFn: adminUsersApi.remove,
@@ -32,9 +33,11 @@ export function UsersListPage() {
         <Link to="/manage/users/new" className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl transition-colors"><Plus size={18} /> Додати користувача</Link>
       </div>
 
+      {data && data.length > 6 && <SearchInput value={q} onChange={setQ} placeholder="Пошук за іменем або логіном…" />}
+
       {isLoading ? <ListSkeleton /> : !data?.length ? <EmptyBox text="Немає користувачів" /> : (
         <div className="grid sm:grid-cols-2 gap-3">
-          {data.map(u => {
+          {data.filter(u => `${u.full_name} ${u.username} ${u.email}`.toLowerCase().includes(q.trim().toLowerCase())).map(u => {
             const isMe = me?.username === u.username;
             return (
               <div key={u.id} className="premium-glass rounded-[1.5rem] p-4 flex items-center gap-4">

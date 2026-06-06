@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { adminFaqItemsApi, adminMetaApi } from '../lib/adminApi';
+import { adminFaqItemsApi, adminMetaApi, adminFaqCategoriesApi } from '../lib/adminApi';
 import { Field, inputCls, MarkdownEditor, Toggle, FormHeader, FormActions } from '../components/FormControls';
+import { InlineCreateSelect } from '../components/InlineCreate';
 
 export function FaqItemFormPage() {
   const { id } = useParams();
@@ -66,10 +67,7 @@ export function FaqItemFormPage() {
         </Field>
         <div className="grid sm:grid-cols-2 gap-5">
           <Field label="Категорія">
-            <select className={inputCls} value={form.category} onChange={e => set('category', e.target.value)}>
-              <option value="">— без категорії —</option>
-              {meta?.faq_categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
+            <InlineCreateSelect value={form.category} onChange={v => set('category', v)} options={meta?.faq_categories || []} placeholder="— без категорії —" createApi={adminFaqCategoriesApi} />
           </Field>
           <Field label="Порядок" hint="Менше число — вище у списку">
             <input type="number" className={inputCls} value={form.order} onChange={e => set('order', e.target.value)} />

@@ -13,7 +13,6 @@ import { FaqItemsListPage } from './pages/FaqItemsListPage';
 import { FaqItemFormPage } from './pages/FaqItemFormPage';
 import { DocumentsListPage } from './pages/DocumentsListPage';
 import { DocumentFormPage } from './pages/DocumentFormPage';
-import { DirectoriesPage } from './pages/DirectoriesPage';
 import { ContactFormPage } from './pages/ContactFormPage';
 import { SlidersListPage } from './pages/SlidersListPage';
 import { SliderFormPage } from './pages/SliderFormPage';
@@ -74,7 +73,6 @@ export default function AdminApp() {
           <Route path="documents" element={<DocumentsListPage />} />
           <Route path="documents/new" element={<DocumentFormPage />} />
           <Route path="documents/:id/edit" element={<DocumentFormPage />} />
-          <Route path="directories" element={<DirectoriesPage />} />
           <Route path="contact" element={<ContactFormPage />} />
           <Route path="sliders" element={<SlidersListPage />} />
           <Route path="sliders/new" element={<SliderFormPage />} />

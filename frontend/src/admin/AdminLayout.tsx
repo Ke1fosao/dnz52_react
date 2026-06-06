@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import {
   LayoutDashboard, MessageSquare, HelpCircle, LogOut, Sun, Moon,
   ExternalLink, Menu as MenuIcon, X, Newspaper, CalendarDays, FileText,
-  Files, Tags, BookOpen, Images, Phone, UsersRound, Baby, Sparkles,
+  Files, BookOpen, Images, Phone, UsersRound, Baby, Sparkles,
   UtensilsCrossed, Camera, UserCog, GraduationCap, HeartHandshake,
   BellRing, History, Users, type LucideIcon,
 } from 'lucide-react';
@@ -46,9 +46,6 @@ const SECTIONS: { title?: string; items: NavItem[] }[] = [
     { to: '/manage/push', label: 'Push-розсилка', icon: BellRing },
     { to: '/manage/history', label: 'Історія змін', icon: History },
     { to: '/manage/users', label: 'Користувачі', icon: Users, superOnly: true },
-  ] },
-  { title: 'Налаштування', items: [
-    { to: '/manage/directories', label: 'Довідники', icon: Tags },
   ] },
 ];
 

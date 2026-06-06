@@ -1,19 +1,23 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Trash2, Images } from 'lucide-react';
+import { Plus, Pencil, Trash2, Images, Tags } from 'lucide-react';
 import { toast } from 'sonner';
-import { adminGalleryAlbumsApi } from '../lib/adminApi';
-import { ListSkeleton, EmptyBox } from '../components/AdminUI';
+import { adminGalleryAlbumsApi, adminGalleryCategoriesApi } from '../lib/adminApi';
+import { ListSkeleton, EmptyBox, SearchInput, CollapsiblePanel } from '../components/AdminUI';
+import { CategoryManager } from '../components/CategoryManager';
 import { formatDate } from '@/lib/utils';
 
 export function AlbumsListPage() {
   const qc = useQueryClient();
+  const [q, setQ] = useState('');
   const { data, isLoading } = useQuery({ queryKey: ['admin-gallery-albums'], queryFn: adminGalleryAlbumsApi.list });
   const remove = useMutation({
     mutationFn: adminGalleryAlbumsApi.remove,
     onSuccess: () => { toast.success('Альбом видалено'); qc.invalidateQueries({ queryKey: ['admin-gallery-albums'] }); qc.invalidateQueries({ queryKey: ['admin-stats'] }); },
     onError: () => toast.error('Помилка'),
   });
+  const filtered = (data || []).filter(a => a.title.toLowerCase().includes(q.trim().toLowerCase()));
 
   return (
     <div className="space-y-5 animate-page-fade-in">
@@ -27,9 +31,13 @@ export function AlbumsListPage() {
         </Link>
       </div>
 
-      {isLoading ? <ListSkeleton /> : !data?.length ? <EmptyBox text="Ще немає альбомів" /> : (
+      <CollapsiblePanel title="Категорії галереї" icon={Tags}><CategoryManager qKey="gallery-cat" api={adminGalleryCategoriesApi} hasIcon hasColor hasOrder /></CollapsiblePanel>
+
+      {data && data.length > 6 && <SearchInput value={q} onChange={setQ} placeholder="Пошук альбому за назвою…" />}
+
+      {isLoading ? <ListSkeleton /> : !data?.length ? <EmptyBox text="Ще немає альбомів" /> : !filtered.length ? <EmptyBox text="Нічого не знайдено" /> : (
         <div className="grid sm:grid-cols-2 gap-3">
-          {data.map(a => (
+          {filtered.map(a => (
             <div key={a.id} className="premium-glass rounded-[1.5rem] p-3 flex items-center gap-4">
               {a.cover
                 ? <img src={a.cover} alt="" className="w-20 h-20 rounded-2xl object-cover shrink-0" />

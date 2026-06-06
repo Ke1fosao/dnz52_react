@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { adminDocumentsApi, adminMetaApi } from '../lib/adminApi';
+import { adminDocumentsApi, adminMetaApi, adminDocumentCategoriesApi } from '../lib/adminApi';
 import { Field, inputCls, FileField, Toggle, FormHeader, FormActions } from '../components/FormControls';
+import { InlineCreateSelect } from '../components/InlineCreate';
 
 export function DocumentFormPage() {
   const { id } = useParams();
@@ -70,10 +71,7 @@ export function DocumentFormPage() {
           <input className={inputCls} value={form.title} onChange={e => set('title', e.target.value)} placeholder="Напр. Статут закладу" />
         </Field>
         <Field label="Категорія">
-          <select className={inputCls} value={form.category} onChange={e => set('category', e.target.value)}>
-            <option value="">— без категорії —</option>
-            {meta?.document_categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
+          <InlineCreateSelect value={form.category} onChange={v => set('category', v)} options={meta?.document_categories || []} placeholder="— без категорії —" createApi={adminDocumentCategoriesApi} />
         </Field>
         <Field label="Файл" required={!editing} hint="PDF, Word, Excel, зображення тощо">
           <FileField url={fileUrl} file={file} onPick={setFile} accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png" />

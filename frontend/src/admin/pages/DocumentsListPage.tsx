@@ -1,19 +1,23 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Trash2, FileText, Download } from 'lucide-react';
+import { Plus, Pencil, Trash2, FileText, Download, Tags } from 'lucide-react';
 import { toast } from 'sonner';
-import { adminDocumentsApi } from '../lib/adminApi';
-import { ListSkeleton, EmptyBox } from '../components/AdminUI';
+import { adminDocumentsApi, adminDocumentCategoriesApi } from '../lib/adminApi';
+import { ListSkeleton, EmptyBox, SearchInput, CollapsiblePanel } from '../components/AdminUI';
+import { CategoryManager } from '../components/CategoryManager';
 import { formatDate } from '@/lib/utils';
 
 export function DocumentsListPage() {
   const qc = useQueryClient();
+  const [q, setQ] = useState('');
   const { data, isLoading } = useQuery({ queryKey: ['admin-documents'], queryFn: adminDocumentsApi.list });
   const remove = useMutation({
     mutationFn: adminDocumentsApi.remove,
     onSuccess: () => { toast.success('Видалено'); qc.invalidateQueries({ queryKey: ['admin-documents'] }); qc.invalidateQueries({ queryKey: ['admin-stats'] }); },
     onError: () => toast.error('Помилка'),
   });
+  const filtered = (data || []).filter(d => d.title.toLowerCase().includes(q.trim().toLowerCase()));
 
   return (
     <div className="space-y-5 animate-page-fade-in">
@@ -27,9 +31,13 @@ export function DocumentsListPage() {
         </Link>
       </div>
 
-      {isLoading ? <ListSkeleton /> : !data?.length ? <EmptyBox text="Ще немає документів" /> : (
+      <CollapsiblePanel title="Категорії документів" icon={Tags}><CategoryManager qKey="doc-cat" api={adminDocumentCategoriesApi} hasOrder /></CollapsiblePanel>
+
+      {data && data.length > 6 && <SearchInput value={q} onChange={setQ} placeholder="Пошук документа за назвою…" />}
+
+      {isLoading ? <ListSkeleton /> : !data?.length ? <EmptyBox text="Ще немає документів" /> : !filtered.length ? <EmptyBox text="Нічого не знайдено" /> : (
         <div className="space-y-3">
-          {data.map(d => (
+          {filtered.map(d => (
             <div key={d.id} className="premium-glass rounded-[1.5rem] p-4 flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-rose-100 dark:bg-rose-900/30 text-rose-500 grid place-items-center shrink-0"><FileText size={22} /></div>
               <div className="flex-1 min-w-0">

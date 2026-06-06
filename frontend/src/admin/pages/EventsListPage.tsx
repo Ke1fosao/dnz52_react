@@ -1,19 +1,22 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Pencil, Trash2, MapPin, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 import { adminEventsApi } from '../lib/adminApi';
-import { ListSkeleton, EmptyBox } from '../components/AdminUI';
+import { ListSkeleton, EmptyBox, SearchInput } from '../components/AdminUI';
 import { formatDate } from '@/lib/utils';
 
 export function EventsListPage() {
   const qc = useQueryClient();
+  const [q, setQ] = useState('');
   const { data, isLoading } = useQuery({ queryKey: ['admin-events'], queryFn: adminEventsApi.list });
   const remove = useMutation({
     mutationFn: adminEventsApi.remove,
     onSuccess: () => { toast.success('Видалено'); qc.invalidateQueries({ queryKey: ['admin-events'] }); qc.invalidateQueries({ queryKey: ['admin-stats'] }); },
     onError: () => toast.error('Помилка'),
   });
+  const filtered = (data || []).filter(e => e.title.toLowerCase().includes(q.trim().toLowerCase()));
 
   return (
     <div className="space-y-5 animate-page-fade-in">
@@ -27,9 +30,11 @@ export function EventsListPage() {
         </Link>
       </div>
 
-      {isLoading ? <ListSkeleton /> : !data?.length ? <EmptyBox text="Ще немає подій" /> : (
+      {data && data.length > 6 && <SearchInput value={q} onChange={setQ} placeholder="Пошук події за назвою…" />}
+
+      {isLoading ? <ListSkeleton /> : !data?.length ? <EmptyBox text="Ще немає подій" /> : !filtered.length ? <EmptyBox text="Нічого не знайдено" /> : (
         <div className="space-y-3">
-          {data.map(e => (
+          {filtered.map(e => (
             <div key={e.id} className="premium-glass rounded-[1.5rem] p-4 flex items-center gap-4">
               {e.image
                 ? <img src={e.image} alt="" className="w-16 h-16 rounded-xl object-cover shrink-0" />

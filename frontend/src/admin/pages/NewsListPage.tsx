@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Trash2, Eye, Clock } from 'lucide-react';
+import { Plus, Pencil, Trash2, Eye, Clock, Tags, Hash } from 'lucide-react';
 import { toast } from 'sonner';
-import { adminNewsApi } from '../lib/adminApi';
-import { ListSkeleton, EmptyBox } from '../components/AdminUI';
+import { adminNewsApi, adminNewsCategoriesApi, adminNewsTagsApi } from '../lib/adminApi';
+import { ListSkeleton, EmptyBox, SearchInput, CollapsiblePanel } from '../components/AdminUI';
+import { CategoryManager } from '../components/CategoryManager';
 import { formatDate, cn } from '@/lib/utils';
 
 const STATUS_CLS: Record<string, string> = {
@@ -14,12 +16,14 @@ const STATUS_CLS: Record<string, string> = {
 
 export function NewsListPage() {
   const qc = useQueryClient();
+  const [q, setQ] = useState('');
   const { data, isLoading } = useQuery({ queryKey: ['admin-news'], queryFn: adminNewsApi.list });
   const remove = useMutation({
     mutationFn: adminNewsApi.remove,
     onSuccess: () => { toast.success('Видалено'); qc.invalidateQueries({ queryKey: ['admin-news'] }); qc.invalidateQueries({ queryKey: ['admin-stats'] }); },
     onError: () => toast.error('Помилка'),
   });
+  const filtered = (data || []).filter(n => n.title.toLowerCase().includes(q.trim().toLowerCase()));
 
   return (
     <div className="space-y-5 animate-page-fade-in">
@@ -33,9 +37,16 @@ export function NewsListPage() {
         </Link>
       </div>
 
-      {isLoading ? <ListSkeleton /> : !data?.length ? <EmptyBox text="Ще немає новин — натисніть «Додати новину»" /> : (
+      <div className="grid sm:grid-cols-2 gap-3">
+        <CollapsiblePanel title="Категорії новин" icon={Tags}><CategoryManager qKey="news-cat" api={adminNewsCategoriesApi} /></CollapsiblePanel>
+        <CollapsiblePanel title="Теги" icon={Hash}><CategoryManager qKey="news-tag" api={adminNewsTagsApi} /></CollapsiblePanel>
+      </div>
+
+      {data && data.length > 6 && <SearchInput value={q} onChange={setQ} placeholder="Пошук новини за назвою…" />}
+
+      {isLoading ? <ListSkeleton /> : !data?.length ? <EmptyBox text="Ще немає новин — натисніть «Додати новину»" /> : !filtered.length ? <EmptyBox text="Нічого не знайдено" /> : (
         <div className="space-y-3">
-          {data.map(n => (
+          {filtered.map(n => (
             <div key={n.id} className="premium-glass rounded-[1.5rem] p-4 flex items-center gap-4">
               {n.image
                 ? <img src={n.image} alt="" className="w-16 h-16 rounded-xl object-cover shrink-0" />

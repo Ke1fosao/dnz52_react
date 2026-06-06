@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { adminGalleryAlbumsApi, adminMetaApi } from '../lib/adminApi';
+import { adminGalleryAlbumsApi, adminMetaApi, adminGalleryCategoriesApi } from '../lib/adminApi';
 import { Field, inputCls, ImageField, Toggle, FormHeader, FormActions } from '../components/FormControls';
+import { InlineCreateSelect } from '../components/InlineCreate';
 import { AlbumPhotos } from '../components/AlbumPhotos';
 
 export function AlbumFormPage() {
@@ -68,10 +69,7 @@ export function AlbumFormPage() {
         {editing && <Field label="URL (slug)"><input className={`${inputCls} font-mono text-sm`} value={form.slug} onChange={e => set('slug', e.target.value)} /></Field>}
         <div className="grid sm:grid-cols-2 gap-5">
           <Field label="Категорія">
-            <select className={inputCls} value={form.category} onChange={e => set('category', e.target.value)}>
-              <option value="">— Без категорії (блок «Інше») —</option>
-              {meta?.gallery_categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
+            <InlineCreateSelect value={form.category} onChange={v => set('category', v)} options={meta?.gallery_categories || []} placeholder="— Без категорії (блок «Інше») —" createApi={adminGalleryCategoriesApi} />
           </Field>
           <Field label="Обкладинка" required={!editing}><ImageField url={coverUrl} file={cover} onPick={setCover} /></Field>
         </div>
