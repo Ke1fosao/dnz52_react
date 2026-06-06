@@ -25,6 +25,9 @@ import { GroupsListPage } from './pages/GroupsListPage';
 import { GroupFormPage } from './pages/GroupFormPage';
 import { CirclesListPage } from './pages/CirclesListPage';
 import { CircleFormPage } from './pages/CircleFormPage';
+import { DailyMenuListPage } from './pages/DailyMenuListPage';
+import { DailyMenuFormPage } from './pages/DailyMenuFormPage';
+import { MenuTemplatesPage } from './pages/MenuTemplatesPage';
 
 function Guarded() {
   const { user, loading } = useAdminAuth();
@@ -77,6 +80,10 @@ export default function AdminApp() {
           <Route path="circles" element={<CirclesListPage />} />
           <Route path="circles/new" element={<CircleFormPage />} />
           <Route path="circles/:id/edit" element={<CircleFormPage />} />
+          <Route path="menu" element={<DailyMenuListPage />} />
+          <Route path="menu/new" element={<DailyMenuFormPage />} />
+          <Route path="menu/:id/edit" element={<DailyMenuFormPage />} />
+          <Route path="menu-templates" element={<MenuTemplatesPage />} />
           <Route path="*" element={<Navigate to="/manage" replace />} />
         </Route>
       </Routes>

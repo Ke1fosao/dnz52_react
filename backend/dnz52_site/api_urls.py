@@ -36,6 +36,7 @@ from main.admin_api import (
     AdminPageViewSet, AdminPageImageViewSet,
     AdminGroupViewSet, AdminGroupStaffViewSet,
     AdminCircleViewSet, AdminCircleBenefitViewSet, AdminCircleSessionViewSet,
+    AdminDailyMenuViewSet, admin_menu_templates,
 )
 
 
@@ -120,6 +121,7 @@ router.register(r'admin/group-staff', AdminGroupStaffViewSet, basename='admin-gr
 router.register(r'admin/circles', AdminCircleViewSet, basename='admin-circle')
 router.register(r'admin/circle-benefits', AdminCircleBenefitViewSet, basename='admin-circle-benefit')
 router.register(r'admin/circle-sessions', AdminCircleSessionViewSet, basename='admin-circle-session')
+router.register(r'admin/menu', AdminDailyMenuViewSet, basename='admin-menu')
 
 
 urlpatterns = [
@@ -132,6 +134,7 @@ urlpatterns = [
     path('admin/stats/', admin_stats, name='api-admin-stats'),
     path('admin/meta/', admin_meta, name='api-admin-meta'),
     path('admin/contact/', admin_contact, name='api-admin-contact'),
+    path('admin/menu-templates/', admin_menu_templates, name='api-admin-menu-templates'),
 
     # Окремі endpoints (menu/today/ та menu/week/ тепер як @action в DailyMenuViewSet)
     path('search/', global_search, name='api-search'),

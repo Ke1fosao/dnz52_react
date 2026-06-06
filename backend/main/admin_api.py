@@ -5,6 +5,8 @@ API адмінпанелі (React, /manage) — захищений namespace `/a
 + IsAdminUser. Вхід проходить через django-axes (захист від брутфорсу).
 Фаза 1: автентифікація, статистика дашборда, модерація Відгуків і Питань FAQ.
 """
+from datetime import timedelta
+
 from django.contrib.auth import authenticate
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
@@ -28,7 +30,11 @@ from groups.models import Group, GroupStaff
 from circles.models import Circle, CircleBenefit, CircleSession
 from gallery.models import GalleryCategory, GalleryAlbum
 from documents.models import Document, DocumentCategory
+from menu.models import DailyMenu, MenuTemplate
 from .models import Page, PageImage, Slider, Contact, StaffMember
+
+
+_WEEKDAYS_UK = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', "П'ятниця", 'Субота', 'Неділя']
 
 
 # ============================================================================
@@ -620,3 +626,106 @@ class AdminCircleSessionViewSet(_ContentViewSet):
         qs = CircleSession.objects.all().order_by('order', 'id')
         c = self.request.query_params.get('circle')
         return qs.filter(circle_id=c) if c else qs
+
+
+# ============================================================================
+# Меню: денні меню (CRUD) + шаблон тижня-основи (7 днів, редагування разом)
+# ============================================================================
+_MEAL_FIELDS = ['breakfast', 'second_breakfast', 'lunch', 'snack', 'dinner']
+
+
+class AdminDailyMenuSerializer(serializers.ModelSerializer):
+    weekday_display = serializers.SerializerMethodField()
+    has_any_meal = serializers.ReadOnlyField()
+
+    class Meta:
+        model = DailyMenu
+        fields = ['id', 'date', 'weekday_display', 'breakfast', 'second_breakfast',
+                  'lunch', 'snack', 'dinner', 'note', 'is_published', 'has_any_meal',
+                  'created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at']
+
+    def get_weekday_display(self, obj):
+        return _WEEKDAYS_UK[obj.date.weekday()]
+
+
+class AdminMenuTemplateSerializer(serializers.ModelSerializer):
+    weekday_display = serializers.CharField(source='get_weekday_display', read_only=True)
+
+    class Meta:
+        model = MenuTemplate
+        fields = ['weekday', 'weekday_display', 'breakfast', 'second_breakfast',
+                  'lunch', 'snack', 'dinner', 'note', 'is_active']
+
+
+class AdminDailyMenuViewSet(_ContentViewSet):
+    """CRUD денних меню. Лукап за pk (для редагування), сортування — найновіші зверху."""
+    serializer_class = AdminDailyMenuSerializer
+    queryset = DailyMenu.objects.all().order_by('-date')
+
+    @action(detail=True, methods=['post'])
+    def duplicate_next_week(self, request, pk=None):
+        """Копіює меню на ту саму дату +7 днів. Якщо меню на цю дату вже існує — 400."""
+        original = self.get_object()
+        new_date = original.date + timedelta(days=7)
+        if DailyMenu.objects.filter(date=new_date).exists():
+            return Response(
+                {'detail': f'Меню на {new_date.strftime("%d.%m.%Y")} вже існує.'},
+                status=400,
+            )
+        copy = DailyMenu.objects.create(
+            date=new_date,
+            breakfast=original.breakfast,
+            second_breakfast=original.second_breakfast,
+            lunch=original.lunch,
+            snack=original.snack,
+            dinner=original.dinner,
+            note=original.note,
+            is_published=original.is_published,
+        )
+        return Response(self.get_serializer(copy).data, status=201)
+
+
+@api_view(['GET', 'PUT'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAdminUser])
+def admin_menu_templates(request):
+    """Шаблон-основа меню по днях тижня. Завжди повертає 7 днів (Пн-Нд),
+    навіть якщо для якогось дня запису ще немає (тоді — порожні поля).
+
+    GET  → список із 7 елементів.
+    PUT  → приймає список елементів {weekday, ...страви...}; для кожного робить
+           update_or_create за днем тижня. Повертає оновлений список із 7.
+    """
+    if request.method == 'PUT':
+        items = request.data if isinstance(request.data, list) else request.data.get('templates', [])
+        for item in items:
+            wd = item.get('weekday')
+            try:
+                wd = int(wd)
+            except (TypeError, ValueError):
+                continue
+            if wd not in range(7):
+                continue
+            MenuTemplate.objects.update_or_create(
+                weekday=wd,
+                defaults={
+                    **{f: (item.get(f) or '') for f in _MEAL_FIELDS},
+                    'note': item.get('note') or '',
+                    'is_active': bool(item.get('is_active', True)),
+                },
+            )
+
+    existing = {t.weekday: t for t in MenuTemplate.objects.all()}
+    result = []
+    for wd, label in MenuTemplate.WEEKDAY_CHOICES:
+        tpl = existing.get(wd)
+        if tpl:
+            result.append(AdminMenuTemplateSerializer(tpl).data)
+        else:
+            result.append({
+                'weekday': wd, 'weekday_display': label,
+                'breakfast': '', 'second_breakfast': '', 'lunch': '',
+                'snack': '', 'dinner': '', 'note': '', 'is_active': True,
+            })
+    return Response(result)

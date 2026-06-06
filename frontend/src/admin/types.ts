@@ -239,3 +239,31 @@ export interface AdminFAQItem {
   is_published: boolean;
   likes: number;
 }
+
+export interface AdminDailyMenu {
+  id: number;
+  date: string;
+  weekday_display: string;
+  breakfast: string;
+  second_breakfast: string;
+  lunch: string;
+  snack: string;
+  dinner: string;
+  note: string;
+  is_published: boolean;
+  has_any_meal: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AdminMenuTemplate {
+  weekday: number;
+  weekday_display: string;
+  breakfast: string;
+  second_breakfast: string;
+  lunch: string;
+  snack: string;
+  dinner: string;
+  note: string;
+  is_active: boolean;
+}

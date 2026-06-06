@@ -4,6 +4,7 @@ import type {
   AdminMeta, AdminNews, AdminEvent, AdminFAQItem, AdminCategory, AdminDocument,
   AdminContact, AdminSlider, AdminStaffMember, AdminPage, AdminPageImage,
   AdminGroup, AdminGroupStaff, AdminCircle, AdminCircleBenefit, AdminCircleSession,
+  AdminDailyMenu, AdminMenuTemplate,
 } from '../types';
 
 const TOKEN_KEY = 'dnz52:adminToken';
@@ -113,3 +114,17 @@ export const adminGroupStaffApi = childApi<AdminGroupStaff>('group-staff', 'grou
 export const adminCirclesApi = crud<AdminCircle>('circles');
 export const adminCircleBenefitsApi = childApi<AdminCircleBenefit>('circle-benefits', 'circle');
 export const adminCircleSessionsApi = childApi<AdminCircleSession>('circle-sessions', 'circle');
+
+// Меню: денні меню (CRUD + копіювання на тиждень вперед)
+export const adminDailyMenuApi = {
+  ...crud<AdminDailyMenu>('menu'),
+  duplicateNextWeek: (id: number) =>
+    http.post<AdminDailyMenu>(`/menu/${id}/duplicate_next_week/`).then(r => r.data),
+};
+
+// Шаблон тижня-основи: завжди 7 днів, зберігаються разом (PUT-ом)
+export const adminMenuTemplatesApi = {
+  get: () => http.get<AdminMenuTemplate[]>('/menu-templates/').then(r => r.data),
+  save: (items: Partial<AdminMenuTemplate>[]) =>
+    http.put<AdminMenuTemplate[]>('/menu-templates/', items).then(r => r.data),
+};
