@@ -4,7 +4,7 @@ import type {
   AdminMeta, AdminNews, AdminEvent, AdminFAQItem, AdminCategory, AdminDocument,
   AdminContact, AdminSlider, AdminStaffMember, AdminPage, AdminPageImage,
   AdminGroup, AdminGroupStaff, AdminCircle, AdminCircleBenefit, AdminCircleSession,
-  AdminDailyMenu, AdminMenuTemplate,
+  AdminDailyMenu, AdminMenuTemplate, AdminGalleryAlbum, AdminGalleryPhoto,
 } from '../types';
 
 const TOKEN_KEY = 'dnz52:adminToken';
@@ -127,4 +127,22 @@ export const adminMenuTemplatesApi = {
   get: () => http.get<AdminMenuTemplate[]>('/menu-templates/').then(r => r.data),
   save: (items: Partial<AdminMenuTemplate>[]) =>
     http.put<AdminMenuTemplate[]>('/menu-templates/', items).then(r => r.data),
+};
+
+// Галерея: альбоми + фото (масове завантаження з прогресом, поворот, сортування)
+export const adminGalleryAlbumsApi = crud<AdminGalleryAlbum>('gallery-albums');
+export const adminGalleryPhotosApi = {
+  ...crud<AdminGalleryPhoto>('gallery-photos'),
+  listFor: (albumId: number) =>
+    http.get<AdminGalleryPhoto[]>('/gallery-photos/', { params: { album: albumId } }).then(r => r.data),
+  bulkUpload: (albumId: number, files: FileList | File[], onProgress?: (pct: number) => void) => {
+    const fd = new FormData();
+    fd.append('album', String(albumId));
+    Array.from(files).forEach(f => fd.append('images', f));
+    return http.post<AdminGalleryPhoto[]>('/gallery-photos/bulk_upload/', fd, {
+      onUploadProgress: e => { if (onProgress && e.total) onProgress(Math.round((e.loaded / e.total) * 100)); },
+    }).then(r => r.data);
+  },
+  rotate: (id: number, direction: 'cw' | 'ccw') =>
+    http.post<AdminGalleryPhoto>(`/gallery-photos/${id}/rotate/`, { direction }).then(r => r.data),
 };

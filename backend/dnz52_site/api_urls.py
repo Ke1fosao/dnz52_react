@@ -37,6 +37,7 @@ from main.admin_api import (
     AdminGroupViewSet, AdminGroupStaffViewSet,
     AdminCircleViewSet, AdminCircleBenefitViewSet, AdminCircleSessionViewSet,
     AdminDailyMenuViewSet, admin_menu_templates,
+    AdminGalleryAlbumViewSet, AdminGalleryPhotoViewSet,
 )
 
 
@@ -122,6 +123,8 @@ router.register(r'admin/circles', AdminCircleViewSet, basename='admin-circle')
 router.register(r'admin/circle-benefits', AdminCircleBenefitViewSet, basename='admin-circle-benefit')
 router.register(r'admin/circle-sessions', AdminCircleSessionViewSet, basename='admin-circle-session')
 router.register(r'admin/menu', AdminDailyMenuViewSet, basename='admin-menu')
+router.register(r'admin/gallery-albums', AdminGalleryAlbumViewSet, basename='admin-gallery-album')
+router.register(r'admin/gallery-photos', AdminGalleryPhotoViewSet, basename='admin-gallery-photo')
 
 
 urlpatterns = [

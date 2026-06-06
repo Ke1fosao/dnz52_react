@@ -28,7 +28,7 @@ from news.models import News, NewsCategory, NewsTag
 from events.models import Event
 from groups.models import Group, GroupStaff
 from circles.models import Circle, CircleBenefit, CircleSession
-from gallery.models import GalleryCategory, GalleryAlbum
+from gallery.models import GalleryCategory, GalleryAlbum, GalleryPhoto
 from documents.models import Document, DocumentCategory
 from menu.models import DailyMenu, MenuTemplate
 from .models import Page, PageImage, Slider, Contact, StaffMember
@@ -451,6 +451,7 @@ def admin_meta(request):
         'groups': [{'id': g.id, 'name': g.name} for g in Group.objects.filter(is_published=True)],
         'news_statuses': [{'value': v, 'label': lbl} for v, lbl in News.Status.choices],
         'gallery_albums': [{'id': a.id, 'name': a.title} for a in GalleryAlbum.objects.all()],
+        'gallery_categories': [{'id': c.id, 'name': c.name} for c in GalleryCategory.objects.all()],
         'age_groups': [{'value': v, 'label': lbl} for v, lbl in Group.AGE_CHOICES],
     })
 
@@ -729,3 +730,74 @@ def admin_menu_templates(request):
                 'snack': '', 'dinner': '', 'note': '', 'is_active': True,
             })
     return Response(result)
+
+
+# ============================================================================
+# Галерея: альбоми + фото (масове завантаження, поворот 90°, сортування)
+# ============================================================================
+class AdminGalleryAlbumSerializer(_AutoSlugMixin, serializers.ModelSerializer):
+    slug_source = 'title'
+    cover = serializers.ImageField(use_url=True, required=False, allow_null=True)
+    category = serializers.PrimaryKeyRelatedField(queryset=GalleryCategory.objects.all(), required=False, allow_null=True)
+    category_name = serializers.CharField(source='category.name', read_only=True, default=None)
+    photos_count = serializers.IntegerField(source='photos.count', read_only=True)
+
+    class Meta:
+        model = GalleryAlbum
+        fields = ['id', 'title', 'slug', 'description', 'cover', 'category',
+                  'category_name', 'photos_count', 'created_at', 'is_published']
+        read_only_fields = ['created_at']
+        extra_kwargs = {'slug': {'required': False}}
+
+
+class AdminGalleryPhotoSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(use_url=True)
+
+    class Meta:
+        model = GalleryPhoto
+        fields = ['id', 'album', 'image', 'title', 'description', 'order']
+
+
+class AdminGalleryAlbumViewSet(_ContentViewSet):
+    serializer_class = AdminGalleryAlbumSerializer
+    queryset = GalleryAlbum.objects.all().select_related('category').order_by('-created_at')
+
+
+class AdminGalleryPhotoViewSet(_ContentViewSet):
+    serializer_class = AdminGalleryPhotoSerializer
+
+    def get_queryset(self):
+        qs = GalleryPhoto.objects.all().order_by('order', 'id')
+        album = self.request.query_params.get('album')
+        return qs.filter(album_id=album) if album else qs
+
+    @action(detail=False, methods=['post'])
+    def bulk_upload(self, request):
+        """Масове завантаження фото в альбом (FormData: album + кілька 'images')."""
+        album = GalleryAlbum.objects.filter(pk=request.data.get('album')).first()
+        if not album:
+            return Response({'detail': 'Альбом не знайдено.'}, status=400)
+        files = request.FILES.getlist('images')
+        if not files:
+            return Response({'detail': 'Не передано жодного фото.'}, status=400)
+        start = album.photos.count()
+        created = [GalleryPhoto.objects.create(album=album, image=f, order=start + i)
+                   for i, f in enumerate(files)]
+        ser = AdminGalleryPhotoSerializer(created, many=True, context=self.get_serializer_context())
+        return Response(ser.data, status=201)
+
+    @action(detail=True, methods=['post'])
+    def rotate(self, request, pk=None):
+        """Поворот фото на 90° (direction: 'cw' за год. стрілкою / 'ccw' проти) через PIL."""
+        photo = self.get_object()
+        if not photo.image:
+            return Response({'detail': 'Фото відсутнє.'}, status=400)
+        degrees = -90 if request.data.get('direction', 'cw') == 'cw' else 90
+        try:
+            from PIL import Image
+            path = photo.image.path
+            with Image.open(path) as img:
+                img.rotate(degrees, expand=True).save(path)
+        except Exception as e:
+            return Response({'detail': f'Не вдалося повернути: {e}'}, status=400)
+        return Response(self.get_serializer(photo).data)

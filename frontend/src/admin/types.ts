@@ -55,6 +55,7 @@ export interface AdminMeta {
   groups: IdName[];
   news_statuses: ValueLabel[];
   gallery_albums: IdName[];
+  gallery_categories: IdName[];
   age_groups: ValueLabel[];
 }
 
@@ -266,4 +267,26 @@ export interface AdminMenuTemplate {
   dinner: string;
   note: string;
   is_active: boolean;
+}
+
+export interface AdminGalleryAlbum {
+  id: number;
+  title: string;
+  slug: string;
+  description: string;
+  cover: string | null;
+  category: number | null;
+  category_name: string | null;
+  photos_count: number;
+  created_at: string;
+  is_published: boolean;
+}
+
+export interface AdminGalleryPhoto {
+  id: number;
+  album: number;
+  image: string;
+  title: string;
+  description: string;
+  order: number;
 }

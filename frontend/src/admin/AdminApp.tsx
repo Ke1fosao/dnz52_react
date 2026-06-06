@@ -28,6 +28,8 @@ import { CircleFormPage } from './pages/CircleFormPage';
 import { DailyMenuListPage } from './pages/DailyMenuListPage';
 import { DailyMenuFormPage } from './pages/DailyMenuFormPage';
 import { MenuTemplatesPage } from './pages/MenuTemplatesPage';
+import { AlbumsListPage } from './pages/AlbumsListPage';
+import { AlbumFormPage } from './pages/AlbumFormPage';
 
 function Guarded() {
   const { user, loading } = useAdminAuth();
@@ -84,6 +86,9 @@ export default function AdminApp() {
           <Route path="menu/new" element={<DailyMenuFormPage />} />
           <Route path="menu/:id/edit" element={<DailyMenuFormPage />} />
           <Route path="menu-templates" element={<MenuTemplatesPage />} />
+          <Route path="albums" element={<AlbumsListPage />} />
+          <Route path="albums/new" element={<AlbumFormPage />} />
+          <Route path="albums/:id/edit" element={<AlbumFormPage />} />
           <Route path="*" element={<Navigate to="/manage" replace />} />
         </Route>
       </Routes>
