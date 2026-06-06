@@ -1,9 +1,10 @@
 import { useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ImagePlus, Trash2, Loader2 } from 'lucide-react';
+import { ImagePlus, Trash2, Loader2, GripVertical } from 'lucide-react';
 import { toast } from 'sonner';
 import { adminPageImagesApi } from '../lib/adminApi';
-import { OrderControls } from './FormControls';
+import { SortableList, persistOrder } from './SortableList';
+import type { AdminPageImage } from '../types';
 
 // Інлайн-галерея фото (PageImage) — додавання (кілька одразу), підпис, сортування, видалення
 export function InlineImages({ pageId }: { pageId: number }) {
@@ -43,14 +44,9 @@ export function InlineImages({ pageId }: { pageId: number }) {
   });
   const remove = useMutation({ mutationFn: adminPageImagesApi.remove, onSuccess: () => { toast.success('Видалено'); invalidate(); }, onError: () => toast.error('Помилка') });
 
-  const move = async (idx: number, dir: 'up' | 'down') => {
-    if (!data) return;
-    const arr = [...data];
-    const j = dir === 'up' ? idx - 1 : idx + 1;
-    if (j < 0 || j >= arr.length) return;
-    [arr[idx], arr[j]] = [arr[j], arr[idx]];
-    const ups = arr.map((im, i) => (im.order !== i ? adminPageImagesApi.update(im.id, { order: i }) : null)).filter(Boolean);
-    await Promise.all(ups as Promise<unknown>[]);
+  const handleReorder = async (next: AdminPageImage[]) => {
+    qc.setQueryData(key, next);
+    try { await persistOrder(next, adminPageImagesApi.update); } catch { toast.error('Помилка'); }
     invalidate();
   };
 
@@ -65,10 +61,10 @@ export function InlineImages({ pageId }: { pageId: number }) {
       ) : !data?.length ? (
         <p className="text-sm text-gray-400 dark:text-slate-500">Ще немає фото</p>
       ) : (
-        <div className="space-y-2">
-          {data.map((im, idx) => (
-            <div key={im.id} className="flex items-center gap-3 premium-glass rounded-2xl p-2.5">
-              <OrderControls onUp={() => move(idx, 'up')} onDown={() => move(idx, 'down')} isFirst={idx === 0} isLast={idx === data.length - 1} />
+        <SortableList items={data} getId={im => im.id} onReorder={handleReorder} className="space-y-2">
+          {(im, dnd) => (
+            <div ref={dnd.setNodeRef} style={dnd.style} className="flex items-center gap-3 premium-glass rounded-2xl p-2.5">
+              <button {...dnd.handleProps} className="cursor-grab active:cursor-grabbing touch-none text-gray-300 dark:text-slate-600 hover:text-gray-500 shrink-0" aria-label="Перетягнути"><GripVertical size={17} /></button>
               <img src={im.image} alt="" className="w-16 h-16 rounded-lg object-cover shrink-0" />
               <input
                 defaultValue={im.caption}
@@ -78,8 +74,8 @@ export function InlineImages({ pageId }: { pageId: number }) {
               />
               <button type="button" onClick={() => { if (window.confirm('Видалити фото?')) remove.mutate(im.id); }} className="w-8 h-8 grid place-items-center rounded-lg bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-colors shrink-0"><Trash2 size={15} /></button>
             </div>
-          ))}
-        </div>
+          )}
+        </SortableList>
       )}
     </div>
   );

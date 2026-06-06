@@ -1,10 +1,11 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Trash2, UserRound, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, UserRound, GripVertical } from 'lucide-react';
 import { toast } from 'sonner';
 import { adminSpecialistPagesApi, adminSpecialistPeopleApi, adminSpecialistSectionsApi } from '../lib/adminApi';
-import { Field, inputCls, MarkdownEditor, FormHeader, FormActions, OrderControls } from '../components/FormControls';
+import { Field, inputCls, MarkdownEditor, FormHeader, FormActions } from '../components/FormControls';
+import { SortableList, persistOrder } from '../components/SortableList';
 
 export function SpecialistPageFormPage() {
   const { id } = useParams();
@@ -113,27 +114,27 @@ function ChildNavList<T extends NavRow>({ qKey, parentId, api, addLabel, onAdd, 
   const rows = data || [];
   const remove = useMutation({ mutationFn: api.remove, onSuccess: () => { toast.success('Видалено'); invalidate(); }, onError: () => toast.error('Помилка') });
 
-  const move = async (idx: number, dir: 'up' | 'down') => {
-    const arr = [...rows];
-    const j = dir === 'up' ? idx - 1 : idx + 1;
-    if (j < 0 || j >= arr.length) return;
-    [arr[idx], arr[j]] = [arr[j], arr[idx]];
-    const ups = arr.map((c, i) => (c.order !== i ? api.update(c.id, { order: i }) : null)).filter(Boolean);
-    await Promise.all(ups as Promise<unknown>[]);
+  const handleReorder = async (next: T[]) => {
+    qc.setQueryData(key, next);
+    try { await persistOrder(next, (id, data) => api.update(id, data)); } catch { toast.error('Помилка'); }
     invalidate();
   };
 
   return (
     <div className="space-y-2">
       {isLoading ? <p className="text-sm text-gray-400 dark:text-slate-500">Завантаження…</p>
-        : rows.map((it, idx) => (
-          <div key={it.id} className="premium-glass rounded-2xl p-3 flex items-center gap-3">
-            <OrderControls onUp={() => move(idx, 'up')} onDown={() => move(idx, 'down')} isFirst={idx === 0} isLast={idx === rows.length - 1} />
-            {renderRow(it)}
-            <button onClick={() => onEdit(it)} className="w-8 h-8 grid place-items-center rounded-lg bg-white/60 dark:bg-slate-800/60 text-blue-600 dark:text-blue-400 hover:bg-white dark:hover:bg-slate-700 transition-colors shrink-0" aria-label="Редагувати"><Pencil size={15} /></button>
-            <button onClick={() => { if (window.confirm('Видалити цей запис?')) remove.mutate(it.id); }} className="w-8 h-8 grid place-items-center rounded-lg bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-colors shrink-0" aria-label="Видалити"><Trash2 size={15} /></button>
-          </div>
-        ))}
+        : (
+          <SortableList items={rows} getId={it => it.id} onReorder={handleReorder} className="space-y-2">
+            {(it, dnd) => (
+              <div ref={dnd.setNodeRef} style={dnd.style} className="premium-glass rounded-2xl p-3 flex items-center gap-3">
+                <button {...dnd.handleProps} className="cursor-grab active:cursor-grabbing touch-none text-gray-300 dark:text-slate-600 hover:text-gray-500 dark:hover:text-slate-400 shrink-0" aria-label="Перетягнути"><GripVertical size={18} /></button>
+                {renderRow(it)}
+                <button onClick={() => onEdit(it)} className="w-8 h-8 grid place-items-center rounded-lg bg-white/60 dark:bg-slate-800/60 text-blue-600 dark:text-blue-400 hover:bg-white dark:hover:bg-slate-700 transition-colors shrink-0" aria-label="Редагувати"><Pencil size={15} /></button>
+                <button onClick={() => { if (window.confirm('Видалити цей запис?')) remove.mutate(it.id); }} className="w-8 h-8 grid place-items-center rounded-lg bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-colors shrink-0" aria-label="Видалити"><Trash2 size={15} /></button>
+              </div>
+            )}
+          </SortableList>
+        )}
       <button onClick={onAdd} className="inline-flex items-center gap-2 bg-white/70 dark:bg-slate-800/70 border border-white/60 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-700 font-bold text-sm px-4 py-2 rounded-xl text-gray-700 dark:text-slate-300 transition-colors">
         <Plus size={16} /> {addLabel}
       </button>

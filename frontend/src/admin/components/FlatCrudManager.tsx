@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, GripVertical } from 'lucide-react';
 import { toast } from 'sonner';
 import {
-  Field, inputCls, ImageField, FileField, IconPicker, ColorField, Toggle, OrderControls,
+  Field, inputCls, ImageField, FileField, IconPicker, ColorField, Toggle,
 } from './FormControls';
 import { ListSkeleton, EmptyBox } from './AdminUI';
+import { SortableList, persistOrder } from './SortableList';
 import { cn } from '@/lib/utils';
 import type { AdminFlatRow } from '../types';
 
@@ -109,13 +110,9 @@ export function FlatCrudManager({ qKey, api, fields, addLabel, titleKey, subtitl
 
   const remove = useMutation({ mutationFn: api.remove, onSuccess: () => { toast.success('Видалено'); invalidate(); }, onError: () => toast.error('Помилка') });
 
-  const move = async (idx: number, dir: 'up' | 'down') => {
-    const arr = [...rows];
-    const j = dir === 'up' ? idx - 1 : idx + 1;
-    if (j < 0 || j >= arr.length) return;
-    [arr[idx], arr[j]] = [arr[j], arr[idx]];
-    const ups = arr.map((c, i) => (c.order !== i ? api.update(c.id, { order: i }) : null)).filter(Boolean);
-    await Promise.all(ups as Promise<unknown>[]);
+  const handleReorder = async (next: AdminFlatRow[]) => {
+    qc.setQueryData(key, next);
+    try { await persistOrder(next, api.update); } catch { toast.error('Не вдалося змінити порядок'); }
     invalidate();
   };
 
@@ -152,13 +149,13 @@ export function FlatCrudManager({ qKey, api, fields, addLabel, titleKey, subtitl
       )}
 
       {isLoading ? <ListSkeleton rows={3} /> : !rows.length ? <EmptyBox text={emptyText || 'Ще немає записів'} /> : (
-        <div className="space-y-2">
-          {rows.map((row, idx) => {
+        <SortableList items={rows} getId={r => r.id} onReorder={handleReorder} className="space-y-2">
+          {(row, dnd) => {
             const inactive = row.is_active === false;
             const subtitle = subtitleKey ? String(row[subtitleKey] || '') : '';
             return (
-              <div key={row.id} className={cn('premium-glass rounded-2xl p-3 flex items-center gap-3', inactive && 'opacity-60')}>
-                <OrderControls onUp={() => move(idx, 'up')} onDown={() => move(idx, 'down')} isFirst={idx === 0} isLast={idx === rows.length - 1} />
+              <div ref={dnd.setNodeRef} style={dnd.style} className={cn('premium-glass rounded-2xl p-3 flex items-center gap-3', inactive && 'opacity-60')}>
+                <button {...dnd.handleProps} className="cursor-grab active:cursor-grabbing touch-none text-gray-300 dark:text-slate-600 hover:text-gray-500 dark:hover:text-slate-400 shrink-0" aria-label="Перетягнути"><GripVertical size={18} /></button>
                 {imgField && typeof row[imgField.key] === 'string' && (row[imgField.key] as string)
                   ? <img src={row[imgField.key] as string} alt="" className="w-12 h-12 rounded-lg object-cover shrink-0" />
                   : colorField
@@ -177,8 +174,8 @@ export function FlatCrudManager({ qKey, api, fields, addLabel, titleKey, subtitl
                 <button onClick={() => { if (window.confirm('Видалити цей запис?')) remove.mutate(row.id); }} className="w-8 h-8 grid place-items-center rounded-lg bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-colors shrink-0" aria-label="Видалити"><Trash2 size={15} /></button>
               </div>
             );
-          })}
-        </div>
+          }}
+        </SortableList>
       )}
     </div>
   );

@@ -1,7 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Trash2, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Loader2, GripVertical } from 'lucide-react';
 import { toast } from 'sonner';
-import { OrderControls, inputCls, ImageField, IconPicker } from './FormControls';
+import { inputCls, ImageField, IconPicker } from './FormControls';
+import { SortableList, persistOrder } from './SortableList';
 
 export type InlineFieldDef =
   | { key: string; label: string; type: 'text' | 'textarea' | 'date'; placeholder?: string; col?: string }
@@ -47,34 +48,33 @@ export function InlineRepeater<T extends InlineChild>({ parentId, parentKey, api
     } catch { toast.error('Не вдалося зберегти'); }
   };
 
-  const move = async (idx: number, dir: 'up' | 'down') => {
-    if (!data) return;
-    const arr = [...data];
-    const j = dir === 'up' ? idx - 1 : idx + 1;
-    if (j < 0 || j >= arr.length) return;
-    [arr[idx], arr[j]] = [arr[j], arr[idx]];
-    const ups = arr.map((c, i) => (c.order !== i ? api.update(c.id, { order: i }) : null)).filter(Boolean);
-    await Promise.all(ups as Promise<unknown>[]);
+  const rows = data || [];
+
+  const handleReorder = async (next: T[]) => {
+    qc.setQueryData(key, next);
+    try { await persistOrder(next, (id, data) => api.update(id, data)); } catch { toast.error('Помилка'); }
     invalidate();
   };
 
-  const rows = data || [];
-
   return (
     <div className="space-y-2">
-      {isLoading ? <p className="text-sm text-gray-400 dark:text-slate-500">Завантаження…</p> : rows.map((item, idx) => (
-        <div key={item.id} className="premium-glass rounded-2xl p-3 flex items-start gap-2">
-          <OrderControls onUp={() => move(idx, 'up')} onDown={() => move(idx, 'down')} isFirst={idx === 0} isLast={idx === rows.length - 1} />
-          <div className="flex-1 grid sm:grid-cols-2 gap-2.5 min-w-0">
-            {fields.map(f => (
-              <div key={f.key} className={f.col}>
-                <InlineFieldInput field={f} value={(item as Record<string, unknown>)[f.key]} onCommit={(v, isFile) => patchField(item.id, f.key, v, isFile)} />
+      {isLoading ? <p className="text-sm text-gray-400 dark:text-slate-500">Завантаження…</p> : (
+        <SortableList items={rows} getId={item => item.id} onReorder={handleReorder} className="space-y-2">
+          {(item, dnd) => (
+            <div ref={dnd.setNodeRef} style={dnd.style} className="premium-glass rounded-2xl p-3 flex items-start gap-2">
+              <button {...dnd.handleProps} className="cursor-grab active:cursor-grabbing touch-none text-gray-300 dark:text-slate-600 hover:text-gray-500 shrink-0 mt-1" aria-label="Перетягнути"><GripVertical size={17} /></button>
+              <div className="flex-1 grid sm:grid-cols-2 gap-2.5 min-w-0">
+                {fields.map(f => (
+                  <div key={f.key} className={f.col}>
+                    <InlineFieldInput field={f} value={(item as Record<string, unknown>)[f.key]} onCommit={(v, isFile) => patchField(item.id, f.key, v, isFile)} />
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-          <button type="button" onClick={() => { if (window.confirm('Видалити цей запис?')) remove.mutate(item.id); }} className="w-8 h-8 grid place-items-center rounded-lg bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 shrink-0 transition-colors" aria-label="Видалити"><Trash2 size={15} /></button>
-        </div>
-      ))}
+              <button type="button" onClick={() => { if (window.confirm('Видалити цей запис?')) remove.mutate(item.id); }} className="w-8 h-8 grid place-items-center rounded-lg bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 shrink-0 transition-colors" aria-label="Видалити"><Trash2 size={15} /></button>
+            </div>
+          )}
+        </SortableList>
+      )}
       <button type="button" onClick={() => add.mutate()} disabled={add.isPending} className="inline-flex items-center gap-2 bg-white/70 dark:bg-slate-800/70 border border-white/60 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-700 font-bold text-sm px-4 py-2 rounded-xl text-gray-700 dark:text-slate-300 transition-colors">
         {add.isPending ? <Loader2 className="animate-spin" size={16} /> : <Plus size={16} />} {addLabel}
       </button>

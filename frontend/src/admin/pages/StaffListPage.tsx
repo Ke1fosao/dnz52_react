@@ -1,14 +1,21 @@
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Trash2, Star } from 'lucide-react';
+import { Plus, Pencil, Trash2, Star, GripVertical } from 'lucide-react';
 import { toast } from 'sonner';
 import { adminStaffApi } from '../lib/adminApi';
 import { ListSkeleton, EmptyBox } from '../components/AdminUI';
+import { SortableList, persistOrder } from '../components/SortableList';
+import type { AdminStaffMember } from '../types';
 
 export function StaffListPage() {
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({ queryKey: ['admin-staff'], queryFn: adminStaffApi.list });
   const remove = useMutation({ mutationFn: adminStaffApi.remove, onSuccess: () => { toast.success('Видалено'); qc.invalidateQueries({ queryKey: ['admin-staff'] }); }, onError: () => toast.error('Помилка') });
+  const reorder = async (next: AdminStaffMember[]) => {
+    qc.setQueryData(['admin-staff'], next);
+    try { await persistOrder(next, adminStaffApi.update); } catch { toast.error('Помилка'); }
+    qc.invalidateQueries({ queryKey: ['admin-staff'] });
+  };
 
   return (
     <div className="space-y-5 animate-page-fade-in">
@@ -20,9 +27,10 @@ export function StaffListPage() {
         <Link to="/manage/staff/new" className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl transition-colors"><Plus size={18} /> Додати особу</Link>
       </div>
       {isLoading ? <ListSkeleton /> : !data?.length ? <EmptyBox text="Ще немає записів" /> : (
-        <div className="space-y-3">
-          {data.map(s => (
-            <div key={s.id} className="premium-glass rounded-[1.5rem] p-4 flex items-center gap-4">
+        <SortableList items={data} getId={s => s.id} onReorder={reorder} className="space-y-3">
+          {(s, dnd) => (
+            <div ref={dnd.setNodeRef} style={dnd.style} className="premium-glass rounded-[1.5rem] p-4 flex items-center gap-4">
+              <button {...dnd.handleProps} className="cursor-grab active:cursor-grabbing touch-none text-gray-300 dark:text-slate-600 hover:text-gray-500 shrink-0" aria-label="Перетягнути"><GripVertical size={18} /></button>
               {s.photo
                 ? <img src={s.photo} alt="" className="w-14 h-14 rounded-full object-cover shrink-0" />
                 : <div className="w-14 h-14 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-500 grid place-items-center font-black shrink-0">{s.full_name.charAt(0)}</div>}
@@ -37,8 +45,8 @@ export function StaffListPage() {
               <Link to={`/manage/staff/${s.id}/edit`} className="w-9 h-9 grid place-items-center rounded-xl bg-white/60 dark:bg-slate-800/60 text-blue-600 dark:text-blue-400 hover:bg-white dark:hover:bg-slate-700 transition-colors shrink-0" aria-label="Редагувати"><Pencil size={16} /></Link>
               <button onClick={() => { if (window.confirm('Видалити цю особу?')) remove.mutate(s.id); }} className="w-9 h-9 grid place-items-center rounded-xl bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-colors shrink-0" aria-label="Видалити"><Trash2 size={16} /></button>
             </div>
-          ))}
-        </div>
+          )}
+        </SortableList>
       )}
     </div>
   );

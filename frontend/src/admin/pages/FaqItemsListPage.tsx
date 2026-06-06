@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, GripVertical } from 'lucide-react';
 import { toast } from 'sonner';
 import { adminFaqItemsApi } from '../lib/adminApi';
 import { ListSkeleton, EmptyBox } from '../components/AdminUI';
+import { SortableList, persistOrder } from '../components/SortableList';
+import type { AdminFAQItem } from '../types';
 
 export function FaqItemsListPage() {
   const qc = useQueryClient();
@@ -13,6 +15,11 @@ export function FaqItemsListPage() {
     onSuccess: () => { toast.success('Видалено'); qc.invalidateQueries({ queryKey: ['admin-faq-items'] }); },
     onError: () => toast.error('Помилка'),
   });
+  const reorder = async (next: AdminFAQItem[]) => {
+    qc.setQueryData(['admin-faq-items'], next);
+    try { await persistOrder(next, adminFaqItemsApi.update); } catch { toast.error('Помилка'); }
+    qc.invalidateQueries({ queryKey: ['admin-faq-items'] });
+  };
 
   return (
     <div className="space-y-5 animate-page-fade-in">
@@ -27,9 +34,10 @@ export function FaqItemsListPage() {
       </div>
 
       {isLoading ? <ListSkeleton /> : !data?.length ? <EmptyBox text="Ще немає питань-відповідей" /> : (
-        <div className="space-y-3">
-          {data.map(f => (
-            <div key={f.id} className="premium-glass rounded-[1.5rem] p-4 flex items-center gap-4">
+        <SortableList items={data} getId={f => f.id} onReorder={reorder} className="space-y-3">
+          {(f, dnd) => (
+            <div ref={dnd.setNodeRef} style={dnd.style} className="premium-glass rounded-[1.5rem] p-4 flex items-center gap-4">
+              <button {...dnd.handleProps} className="cursor-grab active:cursor-grabbing touch-none text-gray-300 dark:text-slate-600 hover:text-gray-500 shrink-0" aria-label="Перетягнути"><GripVertical size={18} /></button>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-1">
                   {f.category_name && <span className="text-xs text-gray-400 dark:text-slate-500">{f.category_name}</span>}
@@ -43,8 +51,8 @@ export function FaqItemsListPage() {
                 <button onClick={() => { if (window.confirm('Видалити це питання?')) remove.mutate(f.id); }} className="w-9 h-9 grid place-items-center rounded-xl bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-colors" aria-label="Видалити"><Trash2 size={16} /></button>
               </div>
             </div>
-          ))}
-        </div>
+          )}
+        </SortableList>
       )}
     </div>
   );

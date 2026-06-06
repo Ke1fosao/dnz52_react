@@ -1,8 +1,8 @@
 import { useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ImagePlus, Trash2, Loader2 } from 'lucide-react';
+import { ImagePlus, Trash2, Loader2, GripVertical } from 'lucide-react';
 import { toast } from 'sonner';
-import { OrderControls } from './FormControls';
+import { SortableList, persistOrder } from './SortableList';
 
 interface ChildImg { id: number; image: string; caption: string; order: number }
 interface ChildImgApi<T> {
@@ -47,13 +47,9 @@ export function ChildImageManager<T extends ChildImg>({ parentId, parentKey, api
   });
   const remove = useMutation({ mutationFn: api.remove, onSuccess: () => { toast.success('Видалено'); invalidate(); }, onError: () => toast.error('Помилка') });
 
-  const move = async (idx: number, dir: 'up' | 'down') => {
-    const arr = [...photos];
-    const j = dir === 'up' ? idx - 1 : idx + 1;
-    if (j < 0 || j >= arr.length) return;
-    [arr[idx], arr[j]] = [arr[j], arr[idx]];
-    const ups = arr.map((p, i) => (p.order !== i ? api.update(p.id, { order: i }) : null)).filter(Boolean);
-    await Promise.all(ups as Promise<unknown>[]);
+  const handleReorder = async (next: T[]) => {
+    qc.setQueryData(key, next);
+    try { await persistOrder(next, (id, data) => api.update(id, data)); } catch { toast.error('Помилка'); }
     invalidate();
   };
 
@@ -66,10 +62,10 @@ export function ChildImageManager<T extends ChildImg>({ parentId, parentKey, api
       {isLoading ? <p className="text-sm text-gray-400 dark:text-slate-500">Завантаження…</p>
         : !photos.length ? <p className="text-sm text-gray-400 dark:text-slate-500">Ще немає фото</p>
         : (
-          <div className="space-y-2">
-            {photos.map((p, idx) => (
-              <div key={p.id} className="flex items-center gap-3 premium-glass rounded-2xl p-2.5">
-                <OrderControls onUp={() => move(idx, 'up')} onDown={() => move(idx, 'down')} isFirst={idx === 0} isLast={idx === photos.length - 1} />
+          <SortableList items={photos} getId={p => p.id} onReorder={handleReorder} className="space-y-2">
+            {(p, dnd) => (
+              <div ref={dnd.setNodeRef} style={dnd.style} className="flex items-center gap-3 premium-glass rounded-2xl p-2.5">
+                <button {...dnd.handleProps} className="cursor-grab active:cursor-grabbing touch-none text-gray-300 dark:text-slate-600 hover:text-gray-500 shrink-0" aria-label="Перетягнути"><GripVertical size={17} /></button>
                 <img src={p.image} alt="" className="w-16 h-16 rounded-lg object-cover shrink-0" />
                 <input
                   defaultValue={p.caption}
@@ -79,8 +75,8 @@ export function ChildImageManager<T extends ChildImg>({ parentId, parentKey, api
                 />
                 <button type="button" onClick={() => { if (window.confirm('Видалити фото?')) remove.mutate(p.id); }} className="w-8 h-8 grid place-items-center rounded-lg bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-colors shrink-0"><Trash2 size={15} /></button>
               </div>
-            ))}
-          </div>
+            )}
+          </SortableList>
         )}
     </div>
   );

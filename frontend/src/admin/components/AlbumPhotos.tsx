@@ -1,9 +1,11 @@
 import { useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ImagePlus, Trash2, Loader2, RotateCw, RotateCcw, ChevronUp, ChevronDown } from 'lucide-react';
+import { ImagePlus, Trash2, Loader2, RotateCw, RotateCcw, GripVertical } from 'lucide-react';
 import { toast } from 'sonner';
 import { adminGalleryPhotosApi } from '../lib/adminApi';
+import { SortableList, persistOrder } from './SortableList';
 import { cn } from '@/lib/utils';
+import type { AdminGalleryPhoto } from '../types';
 
 // Менеджер фото альбому: масове завантаження (drag&drop + прогрес), поворот 90°, сортування, підпис, видалення
 export function AlbumPhotos({ albumId }: { albumId: number }) {
@@ -41,13 +43,10 @@ export function AlbumPhotos({ albumId }: { albumId: number }) {
     onError: () => toast.error('Не вдалося повернути'),
   });
 
-  const move = async (idx: number, dir: 'up' | 'down') => {
-    const arr = [...photos];
-    const j = dir === 'up' ? idx - 1 : idx + 1;
-    if (j < 0 || j >= arr.length) return;
-    [arr[idx], arr[j]] = [arr[j], arr[idx]];
-    const ups = arr.map((p, i) => (p.order !== i ? adminGalleryPhotosApi.update(p.id, { order: i }) : null)).filter(Boolean);
-    await Promise.all(ups as Promise<unknown>[]);
+  const handleReorder = async (next: AdminGalleryPhoto[]) => {
+    qc.setQueryData(key, next);
+    try { await persistOrder(next, (id, data) => adminGalleryPhotosApi.update(id, data)); }
+    catch { toast.error('Не вдалося змінити порядок'); }
     invalidate();
   };
 
@@ -87,11 +86,12 @@ export function AlbumPhotos({ albumId }: { albumId: number }) {
       ) : (
         <>
           <p className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wide">Фото в альбомі: {photos.length}</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {photos.map((p, idx) => (
-              <div key={p.id} className="premium-glass rounded-2xl p-2 space-y-2">
+          <SortableList items={photos} getId={p => p.id} onReorder={handleReorder} layout="grid" className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {(p, dnd) => (
+              <div ref={dnd.setNodeRef} style={dnd.style} className="premium-glass rounded-2xl p-2 space-y-2">
                 <div className="relative group">
                   <img src={versions[p.id] ? `${p.image}?v=${versions[p.id]}` : p.image} alt="" className="w-full aspect-square object-cover rounded-xl bg-gray-100 dark:bg-slate-800" />
+                  <button {...dnd.handleProps} className="absolute top-1 left-1 w-7 h-7 grid place-items-center rounded-lg bg-black/45 text-white cursor-grab active:cursor-grabbing touch-none hover:bg-black/60" aria-label="Перетягнути"><GripVertical size={15} /></button>
                   {rotate.isPending && rotate.variables?.id === p.id && (
                     <div className="absolute inset-0 grid place-items-center bg-black/40 rounded-xl"><Loader2 className="animate-spin text-white" size={22} /></div>
                   )}
@@ -107,15 +107,11 @@ export function AlbumPhotos({ albumId }: { albumId: number }) {
                     <button type="button" onClick={() => rotate.mutate({ id: p.id, dir: 'ccw' })} title="Повернути проти годинникової" className="w-7 h-7 grid place-items-center rounded-lg bg-white/60 dark:bg-slate-800/60 text-gray-500 hover:text-blue-600 hover:bg-white dark:hover:bg-slate-700 transition-colors"><RotateCcw size={14} /></button>
                     <button type="button" onClick={() => rotate.mutate({ id: p.id, dir: 'cw' })} title="Повернути за годинниковою" className="w-7 h-7 grid place-items-center rounded-lg bg-white/60 dark:bg-slate-800/60 text-gray-500 hover:text-blue-600 hover:bg-white dark:hover:bg-slate-700 transition-colors"><RotateCw size={14} /></button>
                   </div>
-                  <div className="flex gap-0.5">
-                    <button type="button" onClick={() => move(idx, 'up')} disabled={idx === 0} title="Вгору" className="w-7 h-7 grid place-items-center rounded-lg bg-white/60 dark:bg-slate-800/60 text-gray-500 hover:bg-white dark:hover:bg-slate-700 disabled:opacity-30 transition-colors"><ChevronUp size={14} /></button>
-                    <button type="button" onClick={() => move(idx, 'down')} disabled={idx === photos.length - 1} title="Вниз" className="w-7 h-7 grid place-items-center rounded-lg bg-white/60 dark:bg-slate-800/60 text-gray-500 hover:bg-white dark:hover:bg-slate-700 disabled:opacity-30 transition-colors"><ChevronDown size={14} /></button>
-                    <button type="button" onClick={() => { if (window.confirm('Видалити фото?')) remove.mutate(p.id); }} title="Видалити" className="w-7 h-7 grid place-items-center rounded-lg bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-colors"><Trash2 size={14} /></button>
-                  </div>
+                  <button type="button" onClick={() => { if (window.confirm('Видалити фото?')) remove.mutate(p.id); }} title="Видалити" className="w-7 h-7 grid place-items-center rounded-lg bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-colors"><Trash2 size={14} /></button>
                 </div>
               </div>
-            ))}
-          </div>
+            )}
+          </SortableList>
         </>
       )}
     </div>
