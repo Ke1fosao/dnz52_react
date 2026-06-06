@@ -25,6 +25,8 @@ from faq.models import FAQQuestionSubmission, FAQItem, FAQCategory
 from news.models import News, NewsCategory, NewsTag
 from events.models import Event
 from groups.models import Group
+from gallery.models import GalleryCategory
+from documents.models import Document, DocumentCategory
 
 
 # ============================================================================
@@ -336,6 +338,97 @@ class AdminFAQItemViewSet(_ContentViewSet):
     queryset = FAQItem.objects.all().order_by('order', 'id')
 
 
+# ============================================================================
+# Довідники (категорії / теги) та Документи
+# ============================================================================
+class AdminNewsCategorySerializer(_AutoSlugMixin, serializers.ModelSerializer):
+    slug_source = 'name'
+
+    class Meta:
+        model = NewsCategory
+        fields = ['id', 'name', 'slug']
+        extra_kwargs = {'slug': {'required': False}}
+
+
+class AdminNewsTagSerializer(_AutoSlugMixin, serializers.ModelSerializer):
+    slug_source = 'name'
+
+    class Meta:
+        model = NewsTag
+        fields = ['id', 'name', 'slug']
+        extra_kwargs = {'slug': {'required': False}}
+
+
+class AdminGalleryCategorySerializer(_AutoSlugMixin, serializers.ModelSerializer):
+    slug_source = 'name'
+
+    class Meta:
+        model = GalleryCategory
+        fields = ['id', 'name', 'slug', 'icon', 'color', 'order']
+        extra_kwargs = {'slug': {'required': False}}
+
+
+class AdminDocumentCategorySerializer(_AutoSlugMixin, serializers.ModelSerializer):
+    slug_source = 'name'
+
+    class Meta:
+        model = DocumentCategory
+        fields = ['id', 'name', 'slug', 'order']
+        extra_kwargs = {'slug': {'required': False}}
+
+
+class AdminFAQCategorySerializer(_AutoSlugMixin, serializers.ModelSerializer):
+    slug_source = 'name'
+
+    class Meta:
+        model = FAQCategory
+        fields = ['id', 'name', 'slug', 'icon', 'color', 'order']
+        extra_kwargs = {'slug': {'required': False}}
+
+
+class AdminDocumentSerializer(serializers.ModelSerializer):
+    file = serializers.FileField(use_url=True)
+    category = serializers.PrimaryKeyRelatedField(queryset=DocumentCategory.objects.all(), required=False, allow_null=True)
+    category_name = serializers.CharField(source='category.name', read_only=True, default=None)
+    file_size = serializers.CharField(source='get_file_size', read_only=True)
+
+    class Meta:
+        model = Document
+        fields = ['id', 'title', 'category', 'category_name', 'file', 'file_size',
+                  'description', 'is_published', 'downloads', 'created_at']
+        read_only_fields = ['downloads', 'created_at']
+
+
+class AdminNewsCategoryViewSet(_ContentViewSet):
+    serializer_class = AdminNewsCategorySerializer
+    queryset = NewsCategory.objects.all().order_by('name')
+
+
+class AdminNewsTagViewSet(_ContentViewSet):
+    serializer_class = AdminNewsTagSerializer
+    queryset = NewsTag.objects.all().order_by('name')
+
+
+class AdminGalleryCategoryViewSet(_ContentViewSet):
+    serializer_class = AdminGalleryCategorySerializer
+    queryset = GalleryCategory.objects.all().order_by('order', 'name')
+
+
+class AdminDocumentCategoryViewSet(_ContentViewSet):
+    serializer_class = AdminDocumentCategorySerializer
+    queryset = DocumentCategory.objects.all().order_by('order', 'name')
+
+
+class AdminFAQCategoryViewSet(_ContentViewSet):
+    serializer_class = AdminFAQCategorySerializer
+    queryset = FAQCategory.objects.all().order_by('order', 'name')
+
+
+class AdminDocumentViewSet(_ContentViewSet):
+    serializer_class = AdminDocumentSerializer
+    queryset = Document.objects.all().order_by('-created_at')
+
+
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAdminUser])
@@ -345,6 +438,7 @@ def admin_meta(request):
         'news_categories': [{'id': c.id, 'name': c.name} for c in NewsCategory.objects.all()],
         'news_tags': [{'id': t.id, 'name': t.name} for t in NewsTag.objects.all()],
         'faq_categories': [{'id': c.id, 'name': c.name} for c in FAQCategory.objects.all()],
+        'document_categories': [{'id': c.id, 'name': c.name} for c in DocumentCategory.objects.all()],
         'event_types': [{'value': v, 'label': lbl} for v, lbl in Event.EVENT_TYPE_CHOICES],
         'groups': [{'id': g.id, 'name': g.name} for g in Group.objects.filter(is_published=True)],
         'news_statuses': [{'value': v, 'label': lbl} for v, lbl in News.Status.choices],

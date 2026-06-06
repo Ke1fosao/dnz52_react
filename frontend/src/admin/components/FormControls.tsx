@@ -1,7 +1,8 @@
 import { type ReactNode, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Eye, Pencil, ImagePlus, X, ArrowLeft, Save, Trash2, Loader2, type LucideIcon,
+  Eye, Pencil, ImagePlus, X, ArrowLeft, Save, Trash2, Loader2,
+  File as FileIcon, Download, ChevronUp, ChevronDown, type LucideIcon,
 } from 'lucide-react';
 import { RichContent } from '@/components/common/RichContent';
 import { cn } from '@/lib/utils';
@@ -133,6 +134,109 @@ export function FormActions({ onSave, saving, onDelete, cancelTo }: {
           <Trash2 size={18} /> Видалити
         </button>
       )}
+    </div>
+  );
+}
+
+// Завантаження файлу (документи тощо)
+export function FileField({ url, file, onPick, accept }: {
+  url: string | null; file: File | null; onPick: (f: File | null) => void; accept?: string;
+}) {
+  const name = file ? file.name : (url ? decodeURIComponent(url.split('/').pop() || '') : null);
+  return (
+    <div className="flex items-center gap-3 flex-wrap">
+      {name ? (
+        <span className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/70 dark:bg-slate-800/70 border border-white/60 dark:border-slate-700 text-sm font-medium text-gray-700 dark:text-slate-300 max-w-full">
+          <FileIcon size={16} className="text-blue-500 shrink-0" />
+          <span className="truncate max-w-[200px]">{name}</span>
+          {url && !file && <a href={url} target="_blank" rel="noreferrer" className="text-blue-500 shrink-0" title="Відкрити"><Download size={14} /></a>}
+        </span>
+      ) : <span className="text-sm text-gray-400 dark:text-slate-500">Файл не вибрано</span>}
+      <label className="cursor-pointer bg-white/70 dark:bg-slate-800/70 border border-white/60 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-700 font-bold text-sm px-4 py-2 rounded-xl text-gray-700 dark:text-slate-300 transition-colors">
+        {name ? 'Замінити файл' : 'Вибрати файл'}
+        <input type="file" accept={accept} className="hidden" onChange={e => onPick(e.target.files?.[0] || null)} />
+      </label>
+    </div>
+  );
+}
+
+const PRESET_COLORS = ['#4A90E2', '#34C8A8', '#50E3C2', '#38C2DD', '#7C4DCB', '#B388FF', '#FF9F1A', '#FFD93D', '#E5677E', '#FF8FA3', '#22C55E', '#64748B'];
+
+export function ColorField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex gap-1.5 flex-wrap">
+        {PRESET_COLORS.map(c => (
+          <button type="button" key={c} onClick={() => onChange(c)} title={c}
+            className={cn('w-7 h-7 rounded-lg border-2 transition-transform hover:scale-110',
+              value?.toLowerCase() === c.toLowerCase() ? 'border-gray-900 dark:border-white scale-110' : 'border-white/60 dark:border-slate-700')}
+            style={{ background: c }} />
+        ))}
+      </div>
+      <span className="inline-flex items-center gap-2 rounded-xl bg-white/70 dark:bg-slate-800/70 border border-white/60 dark:border-slate-700 px-2 py-1.5">
+        <input type="color" value={/^#[0-9a-fA-F]{6}$/.test(value) ? value : '#4A90E2'} onChange={e => onChange(e.target.value)} className="w-6 h-6 rounded cursor-pointer bg-transparent border-0 p-0" />
+        <input value={value} onChange={e => onChange(e.target.value)} className="w-20 bg-transparent outline-none text-sm font-mono text-gray-700 dark:text-slate-300" placeholder="#RRGGBB" />
+      </span>
+    </div>
+  );
+}
+
+const COMMON_ICONS = [
+  'bi-star-fill', 'bi-heart-fill', 'bi-house-fill', 'bi-book-fill', 'bi-mortarboard-fill', 'bi-palette-fill',
+  'bi-music-note-beamed', 'bi-bicycle', 'bi-heart-pulse-fill', 'bi-snow', 'bi-sun-fill', 'bi-tree-fill',
+  'bi-flower1', 'bi-balloon-fill', 'bi-gift-fill', 'bi-trophy-fill', 'bi-people-fill', 'bi-emoji-smile-fill',
+  'bi-lightbulb-fill', 'bi-puzzle-fill', 'bi-pencil-fill', 'bi-brush-fill', 'bi-camera-fill', 'bi-image-fill',
+  'bi-calendar-event-fill', 'bi-clock-fill', 'bi-shield-fill-check', 'bi-award-fill', 'bi-bell-fill',
+  'bi-chat-heart-fill', 'bi-info-circle-fill', 'bi-question-circle-fill', 'bi-file-earmark-text-fill',
+  'bi-folder-fill', 'bi-globe', 'bi-telephone-fill', 'bi-envelope-fill', 'bi-geo-alt-fill', 'bi-cup-hot-fill',
+  'bi-egg-fried', 'bi-basket-fill', 'bi-droplet-fill', 'bi-flag-fill', 'bi-stars', 'bi-magic',
+  'bi-rocket-takeoff-fill', 'bi-controller', 'bi-music-note-list', 'bi-journal-bookmark-fill',
+];
+
+export function IconPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState('');
+  const filtered = q ? COMMON_ICONS.filter(ic => ic.includes(q.toLowerCase().replace(/\s/g, '-'))) : COMMON_ICONS;
+  return (
+    <div>
+      <div className="flex items-center gap-2">
+        <span className="w-11 h-11 grid place-items-center rounded-xl bg-white/70 dark:bg-slate-800/70 border border-white/60 dark:border-slate-700 text-blue-500 text-xl shrink-0">
+          {value ? <i className={`bi ${value}`} /> : <span className="text-gray-300 text-base">?</span>}
+        </span>
+        <input value={value} onChange={e => onChange(e.target.value)} placeholder="bi-star-fill" className={cn(inputCls, 'flex-1')} />
+        <button type="button" onClick={() => setOpen(o => !o)} className="px-3 py-2.5 rounded-xl bg-white/70 dark:bg-slate-800/70 border border-white/60 dark:border-slate-700 font-bold text-sm shrink-0 text-gray-700 dark:text-slate-300">Вибрати</button>
+      </div>
+      {open && (
+        <div className="mt-2 premium-glass rounded-2xl p-3">
+          <input value={q} onChange={e => setQ(e.target.value)} placeholder="Пошук іконки…" className={cn(inputCls, 'mb-2')} />
+          <div className="grid grid-cols-8 sm:grid-cols-10 gap-1.5 max-h-52 overflow-y-auto">
+            {filtered.map(ic => (
+              <button type="button" key={ic} title={ic} onClick={() => { onChange(ic); setOpen(false); }}
+                className={cn('aspect-square grid place-items-center rounded-lg text-lg transition-colors',
+                  value === ic ? 'bg-blue-500 text-white' : 'bg-white/50 dark:bg-slate-800/50 text-gray-600 dark:text-slate-300 hover:bg-blue-100 dark:hover:bg-blue-900/40')}>
+                <i className={`bi ${ic}`} />
+              </button>
+            ))}
+          </div>
+          <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-2">
+            Будь-яку іконку з <a href="https://icons.getbootstrap.com" target="_blank" rel="noreferrer" className="text-blue-500">Bootstrap Icons</a> можна вписати вручну (напр. <code>bi-snow</code>).
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Кнопки ↑/↓ для зміни порядку (батьківський список реалізує саму перестановку)
+export function OrderControls({ onUp, onDown, isFirst, isLast }: {
+  onUp: () => void; onDown: () => void; isFirst?: boolean; isLast?: boolean;
+}) {
+  return (
+    <div className="flex flex-col shrink-0">
+      <button type="button" onClick={onUp} disabled={isFirst} aria-label="Вгору"
+        className="w-7 h-6 grid place-items-center rounded-t-lg bg-white/60 dark:bg-slate-800/60 disabled:opacity-30 hover:bg-blue-100 dark:hover:bg-blue-900/40 text-gray-500 dark:text-slate-400 transition-colors"><ChevronUp size={15} /></button>
+      <button type="button" onClick={onDown} disabled={isLast} aria-label="Вниз"
+        className="w-7 h-6 grid place-items-center rounded-b-lg bg-white/60 dark:bg-slate-800/60 disabled:opacity-30 hover:bg-blue-100 dark:hover:bg-blue-900/40 text-gray-500 dark:text-slate-400 transition-colors"><ChevronDown size={15} /></button>
     </div>
   );
 }

@@ -4,7 +4,8 @@ import { Toaster } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import {
   LayoutDashboard, MessageSquare, HelpCircle, LogOut, Sun, Moon,
-  ExternalLink, Menu as MenuIcon, X, Newspaper, CalendarDays, FileText, type LucideIcon,
+  ExternalLink, Menu as MenuIcon, X, Newspaper, CalendarDays, FileText,
+  Files, Tags, type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/hooks/useTheme';
@@ -24,6 +25,10 @@ const SECTIONS: { title?: string; items: NavItem[] }[] = [
     { to: '/manage/news', label: 'Новини', icon: Newspaper },
     { to: '/manage/events', label: 'Події', icon: CalendarDays },
     { to: '/manage/faq', label: 'FAQ', icon: FileText },
+    { to: '/manage/documents', label: 'Документи', icon: Files },
+  ] },
+  { title: 'Налаштування', items: [
+    { to: '/manage/directories', label: 'Довідники', icon: Tags },
   ] },
 ];
 

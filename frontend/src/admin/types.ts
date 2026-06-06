@@ -50,9 +50,32 @@ export interface AdminMeta {
   news_categories: IdName[];
   news_tags: IdName[];
   faq_categories: IdName[];
+  document_categories: IdName[];
   event_types: ValueLabel[];
   groups: IdName[];
   news_statuses: ValueLabel[];
+}
+
+export interface AdminCategory {
+  id: number;
+  name: string;
+  slug: string;
+  icon?: string;
+  color?: string;
+  order?: number;
+}
+
+export interface AdminDocument {
+  id: number;
+  title: string;
+  category: number | null;
+  category_name: string | null;
+  file: string;
+  file_size: string;
+  description: string;
+  is_published: boolean;
+  downloads: number;
+  created_at: string;
 }
 
 export interface AdminNews {

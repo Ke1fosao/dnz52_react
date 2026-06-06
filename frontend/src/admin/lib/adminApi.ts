@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type {
   AdminStats, AdminReview, AdminQuestion, AdminUser, QuestionStatus,
-  AdminMeta, AdminNews, AdminEvent, AdminFAQItem,
+  AdminMeta, AdminNews, AdminEvent, AdminFAQItem, AdminCategory, AdminDocument,
 } from '../types';
 
 const TOKEN_KEY = 'dnz52:adminToken';
@@ -77,3 +77,10 @@ function crud<T>(path: string) {
 export const adminNewsApi = crud<AdminNews>('news');
 export const adminEventsApi = crud<AdminEvent>('events');
 export const adminFaqItemsApi = crud<AdminFAQItem>('faq-items');
+
+export const adminDocumentsApi = crud<AdminDocument>('documents');
+export const adminNewsCategoriesApi = crud<AdminCategory>('news-categories');
+export const adminNewsTagsApi = crud<AdminCategory>('news-tags');
+export const adminGalleryCategoriesApi = crud<AdminCategory>('gallery-categories');
+export const adminDocumentCategoriesApi = crud<AdminCategory>('document-categories');
+export const adminFaqCategoriesApi = crud<AdminCategory>('faq-categories');

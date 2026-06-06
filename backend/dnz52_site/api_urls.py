@@ -30,6 +30,8 @@ from main.admin_api import (
     admin_login, admin_logout, admin_me, admin_stats, admin_meta,
     AdminReviewViewSet, AdminQuestionViewSet,
     AdminNewsViewSet, AdminEventViewSet, AdminFAQItemViewSet,
+    AdminNewsCategoryViewSet, AdminNewsTagViewSet, AdminGalleryCategoryViewSet,
+    AdminDocumentCategoryViewSet, AdminFAQCategoryViewSet, AdminDocumentViewSet,
 )
 
 
@@ -99,6 +101,12 @@ router.register(r'admin/questions', AdminQuestionViewSet, basename='admin-questi
 router.register(r'admin/news', AdminNewsViewSet, basename='admin-news')
 router.register(r'admin/events', AdminEventViewSet, basename='admin-event')
 router.register(r'admin/faq-items', AdminFAQItemViewSet, basename='admin-faq-item')
+router.register(r'admin/documents', AdminDocumentViewSet, basename='admin-document')
+router.register(r'admin/news-categories', AdminNewsCategoryViewSet, basename='admin-news-category')
+router.register(r'admin/news-tags', AdminNewsTagViewSet, basename='admin-news-tag')
+router.register(r'admin/gallery-categories', AdminGalleryCategoryViewSet, basename='admin-gallery-category')
+router.register(r'admin/document-categories', AdminDocumentCategoryViewSet, basename='admin-document-category')
+router.register(r'admin/faq-categories', AdminFAQCategoryViewSet, basename='admin-faq-category')
 
 
 urlpatterns = [

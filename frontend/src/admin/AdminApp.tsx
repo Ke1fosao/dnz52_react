@@ -11,6 +11,9 @@ import { EventsListPage } from './pages/EventsListPage';
 import { EventFormPage } from './pages/EventFormPage';
 import { FaqItemsListPage } from './pages/FaqItemsListPage';
 import { FaqItemFormPage } from './pages/FaqItemFormPage';
+import { DocumentsListPage } from './pages/DocumentsListPage';
+import { DocumentFormPage } from './pages/DocumentFormPage';
+import { DirectoriesPage } from './pages/DirectoriesPage';
 
 function Guarded() {
   const { user, loading } = useAdminAuth();
@@ -43,6 +46,10 @@ export default function AdminApp() {
           <Route path="faq" element={<FaqItemsListPage />} />
           <Route path="faq/new" element={<FaqItemFormPage />} />
           <Route path="faq/:id/edit" element={<FaqItemFormPage />} />
+          <Route path="documents" element={<DocumentsListPage />} />
+          <Route path="documents/new" element={<DocumentFormPage />} />
+          <Route path="documents/:id/edit" element={<DocumentFormPage />} />
+          <Route path="directories" element={<DirectoriesPage />} />
           <Route path="*" element={<Navigate to="/manage" replace />} />
         </Route>
       </Routes>
