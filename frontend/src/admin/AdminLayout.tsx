@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import {
   LayoutDashboard, MessageSquare, HelpCircle, LogOut, Sun, Moon,
   ExternalLink, Menu as MenuIcon, X, Newspaper, CalendarDays, FileText,
-  Files, Tags, BookOpen, Images, Phone, UsersRound, type LucideIcon,
+  Files, Tags, BookOpen, Images, Phone, UsersRound, Baby, Sparkles, type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/hooks/useTheme';
@@ -29,6 +29,8 @@ const SECTIONS: { title?: string; items: NavItem[] }[] = [
   ] },
   { title: 'Сайт', items: [
     { to: '/manage/pages', label: 'Сторінки', icon: BookOpen },
+    { to: '/manage/groups', label: 'Групи', icon: Baby },
+    { to: '/manage/circles', label: 'Гуртки', icon: Sparkles },
     { to: '/manage/sliders', label: 'Слайдер', icon: Images },
     { to: '/manage/staff', label: 'Штат', icon: UsersRound },
     { to: '/manage/contact', label: 'Контакти', icon: Phone },

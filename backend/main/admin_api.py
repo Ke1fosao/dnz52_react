@@ -24,8 +24,9 @@ from reviews.models import Review
 from faq.models import FAQQuestionSubmission, FAQItem, FAQCategory
 from news.models import News, NewsCategory, NewsTag
 from events.models import Event
-from groups.models import Group
-from gallery.models import GalleryCategory
+from groups.models import Group, GroupStaff
+from circles.models import Circle, CircleBenefit, CircleSession
+from gallery.models import GalleryCategory, GalleryAlbum
 from documents.models import Document, DocumentCategory
 from .models import Page, PageImage, Slider, Contact, StaffMember
 
@@ -443,6 +444,8 @@ def admin_meta(request):
         'event_types': [{'value': v, 'label': lbl} for v, lbl in Event.EVENT_TYPE_CHOICES],
         'groups': [{'id': g.id, 'name': g.name} for g in Group.objects.filter(is_published=True)],
         'news_statuses': [{'value': v, 'label': lbl} for v, lbl in News.Status.choices],
+        'gallery_albums': [{'id': a.id, 'name': a.title} for a in GalleryAlbum.objects.all()],
+        'age_groups': [{'value': v, 'label': lbl} for v, lbl in Group.AGE_CHOICES],
     })
 
 
@@ -531,3 +534,89 @@ class AdminPageImageViewSet(_ContentViewSet):
         qs = PageImage.objects.all().order_by('order', 'id')
         page = self.request.query_params.get('page')
         return qs.filter(page_id=page) if page else qs
+
+
+# ============================================================================
+# Групи (+ персонал) та Гуртки (+ переваги/розклад)
+# ============================================================================
+class AdminGroupSerializer(_AutoSlugMixin, serializers.ModelSerializer):
+    slug_source = 'name'
+    cover = serializers.ImageField(use_url=True, required=False, allow_null=True)
+    album = serializers.PrimaryKeyRelatedField(queryset=GalleryAlbum.objects.all(), required=False, allow_null=True)
+    age_group_display = serializers.CharField(source='get_age_group_display', read_only=True)
+
+    class Meta:
+        model = Group
+        fields = ['id', 'name', 'slug', 'age_group', 'age_group_display', 'motto', 'description',
+                  'cover', 'color', 'album', 'order', 'is_published']
+        extra_kwargs = {'slug': {'required': False}}
+
+
+class AdminGroupStaffSerializer(serializers.ModelSerializer):
+    photo = serializers.ImageField(use_url=True, required=False, allow_null=True)
+
+    class Meta:
+        model = GroupStaff
+        fields = ['id', 'group', 'role', 'full_name', 'photo', 'birth_date', 'education', 'experience', 'motto', 'order']
+
+
+class AdminCircleSerializer(_AutoSlugMixin, serializers.ModelSerializer):
+    slug_source = 'name'
+    cover = serializers.ImageField(use_url=True, required=False, allow_null=True)
+    album = serializers.PrimaryKeyRelatedField(queryset=GalleryAlbum.objects.all(), required=False, allow_null=True)
+
+    class Meta:
+        model = Circle
+        fields = ['id', 'name', 'slug', 'tagline', 'leader', 'age_group', 'schedule', 'duration',
+                  'format', 'price', 'icon', 'color', 'cover', 'goal', 'description', 'album',
+                  'is_featured', 'order', 'is_published']
+        extra_kwargs = {'slug': {'required': False}}
+
+
+class AdminCircleBenefitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CircleBenefit
+        fields = ['id', 'circle', 'icon', 'title', 'text', 'order']
+
+
+class AdminCircleSessionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CircleSession
+        fields = ['id', 'circle', 'day', 'time', 'note', 'order']
+
+
+class AdminGroupViewSet(_ContentViewSet):
+    serializer_class = AdminGroupSerializer
+    queryset = Group.objects.all().order_by('order', 'name')
+
+
+class AdminGroupStaffViewSet(_ContentViewSet):
+    serializer_class = AdminGroupStaffSerializer
+
+    def get_queryset(self):
+        qs = GroupStaff.objects.all().order_by('order', 'id')
+        g = self.request.query_params.get('group')
+        return qs.filter(group_id=g) if g else qs
+
+
+class AdminCircleViewSet(_ContentViewSet):
+    serializer_class = AdminCircleSerializer
+    queryset = Circle.objects.all().order_by('order', 'name')
+
+
+class AdminCircleBenefitViewSet(_ContentViewSet):
+    serializer_class = AdminCircleBenefitSerializer
+
+    def get_queryset(self):
+        qs = CircleBenefit.objects.all().order_by('order', 'id')
+        c = self.request.query_params.get('circle')
+        return qs.filter(circle_id=c) if c else qs
+
+
+class AdminCircleSessionViewSet(_ContentViewSet):
+    serializer_class = AdminCircleSessionSerializer
+
+    def get_queryset(self):
+        qs = CircleSession.objects.all().order_by('order', 'id')
+        c = self.request.query_params.get('circle')
+        return qs.filter(circle_id=c) if c else qs

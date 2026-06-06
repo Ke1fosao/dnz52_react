@@ -3,6 +3,7 @@ import type {
   AdminStats, AdminReview, AdminQuestion, AdminUser, QuestionStatus,
   AdminMeta, AdminNews, AdminEvent, AdminFAQItem, AdminCategory, AdminDocument,
   AdminContact, AdminSlider, AdminStaffMember, AdminPage, AdminPageImage,
+  AdminGroup, AdminGroupStaff, AdminCircle, AdminCircleBenefit, AdminCircleSession,
 } from '../types';
 
 const TOKEN_KEY = 'dnz52:adminToken';
@@ -98,3 +99,17 @@ export const adminContactApi = {
   get: () => http.get<AdminContact>('/contact/').then(r => r.data),
   update: (data: FormData | object) => http.patch<AdminContact>('/contact/', data).then(r => r.data),
 };
+
+// Дочірній CRUD (інлайни): list фільтрується за батьком (?<parentParam>=id)
+function childApi<T>(path: string, parentParam: string) {
+  return {
+    ...crud<T>(path),
+    listFor: (parentId: number) => http.get<T[]>(`/${path}/`, { params: { [parentParam]: parentId } }).then(r => r.data),
+  };
+}
+
+export const adminGroupsApi = crud<AdminGroup>('groups');
+export const adminGroupStaffApi = childApi<AdminGroupStaff>('group-staff', 'group');
+export const adminCirclesApi = crud<AdminCircle>('circles');
+export const adminCircleBenefitsApi = childApi<AdminCircleBenefit>('circle-benefits', 'circle');
+export const adminCircleSessionsApi = childApi<AdminCircleSession>('circle-sessions', 'circle');

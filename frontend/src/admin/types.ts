@@ -54,6 +54,8 @@ export interface AdminMeta {
   event_types: ValueLabel[];
   groups: IdName[];
   news_statuses: ValueLabel[];
+  gallery_albums: IdName[];
+  age_groups: ValueLabel[];
 }
 
 export interface AdminCategory {
@@ -140,6 +142,59 @@ export interface AdminPageImage {
   order: number;
   is_active: boolean;
 }
+
+export interface AdminGroup {
+  id: number;
+  name: string;
+  slug: string;
+  age_group: string;
+  age_group_display: string;
+  motto: string;
+  description: string;
+  cover: string | null;
+  color: string;
+  album: number | null;
+  order: number;
+  is_published: boolean;
+}
+
+export interface AdminGroupStaff {
+  id: number;
+  group: number;
+  role: string;
+  full_name: string;
+  photo: string | null;
+  birth_date: string | null;
+  education: string;
+  experience: string;
+  motto: string;
+  order: number;
+}
+
+export interface AdminCircle {
+  id: number;
+  name: string;
+  slug: string;
+  tagline: string;
+  leader: string;
+  age_group: string;
+  schedule: string;
+  duration: string;
+  format: string;
+  price: string;
+  icon: string;
+  color: string;
+  cover: string | null;
+  goal: string;
+  description: string;
+  album: number | null;
+  is_featured: boolean;
+  order: number;
+  is_published: boolean;
+}
+
+export interface AdminCircleBenefit { id: number; circle: number; icon: string; title: string; text: string; order: number; }
+export interface AdminCircleSession { id: number; circle: number; day: string; time: string; note: string; order: number; }
 
 export interface AdminNews {
   id: number;
