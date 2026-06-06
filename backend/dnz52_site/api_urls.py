@@ -32,6 +32,8 @@ from main.admin_api import (
     AdminNewsViewSet, AdminEventViewSet, AdminFAQItemViewSet,
     AdminNewsCategoryViewSet, AdminNewsTagViewSet, AdminGalleryCategoryViewSet,
     AdminDocumentCategoryViewSet, AdminFAQCategoryViewSet, AdminDocumentViewSet,
+    admin_contact, AdminSliderViewSet, AdminStaffMemberViewSet,
+    AdminPageViewSet, AdminPageImageViewSet,
 )
 
 
@@ -107,6 +109,10 @@ router.register(r'admin/news-tags', AdminNewsTagViewSet, basename='admin-news-ta
 router.register(r'admin/gallery-categories', AdminGalleryCategoryViewSet, basename='admin-gallery-category')
 router.register(r'admin/document-categories', AdminDocumentCategoryViewSet, basename='admin-document-category')
 router.register(r'admin/faq-categories', AdminFAQCategoryViewSet, basename='admin-faq-category')
+router.register(r'admin/sliders', AdminSliderViewSet, basename='admin-slider')
+router.register(r'admin/staff', AdminStaffMemberViewSet, basename='admin-staff')
+router.register(r'admin/pages', AdminPageViewSet, basename='admin-page')
+router.register(r'admin/page-images', AdminPageImageViewSet, basename='admin-page-image')
 
 
 urlpatterns = [
@@ -118,6 +124,7 @@ urlpatterns = [
     path('admin/auth/me/', admin_me, name='api-admin-me'),
     path('admin/stats/', admin_stats, name='api-admin-stats'),
     path('admin/meta/', admin_meta, name='api-admin-meta'),
+    path('admin/contact/', admin_contact, name='api-admin-contact'),
 
     # Окремі endpoints (menu/today/ та menu/week/ тепер як @action в DailyMenuViewSet)
     path('search/', global_search, name='api-search'),

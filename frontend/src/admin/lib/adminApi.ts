@@ -2,6 +2,7 @@ import axios from 'axios';
 import type {
   AdminStats, AdminReview, AdminQuestion, AdminUser, QuestionStatus,
   AdminMeta, AdminNews, AdminEvent, AdminFAQItem, AdminCategory, AdminDocument,
+  AdminContact, AdminSlider, AdminStaffMember, AdminPage, AdminPageImage,
 } from '../types';
 
 const TOKEN_KEY = 'dnz52:adminToken';
@@ -84,3 +85,16 @@ export const adminNewsTagsApi = crud<AdminCategory>('news-tags');
 export const adminGalleryCategoriesApi = crud<AdminCategory>('gallery-categories');
 export const adminDocumentCategoriesApi = crud<AdminCategory>('document-categories');
 export const adminFaqCategoriesApi = crud<AdminCategory>('faq-categories');
+
+export const adminSlidersApi = crud<AdminSlider>('sliders');
+export const adminStaffApi = crud<AdminStaffMember>('staff');
+export const adminPagesApi = crud<AdminPage>('pages');
+export const adminPageImagesApi = {
+  ...crud<AdminPageImage>('page-images'),
+  listFor: (pageId: number) => http.get<AdminPageImage[]>('/page-images/', { params: { page: pageId } }).then(r => r.data),
+};
+
+export const adminContactApi = {
+  get: () => http.get<AdminContact>('/contact/').then(r => r.data),
+  update: (data: FormData | object) => http.patch<AdminContact>('/contact/', data).then(r => r.data),
+};

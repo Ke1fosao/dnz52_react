@@ -78,6 +78,69 @@ export interface AdminDocument {
   created_at: string;
 }
 
+export interface AdminContact {
+  id: number;
+  address: string;
+  phone: string;
+  email: string;
+  working_hours: string;
+  map_embed: string;
+  facebook_url: string;
+  instagram_url: string;
+  youtube_url: string;
+}
+
+export interface AdminSlider {
+  id: number;
+  title: string;
+  description: string;
+  image: string | null;
+  video: string | null;
+  link: string;
+  order: number;
+  is_active: boolean;
+}
+
+export interface AdminStaffMember {
+  id: number;
+  full_name: string;
+  position: string;
+  photo: string | null;
+  education: string;
+  experience: string;
+  category: string;
+  awards: string;
+  bio: string;
+  email: string;
+  phone: string;
+  reception_hours: string;
+  is_featured: boolean;
+  accent_color: string;
+  detail_url: string;
+  order: number;
+  is_active: boolean;
+}
+
+export interface AdminPage {
+  id: number;
+  title: string;
+  slug: string;
+  content: string;
+  image: string | null;
+  is_published: boolean;
+  order: number;
+  updated_at: string;
+}
+
+export interface AdminPageImage {
+  id: number;
+  page: number;
+  image: string;
+  caption: string;
+  order: number;
+  is_active: boolean;
+}
+
 export interface AdminNews {
   id: number;
   title: string;

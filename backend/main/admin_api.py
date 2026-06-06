@@ -27,6 +27,7 @@ from events.models import Event
 from groups.models import Group
 from gallery.models import GalleryCategory
 from documents.models import Document, DocumentCategory
+from .models import Page, PageImage, Slider, Contact, StaffMember
 
 
 # ============================================================================
@@ -443,3 +444,90 @@ def admin_meta(request):
         'groups': [{'id': g.id, 'name': g.name} for g in Group.objects.filter(is_published=True)],
         'news_statuses': [{'value': v, 'label': lbl} for v, lbl in News.Status.choices],
     })
+
+
+# ============================================================================
+# Сторінки сайту: Контакти (singleton), Слайдер, Штат, Сторінки (+фото-інлайн)
+# ============================================================================
+class AdminContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contact
+        fields = ['id', 'address', 'phone', 'email', 'working_hours', 'map_embed',
+                  'facebook_url', 'instagram_url', 'youtube_url']
+
+
+@api_view(['GET', 'PATCH'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAdminUser])
+def admin_contact(request):
+    """Єдиний запис контактів (singleton)."""
+    obj = Contact.objects.first()
+    if obj is None:
+        obj = Contact.objects.create(address='', phone='', email='', working_hours='')
+    if request.method == 'PATCH':
+        ser = AdminContactSerializer(obj, data=request.data, partial=True)
+        ser.is_valid(raise_exception=True)
+        ser.save()
+        return Response(ser.data)
+    return Response(AdminContactSerializer(obj).data)
+
+
+class AdminSliderSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(use_url=True, required=False, allow_null=True)
+    video = serializers.FileField(use_url=True, required=False, allow_null=True)
+
+    class Meta:
+        model = Slider
+        fields = ['id', 'title', 'description', 'image', 'video', 'link', 'order', 'is_active']
+
+
+class AdminStaffMemberSerializer(serializers.ModelSerializer):
+    photo = serializers.ImageField(use_url=True, required=False, allow_null=True)
+
+    class Meta:
+        model = StaffMember
+        fields = ['id', 'full_name', 'position', 'photo', 'education', 'experience', 'category',
+                  'awards', 'bio', 'email', 'phone', 'reception_hours', 'is_featured',
+                  'accent_color', 'detail_url', 'order', 'is_active']
+
+
+class AdminPageSerializer(_AutoSlugMixin, serializers.ModelSerializer):
+    image = serializers.ImageField(use_url=True, required=False, allow_null=True)
+
+    class Meta:
+        model = Page
+        fields = ['id', 'title', 'slug', 'content', 'image', 'is_published', 'order', 'updated_at']
+        read_only_fields = ['updated_at']
+        extra_kwargs = {'slug': {'required': False}}
+
+
+class AdminPageImageSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(use_url=True)
+
+    class Meta:
+        model = PageImage
+        fields = ['id', 'page', 'image', 'caption', 'order', 'is_active']
+
+
+class AdminSliderViewSet(_ContentViewSet):
+    serializer_class = AdminSliderSerializer
+    queryset = Slider.objects.all().order_by('order', 'id')
+
+
+class AdminStaffMemberViewSet(_ContentViewSet):
+    serializer_class = AdminStaffMemberSerializer
+    queryset = StaffMember.objects.all().order_by('order', 'id')
+
+
+class AdminPageViewSet(_ContentViewSet):
+    serializer_class = AdminPageSerializer
+    queryset = Page.objects.all().order_by('order', 'id')
+
+
+class AdminPageImageViewSet(_ContentViewSet):
+    serializer_class = AdminPageImageSerializer
+
+    def get_queryset(self):
+        qs = PageImage.objects.all().order_by('order', 'id')
+        page = self.request.query_params.get('page')
+        return qs.filter(page_id=page) if page else qs

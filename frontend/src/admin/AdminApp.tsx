@@ -14,6 +14,13 @@ import { FaqItemFormPage } from './pages/FaqItemFormPage';
 import { DocumentsListPage } from './pages/DocumentsListPage';
 import { DocumentFormPage } from './pages/DocumentFormPage';
 import { DirectoriesPage } from './pages/DirectoriesPage';
+import { ContactFormPage } from './pages/ContactFormPage';
+import { SlidersListPage } from './pages/SlidersListPage';
+import { SliderFormPage } from './pages/SliderFormPage';
+import { StaffListPage } from './pages/StaffListPage';
+import { StaffFormPage } from './pages/StaffFormPage';
+import { PagesListPage } from './pages/PagesListPage';
+import { PageFormPage } from './pages/PageFormPage';
 
 function Guarded() {
   const { user, loading } = useAdminAuth();
@@ -50,6 +57,16 @@ export default function AdminApp() {
           <Route path="documents/new" element={<DocumentFormPage />} />
           <Route path="documents/:id/edit" element={<DocumentFormPage />} />
           <Route path="directories" element={<DirectoriesPage />} />
+          <Route path="contact" element={<ContactFormPage />} />
+          <Route path="sliders" element={<SlidersListPage />} />
+          <Route path="sliders/new" element={<SliderFormPage />} />
+          <Route path="sliders/:id/edit" element={<SliderFormPage />} />
+          <Route path="staff" element={<StaffListPage />} />
+          <Route path="staff/new" element={<StaffFormPage />} />
+          <Route path="staff/:id/edit" element={<StaffFormPage />} />
+          <Route path="pages" element={<PagesListPage />} />
+          <Route path="pages/new" element={<PageFormPage />} />
+          <Route path="pages/:id/edit" element={<PageFormPage />} />
           <Route path="*" element={<Navigate to="/manage" replace />} />
         </Route>
       </Routes>
