@@ -377,15 +377,22 @@ AXES_IPWARE_PROXY_COUNT = 1
 AXES_IPWARE_META_PRECEDENCE_ORDER = ['HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR']
 
 # Content-Security-Policy (django-csp 4.x).
-# 'unsafe-inline' ОБОВʼЯЗКОВИЙ: у index.html є inline-скрипт теми/шрифту (anti-FOUC)
-# та inline-стилі (React style={{}}) — без нього сайт зламається.
+# УВАГА: якщо змінити inline-скрипт у frontend/index.html — перерахувати sha256 тут:
+#   PowerShell: $c = ([regex]::Match((gc backend/spa/index.html -Raw),'(?s)<script>(.*?)</script>')).Groups[1].Value
+#               $b = [Text.Encoding]::UTF8.GetBytes($c); $h = [Security.Cryptography.SHA256]::Create().ComputeHash($b)
+#               "sha256-$([Convert]::ToBase64String($h))"
+# style-src лишаємо з 'unsafe-inline' — React рендерить динамічні inline-стилі,
+# їх не захешувати. XSS через style набагато менш критичний, ніж через script.
 CONTENT_SECURITY_POLICY = {
     'DIRECTIVES': {
         'default-src': ["'self'"],
         'script-src': [
-            "'self'", "'unsafe-inline'",
-            'https://www.googletagmanager.com',   # Google Analytics (gtag)
-            'https://plausible.io',                # Plausible
+            "'self'",
+            # hash anti-FOUC inline-скрипта з frontend/index.html (тема + розмір шрифту)
+            "'sha256-FUNyb4k9pMOU98IgRMNON1D4FYdX5kLCEz71lxbMqDg='",
+            'https://www.googletagmanager.com',        # Google Analytics (gtag)
+            'https://plausible.io',                    # Plausible
+            'https://challenges.cloudflare.com',       # Cloudflare Turnstile (Фаза 5)
         ],
         'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
         'font-src': ["'self'", 'https://fonts.gstatic.com', 'data:'],
@@ -397,7 +404,10 @@ CONTENT_SECURITY_POLICY = {
             'https://www.googletagmanager.com',
             'https://plausible.io',
         ],
-        'frame-src': ['https://www.google.com'],   # вбудована Google-карта (Контакти)
+        'frame-src': [
+            'https://www.google.com',             # вбудована Google-карта (Контакти)
+            'https://challenges.cloudflare.com',  # Cloudflare Turnstile (Фаза 5)
+        ],
         'frame-ancestors': ["'none'"],             # анти-clickjacking (як X-Frame-Options: DENY)
         'base-uri': ["'self'"],
         'object-src': ["'none'"],
