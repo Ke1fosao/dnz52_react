@@ -519,3 +519,27 @@ if not DEBUG:
 
     # Не відправляти Referer на сторонні сайти (приватність відвідувачів)
     SECURE_REFERRER_POLICY = 'same-origin'
+
+
+# ----------------------------------------------------------------------------
+# Sentry — моніторинг помилок (env-gated: вмикається лише якщо задано SENTRY_DSN)
+# Додайте у .env: SENTRY_DSN=https://xxxx@o123.ingest.sentry.io/456
+# На Render: Settings → Environment Variables → SENTRY_DSN
+# ----------------------------------------------------------------------------
+SENTRY_DSN = os.environ.get('SENTRY_DSN', '')
+if SENTRY_DSN:
+    try:
+        import sentry_sdk
+        from sentry_sdk.integrations.django import DjangoIntegration
+        sentry_sdk.init(
+            dsn=SENTRY_DSN,
+            integrations=[DjangoIntegration()],
+            # Відправляємо 10% транзакцій для трасування продуктивності
+            traces_sample_rate=0.1,
+            # Не відправляємо персональні дані (IP, cookies, user agent)
+            send_default_pii=False,
+            environment='production' if not DEBUG else 'development',
+            release=os.environ.get('RENDER_GIT_COMMIT', 'unknown'),
+        )
+    except ImportError:
+        pass  # sentry-sdk не встановлено — мовчки ігноруємо
