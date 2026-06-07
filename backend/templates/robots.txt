@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /admin/
-Disallow: /ckeditor/
+Disallow: /manage/
+Disallow: /api/
 
 Sitemap: /sitemap.xml

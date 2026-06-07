@@ -1,6 +1,6 @@
 # 🌈 ЗДО №52 — сайт закладу дошкільної освіти (м. Рівне)
 
-### 🔗 Живий сайт: **[dnz52.pythonanywhere.com](https://dnz52.pythonanywhere.com/)**
+### 🔗 Живий сайт: **[dnz52.onrender.com](https://dnz52.onrender.com/)**
 
 Сучасний повнофункціональний вебсайт дитячого садка: преміум-дизайн зі світлою й
 темною темами, власна React-адмінпанель, розумний пошук, PWA з офлайн-режимом та
@@ -70,7 +70,7 @@ Django REST API, який також роздає зібраний фронт о
 | **PWA / офлайн** | vite-plugin-pwa · Workbox (кастомний service worker) |
 | **Безпека** | django-axes · django-csp · django-otp (TOTP) · Cloudflare Turnstile · bleach |
 | **ШІ** | Google Gemini API (модерація + генерація тексту) |
-| **Деплой** | PythonAnywhere (Django + SPA) · Supabase (БД + медіа) |
+| **Деплой** | Render (авто-деплой із GitHub: build → migrate → collectstatic) · Supabase (БД + медіа) |
 
 ---
 
@@ -120,16 +120,9 @@ npm run build      # tsc + vite build → frontend/dist
 git add -A && git commit -m "..." && git push
 ```
 
-**Оновлення на PythonAnywhere:**
-```bash
-cd ~/dnz52_react && git pull
-workon dnz52
-cd backend
-pip install -r requirements.txt     # якщо додавались залежності
-python manage.py migrate            # якщо були міграції
-python manage.py collectstatic --noinput
-# Web → 🔄 Reload
-```
+**Деплой — автоматичний (Render).** Будь-який `git push` у гілку `main` запускає білд
+(`pip install` → `migrate` → `collectstatic`) і викочує нову версію — жодних ручних команд
+на сервері. Конфігурація — у `render.yaml`. Логи й статус: **Render → Logs**.
 
 Секрети задаються у `backend/.env` (ніколи не в git) — повний перелік у
 `backend/.env.example`: `SECRET_KEY`, `DEBUG`, `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS`,
@@ -138,9 +131,9 @@ python manage.py collectstatic --noinput
 
 > **База даних і медіа на Supabase.** БД підключається **лише через connection pooler**
 > Supabase (IPv4): `aws-1-<region>.pooler.supabase.com:5432`, користувач
-> `postgres.<project-ref>` — прямий хост `db.<ref>.supabase.co` лише IPv6 і на PA не
-> працює. Медіа зберігаються у Storage-бакеті (публічному); локальні файли й `db.sqlite3`
-> на сервері більше не потрібні. Перенесення наявних медіа — `python manage.py migrate_media_to_s3`.
+> `postgres.<project-ref>` (прямий хост `db.<ref>.supabase.co` — лише IPv6). Медіа — у
+> публічному Storage-бакеті; перенесення наявних — `python manage.py migrate_media_to_s3`.
+> Локальна розробка лишається на SQLite + локальних файлах (якщо `DATABASE_URL`/`AWS_*` не задані).
 
 ---
 
