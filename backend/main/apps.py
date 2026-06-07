@@ -9,6 +9,7 @@ class MainConfig(AppConfig):
         from django.contrib import admin
         from .admin_helpers import customize_app_list
         from .image_signals import register_image_signals
+        from .search_signals import register_search_signals
 
         # Брендинг адмінки (з'являється у хедері та в title вкладки)
         admin.site.site_header = 'ЗДО №52 — Адміністрування'
@@ -23,3 +24,6 @@ class MainConfig(AppConfig):
 
         # Авто-ресайз зображень при завантаженні (pre_save-сигнали)
         register_image_signals()
+
+        # Інвалідація кешу пошукового індексу при зміні контенту
+        register_search_signals()

@@ -1,3 +1,5 @@
+from django.core.cache import cache
+
 from rest_framework import viewsets, mixins
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -241,12 +243,8 @@ def _search_snippet(text, matched_terms, length=200):
     return '…' + snippet + ('…' if start + length < len(text) else '')
 
 
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def global_search(request):
-    """Розумний пошук по всьому сайту (новини, сторінки, групи, гуртки,
-    спеціалісти, документи, події, FAQ, фотоальбоми) з урахуванням відмінків,
-    друкарських помилок та релевантності."""
+def _build_search_index():
+    """Будує повний індекс пошуку (усі моделі). Кешується 10 хвилин."""
     from django.db.models import Q
     from django.utils import timezone
     from news.models import News
@@ -257,15 +255,6 @@ def global_search(request):
     from events.models import Event
     from faq.models import FAQItem
     from gallery.models import GalleryAlbum
-
-    raw_q = request.query_params.get('q', '').strip()
-    if not raw_q or len(raw_q) < 2:
-        return Response({'query': raw_q, 'suggestion': None, 'count': 0, 'results': []})
-
-    query_tokens = _search_tokens(raw_q)
-    core_tokens = [t for t in query_tokens if t not in _SEARCH_STOPWORDS] or query_tokens
-    if not core_tokens:
-        return Response({'query': raw_q, 'suggestion': None, 'count': 0, 'results': []})
 
     now = timezone.now()
     index = []
@@ -321,6 +310,29 @@ def global_search(request):
 
     for a in GalleryAlbum.objects.filter(is_published=True)[:300]:
         add('album', a.title, a.slug, a.description or '', excerpt=(a.description or ''), weight=0.9)
+
+    return index
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def global_search(request):
+    """Розумний пошук по всьому сайту (новини, сторінки, групи, гуртки,
+    спеціалісти, документи, події, FAQ, фотоальбоми) з урахуванням відмінків,
+    друкарських помилок та релевантності."""
+    from django.utils import timezone
+
+    raw_q = request.query_params.get('q', '').strip()
+    if not raw_q or len(raw_q) < 2:
+        return Response({'query': raw_q, 'suggestion': None, 'count': 0, 'results': []})
+
+    query_tokens = _search_tokens(raw_q)
+    core_tokens = [t for t in query_tokens if t not in _SEARCH_STOPWORDS] or query_tokens
+    if not core_tokens:
+        return Response({'query': raw_q, 'suggestion': None, 'count': 0, 'results': []})
+
+    now = timezone.now()
+    index = cache.get_or_set('search_index_v1', _build_search_index, 600)
 
     # Словник усіх слів сайту → розширюємо кожен токен запиту (точний / основа / помилка)
     vocab = set()
