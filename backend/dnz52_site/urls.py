@@ -22,6 +22,11 @@ from main.sitemaps import (
 )
 from news.feeds import LatestNewsFeed
 from dnz52_site.spa_views import spa_index
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularSwaggerView,
+    SpectacularRedocView,
+)
 
 
 # 2FA для адмінки (env-gated). Коли ENFORCE_ADMIN_2FA=True — адмінка вимагає TOTP.
@@ -45,7 +50,14 @@ urlpatterns = [
     # 2. REST API (для React)
     path('api/v1/', include('dnz52_site.api_urls')),
 
-    # 3. SEO
+    # 3. Документація API (Swagger / ReDoc) — лише для внутрішнього використання.
+    #    CSP-примітка: SwaggerUI вантажить inline-стилі, тому ці URL виводяться
+    #    поза CSP (або потрібно додати 'unsafe-inline' для style-src).
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+
+    # 4. SEO
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap'),
     path('rss/', LatestNewsFeed(), name='news-rss'),
     path('robots.txt', TemplateView.as_view(

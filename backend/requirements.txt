@@ -85,3 +85,6 @@ bleach==6.2.0               # санітизація HTML (ШІ-генераці
 pytest>=8.0
 pytest-django>=4.10
 pytest-cov>=6.0
+
+# Документація API (Swagger / ReDoc)
+drf-spectacular>=0.27

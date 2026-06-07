@@ -104,6 +104,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',   # токени для React-адмінки (/manage)
     'corsheaders',
     'django_filters',
+    'drf_spectacular',            # Swagger/OpenAPI документація (/api/docs/)
 
     # Безпека
     'axes',                            # захист від брутфорсу входу в адмінку
@@ -359,6 +360,27 @@ REST_FRAMEWORK = {
     # без CSRF токена. Для публічного API це нормально (відгуки, лайки).
     # Адмінка Django окремо і має свою CSRF захист.
     'DEFAULT_AUTHENTICATION_CLASSES': [],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+
+# ----------------------------------------------------------------------------
+# drf-spectacular (Swagger / OpenAPI 3 документація)
+# ----------------------------------------------------------------------------
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'ЗДО №52 API',
+    'VERSION': '1.0.0',
+    'DESCRIPTION': (
+        'REST API офіційного сайту Закладу дошкільної освіти №52 (м. Рівне). '
+        'Надає доступ до новин, галереї, груп, гуртків, спеціалістів, '
+        'документів, меню харчування, подій, FAQ та відгуків. '
+        'Використовується React-фронтендом.'
+    ),
+    'CONTACT': {'name': 'Адміністратор ЗДО №52', 'email': 'admin@dnz52.rv.ua'},
+    'LICENSE': {'name': 'Приватний (для внутрішнього використання)'},
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SORT_OPERATIONS': True,
+    'ENUM_GENERATE_CHOICE_DESCRIPTION': True,
 }
 
 
