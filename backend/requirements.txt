@@ -16,7 +16,7 @@ pillow==12.2.0
 
 # Гарні форми
 django-crispy-forms==2.3
-crispy-bootstrap5==2024.10
+crispy-bootstrap5==2026.3
 
 # Витяг тексту з PDF (для seed-скриптів)
 pypdf==6.11.0
