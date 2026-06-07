@@ -116,7 +116,7 @@ export function EventFormPage() {
         </Field>
 
         <Field label="Опис">
-          <MarkdownEditor value={form.description} onChange={v => set('description', v)} rows={8} />
+          <MarkdownEditor value={form.description} onChange={v => set('description', v)} rows={8} aiKind="event" />
         </Field>
 
         <Toggle checked={form.is_published} onChange={v => set('is_published', v)} label="Опубліковано (видно на сайті)" />

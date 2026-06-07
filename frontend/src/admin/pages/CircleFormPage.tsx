@@ -106,8 +106,8 @@ export function CircleFormPage() {
           <Field label="Формат"><input className={inputCls} value={form.format} onChange={e => set('format', e.target.value)} /></Field>
           <Field label="Вартість"><input className={inputCls} value={form.price} onChange={e => set('price', e.target.value)} /></Field>
         </div>
-        <Field label="Мета та завдання"><MarkdownEditor value={form.goal} onChange={v => set('goal', v)} rows={5} /></Field>
-        <Field label="Опис діяльності"><MarkdownEditor value={form.description} onChange={v => set('description', v)} rows={6} /></Field>
+        <Field label="Мета та завдання"><MarkdownEditor value={form.goal} onChange={v => set('goal', v)} rows={5} aiKind="section" /></Field>
+        <Field label="Опис діяльності"><MarkdownEditor value={form.description} onChange={v => set('description', v)} rows={6} aiKind="page" /></Field>
         <div className="grid sm:grid-cols-2 gap-5 items-end">
           <Field label="Фотоальбом">
             <select className={inputCls} value={form.album} onChange={e => set('album', e.target.value)}>

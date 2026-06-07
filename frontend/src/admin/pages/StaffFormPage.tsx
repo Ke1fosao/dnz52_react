@@ -81,7 +81,7 @@ export function StaffFormPage() {
         </div>
         <Field label="Категорія / звання"><input className={inputCls} value={form.category} onChange={e => set('category', e.target.value)} /></Field>
         <Field label="Нагороди" hint="Кожна — з нового рядка"><textarea className={inputCls} rows={2} value={form.awards} onChange={e => set('awards', e.target.value)} /></Field>
-        <Field label="Біографія / опис"><MarkdownEditor value={form.bio} onChange={v => set('bio', v)} rows={6} /></Field>
+        <Field label="Біографія / опис"><MarkdownEditor value={form.bio} onChange={v => set('bio', v)} rows={6} aiKind="bio" /></Field>
         <div className="grid sm:grid-cols-3 gap-5">
           <Field label="Email"><input className={inputCls} value={form.email} onChange={e => set('email', e.target.value)} /></Field>
           <Field label="Телефон"><input className={inputCls} value={form.phone} onChange={e => set('phone', e.target.value)} /></Field>

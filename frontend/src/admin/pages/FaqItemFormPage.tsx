@@ -74,7 +74,7 @@ export function FaqItemFormPage() {
           </Field>
         </div>
         <Field label="Відповідь">
-          <MarkdownEditor value={form.answer} onChange={v => set('answer', v)} rows={8} />
+          <MarkdownEditor value={form.answer} onChange={v => set('answer', v)} rows={8} aiKind="faq" />
         </Field>
         <Toggle checked={form.is_published} onChange={v => set('is_published', v)} label="Опубліковано (видно на сайті)" />
         <FormActions onSave={save} saving={saving} onDelete={editing ? del : undefined} cancelTo="/manage/faq" />

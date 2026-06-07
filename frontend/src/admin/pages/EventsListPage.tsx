@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Trash2, MapPin, Calendar } from 'lucide-react';
+import { Plus, Pencil, Trash2, MapPin, Calendar, Tags } from 'lucide-react';
 import { toast } from 'sonner';
-import { adminEventsApi } from '../lib/adminApi';
-import { ListSkeleton, EmptyBox, SearchInput } from '../components/AdminUI';
+import { adminEventsApi, adminEventTypesApi } from '../lib/adminApi';
+import { ListSkeleton, EmptyBox, SearchInput, CollapsiblePanel } from '../components/AdminUI';
+import { CategoryManager } from '../components/CategoryManager';
 import { formatDate } from '@/lib/utils';
 
 export function EventsListPage() {
@@ -29,6 +30,8 @@ export function EventsListPage() {
           <Plus size={18} /> Додати подію
         </Link>
       </div>
+
+      <CollapsiblePanel title="Типи подій" icon={Tags}><CategoryManager qKey="event-type" api={adminEventTypesApi} hasColor hasOrder /></CollapsiblePanel>
 
       {data && data.length > 6 && <SearchInput value={q} onChange={setQ} placeholder="Пошук події за назвою…" />}
 

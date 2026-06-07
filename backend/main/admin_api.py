@@ -25,7 +25,7 @@ from rest_framework.response import Response
 from reviews.models import Review
 from faq.models import FAQQuestionSubmission, FAQItem, FAQCategory
 from news.models import News, NewsCategory, NewsTag
-from events.models import Event
+from events.models import Event, EventType
 from groups.models import Group, GroupStaff
 from circles.models import Circle, CircleBenefit, CircleSession
 from gallery.models import GalleryCategory, GalleryAlbum, GalleryPhoto
@@ -40,7 +40,7 @@ from .models import (
     ParentsAnnouncement, ParentsDocument, ParentsAdaptationPhoto,
     ParentsEnrollmentDoc, ParentsApplicationSample,
     AttestationDocument, AttestationStep, AttestationCategory,
-    AttestationLaw, AttestationSettings,
+    AttestationLaw, AttestationSettings, AISettings,
 )
 from .serializers import (
     ParentsAnnouncementSerializer, ParentsDocumentSerializer,
@@ -62,9 +62,9 @@ class AdminReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = ['id', 'author', 'child_group', 'rating', 'text', 'created_at',
-                  'is_approved', 'likes', 'dislikes', 'admin_reply']
+                  'is_approved', 'likes', 'dislikes', 'admin_reply', 'ai_moderation']
         read_only_fields = ['author', 'child_group', 'rating', 'text', 'created_at',
-                            'likes', 'dislikes']
+                            'likes', 'dislikes', 'ai_moderation']
 
 
 class AdminQuestionSerializer(serializers.ModelSerializer):
@@ -347,7 +347,7 @@ class AdminNewsSerializer(_AutoSlugMixin, serializers.ModelSerializer):
 class AdminEventSerializer(_AutoSlugMixin, serializers.ModelSerializer):
     image = serializers.ImageField(use_url=True, required=False, allow_null=True)
     group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all(), required=False, allow_null=True)
-    event_type_display = serializers.CharField(source='get_event_type_display', read_only=True)
+    event_type_display = serializers.CharField(source='type_label', read_only=True)
 
     class Meta:
         model = Event
@@ -383,6 +383,20 @@ class AdminNewsViewSet(_ContentViewSet):
 class AdminEventViewSet(_ContentViewSet):
     serializer_class = AdminEventSerializer
     queryset = Event.objects.all().order_by('-start_date')
+
+
+class AdminEventTypeSerializer(_AutoSlugMixin, serializers.ModelSerializer):
+    slug_source = 'name'
+
+    class Meta:
+        model = EventType
+        fields = ['id', 'name', 'slug', 'color', 'order']
+        extra_kwargs = {'slug': {'required': False}}
+
+
+class AdminEventTypeViewSet(_ContentViewSet):
+    serializer_class = AdminEventTypeSerializer
+    queryset = EventType.objects.all().order_by('order', 'id')
 
 
 class AdminFAQItemViewSet(_ContentViewSet):
@@ -491,7 +505,7 @@ def admin_meta(request):
         'news_tags': [{'id': t.id, 'name': t.name} for t in NewsTag.objects.all()],
         'faq_categories': [{'id': c.id, 'name': c.name} for c in FAQCategory.objects.all()],
         'document_categories': [{'id': c.id, 'name': c.name} for c in DocumentCategory.objects.all()],
-        'event_types': [{'value': v, 'label': lbl} for v, lbl in Event.EVENT_TYPE_CHOICES],
+        'event_types': [{'value': t.slug, 'label': t.name} for t in EventType.objects.all()],
         'groups': [{'id': g.id, 'name': g.name} for g in Group.objects.filter(is_published=True)],
         'news_statuses': [{'value': v, 'label': lbl} for v, lbl in News.Status.choices],
         'gallery_albums': [{'id': a.id, 'name': a.title} for a in GalleryAlbum.objects.all()],
@@ -1238,3 +1252,50 @@ def admin_2fa_disable(request):
         return Response({'detail': 'Введіть поточний пароль для вимкнення 2FA.'}, status=400)
     TOTPDevice.objects.filter(user=u).delete()
     return Response({'detail': 'Двофакторну автентифікацію вимкнено.', 'has_2fa': False})
+
+
+# ============================================================================
+# ШІ (Gemini): налаштування авто-модерації + генерація тексту
+# ============================================================================
+class AdminAISettingsSerializer(serializers.ModelSerializer):
+    ai_configured = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AISettings
+        fields = ['auto_moderate_reviews', 'ai_configured']
+
+    def get_ai_configured(self, obj):
+        from . import ai
+        return ai.is_configured()
+
+
+@api_view(['GET', 'PATCH'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAdminUser])
+def admin_ai_settings(request):
+    obj = AISettings.get_solo()
+    if request.method == 'PATCH':
+        ser = AdminAISettingsSerializer(obj, data=request.data, partial=True)
+        ser.is_valid(raise_exception=True)
+        ser.save()
+        return Response(ser.data)
+    return Response(AdminAISettingsSerializer(obj).data)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAdminUser])
+def admin_ai_generate(request):
+    """Генерація HTML-тексту з короткого брифу. kind визначає стиль/довжину."""
+    from . import ai
+    brief = (request.data.get('brief') or '').strip()
+    kind = (request.data.get('kind') or 'generic').strip()
+    if len(brief) < 3:
+        return Response({'detail': 'Опишіть коротко, про що має бути текст.'}, status=400)
+    if not ai.is_configured():
+        return Response({'detail': 'ШІ не налаштовано (немає ключа в .env).'}, status=503)
+    try:
+        text = ai.generate_text(brief, kind)
+    except ai.AIError as e:
+        return Response({'detail': f'ШІ зараз недоступний: {e}'}, status=502)
+    return Response({'text': text})

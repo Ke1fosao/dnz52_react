@@ -103,7 +103,7 @@ export function NewsFormPage() {
         </Field>
 
         <Field label="Текст новини">
-          <MarkdownEditor value={form.content} onChange={v => set('content', v)} rows={12} />
+          <MarkdownEditor value={form.content} onChange={v => set('content', v)} rows={12} aiKind="news" />
         </Field>
 
         <FormActions onSave={save} saving={saving} onDelete={editing ? del : undefined} cancelTo="/manage/news" />

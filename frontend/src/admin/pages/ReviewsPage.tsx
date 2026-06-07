@@ -1,11 +1,35 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Check, X, Reply, Trash2, Clock } from 'lucide-react';
+import { Check, X, Reply, Trash2, Clock, Bot } from 'lucide-react';
 import { toast } from 'sonner';
-import { adminReviewsApi } from '../lib/adminApi';
+import { adminReviewsApi, adminAiApi } from '../lib/adminApi';
 import { Stars, FilterTabs, ActButton, ListSkeleton, EmptyBox } from '../components/AdminUI';
+import { Toggle } from '../components/FormControls';
 import { formatDate, cn } from '@/lib/utils';
 import type { AdminReview } from '../types';
+
+function AiModerationToggle() {
+  const qc = useQueryClient();
+  const { data } = useQuery({ queryKey: ['admin-ai-settings'], queryFn: adminAiApi.settings });
+  const save = useMutation({
+    mutationFn: (v: boolean) => adminAiApi.updateSettings({ auto_moderate_reviews: v }),
+    onSuccess: (d) => { qc.setQueryData(['admin-ai-settings'], d); toast.success(d.auto_moderate_reviews ? 'Авто-модерацію увімкнено' : 'Авто-модерацію вимкнено'); },
+    onError: () => toast.error('Помилка'),
+  });
+  return (
+    <div className="premium-glass rounded-2xl p-4 flex items-start gap-3">
+      <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white grid place-items-center shrink-0"><Bot size={20} /></span>
+      <div className="flex-1 min-w-0">
+        <Toggle checked={!!data?.auto_moderate_reviews} onChange={v => save.mutate(v)} label="Авто-модерація відгуків ШІ" />
+        <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">
+          {data?.ai_configured === false
+            ? '⚠️ ШІ не налаштовано (немає ключа в .env) — функція не працюватиме.'
+            : 'Коректні відгуки публікуються автоматично; підозрілі (лайка, погрози) — відкладаються сюди на ручну перевірку.'}
+        </p>
+      </div>
+    </div>
+  );
+}
 
 type Filter = 'pending' | 'approved' | 'all';
 
@@ -36,6 +60,8 @@ export function ReviewsPage() {
         <h1 className="text-3xl font-black text-gray-900 dark:text-white">Відгуки</h1>
         <p className="text-gray-500 dark:text-slate-400 font-medium">Модерація відгуків відвідувачів</p>
       </div>
+
+      <AiModerationToggle />
 
       <FilterTabs value={filter} onChange={setFilter} tabs={[
         { value: 'pending', label: 'На модерації', count: reviews && filter === 'pending' ? reviews.length : undefined },
@@ -92,9 +118,14 @@ function ReviewCard({ review, onApprove, onUnpublish, onRemove, onReply }: {
       </div>
 
       <p className="text-gray-600 dark:text-slate-300 mb-2 whitespace-pre-wrap">{review.text}</p>
-      <p className="text-xs text-gray-400 dark:text-slate-500 flex items-center gap-1.5 mb-3">
+      <p className="text-xs text-gray-400 dark:text-slate-500 flex items-center gap-1.5 mb-2">
         <Clock size={12} /> {formatDate(review.created_at)} · 👍 {review.likes} · 👎 {review.dislikes}
       </p>
+      {review.ai_moderation && (
+        <p className="text-xs text-violet-600 dark:text-violet-300 inline-flex items-start gap-1.5 mb-3 bg-violet-50/60 dark:bg-violet-900/15 px-2.5 py-1 rounded-lg">
+          <Bot size={13} className="shrink-0 mt-0.5" /> <span>ШІ: {review.ai_moderation}</span>
+        </p>
+      )}
 
       {review.admin_reply && !replyOpen && (
         <div className="bg-blue-50/60 dark:bg-blue-900/15 border-l-4 border-blue-500 rounded-r-xl p-3 mb-3 text-sm">

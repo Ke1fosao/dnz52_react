@@ -75,7 +75,7 @@ export function SpecialistSectionFormPage() {
       <div className="premium-glass rounded-[1.8rem] p-6 space-y-5">
         <Field label="Заголовок розділу" required><input className={inputCls} value={form.title} onChange={e => set('title', e.target.value)} /></Field>
         <Field label="Підзаголовок"><input className={inputCls} value={form.subtitle} onChange={e => set('subtitle', e.target.value)} /></Field>
-        <Field label="Опис розділу" hint="Markdown"><MarkdownEditor value={form.description} onChange={v => set('description', v)} rows={5} /></Field>
+        <Field label="Опис розділу" hint="Markdown"><MarkdownEditor value={form.description} onChange={v => set('description', v)} rows={5} aiKind="section" /></Field>
         <div className="grid sm:grid-cols-2 gap-5">
           <Field label="Іконка"><IconPicker value={form.icon} onChange={v => set('icon', v)} /></Field>
           <Field label="Колір акценту">

@@ -403,6 +403,15 @@ ENFORCE_ADMIN_2FA = os.environ.get('ENFORCE_ADMIN_2FA', 'False').lower() in ('tr
 # Назва видавця для TOTP (показується в Google Authenticator / Authy).
 OTP_TOTP_ISSUER = 'ZDO52 Admin'
 
+# ── Google AI Studio (Gemini): авто-модерація відгуків + генерація тексту ──
+# Ключ ЛИШЕ через .env (ніколи не в git). Ланцюг моделей пробується по черзі:
+# спершу flash-lite (найвищі безкоштовні ліміти), при 429/помилці — наступна.
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
+GEMINI_MODELS = [m.strip() for m in os.environ.get(
+    'GEMINI_MODELS',
+    'gemini-2.5-flash-lite,gemini-2.0-flash-lite,gemini-2.5-flash,gemini-flash-latest',
+).split(',') if m.strip()]
+
 
 # ----------------------------------------------------------------------------
 # Безпека у продакшені (вмикається коли DEBUG=False)

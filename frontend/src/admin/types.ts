@@ -77,6 +77,12 @@ export interface AdminReview {
   likes: number;
   dislikes: number;
   admin_reply: string;
+  ai_moderation: string;
+}
+
+export interface AdminAISettings {
+  auto_moderate_reviews: boolean;
+  ai_configured: boolean;
 }
 
 export type QuestionStatus = 'new' | 'in_progress' | 'callback' | 'done';

@@ -1,4 +1,4 @@
-import time
+import logging
 
 from django.db.models import F
 from django.core.cache import cache
@@ -8,6 +8,8 @@ from rest_framework.response import Response
 
 from .models import Review
 from .serializers import ReviewSerializer, ReviewCreateSerializer
+
+logger = logging.getLogger(__name__)
 
 
 class ReviewViewSet(mixins.CreateModelMixin,
@@ -38,14 +40,28 @@ class ReviewViewSet(mixins.CreateModelMixin,
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        review = serializer.save()
 
         cache.set(cache_key, True, timeout=60)
 
-        return Response(
-            {'detail': 'Дякуємо! Ваш відгук відправлено на модерацію.'},
-            status=status.HTTP_201_CREATED,
-        )
+        # Авто-модерація ШІ (якщо увімкнено в адмінці й заданий ключ).
+        # Fail-safe: будь-яка помилка ШІ → відгук лишається на ручній модерації.
+        published = False
+        try:
+            from main.models import AISettings
+            from main import ai
+            if AISettings.get_solo().auto_moderate_reviews and ai.is_configured():
+                safe, reason = ai.moderate_review(review.text)
+                review.ai_moderation = (reason or ('коректний' if safe else 'підозрілий вміст'))[:500]
+                review.is_approved = bool(safe)
+                published = bool(safe)
+                review.save(update_fields=['is_approved', 'ai_moderation'])
+        except Exception as e:
+            logger.warning('AI-модерація недоступна, відгук на ручну перевірку: %s', e)
+
+        msg = ('Дякуємо! Ваш відгук опубліковано.' if published
+               else 'Дякуємо! Ваш відгук відправлено на модерацію.')
+        return Response({'detail': msg}, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['post'])
     def like(self, request, pk=None):

@@ -4,6 +4,23 @@ from django.utils import timezone
 from markdownx.models import MarkdownxField
 
 
+class EventType(models.Model):
+    """Тип події (редагований довідник). Event.event_type зберігає slug."""
+    slug = models.SlugField('Код (slug)', max_length=40, unique=True)
+    name = models.CharField('Назва', max_length=120,
+                            help_text='Можна з емодзі на початку, напр. «🎭 Ранок / Свято».')
+    color = models.CharField('Колір (HEX)', max_length=7, default='#7B8AA5')
+    order = models.IntegerField('Порядок', default=0)
+
+    class Meta:
+        verbose_name = 'Тип події'
+        verbose_name_plural = 'Типи подій'
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return self.name
+
+
 class Event(models.Model):
     """Подія календаря — ранки, дні відкритих дверей, батьківські збори тощо."""
 
@@ -60,9 +77,28 @@ class Event(models.Model):
     def get_absolute_url(self):
         return reverse('events:event_detail', args=[self.slug])
 
+    @classmethod
+    def _type_map(cls):
+        """{slug: (name, color)} з EventType — кешується (інвалідація сигналом)."""
+        from django.core.cache import cache
+        m = cache.get('event_type_map')
+        if m is None:
+            m = {t.slug: (t.name, t.color) for t in EventType.objects.all()}
+            cache.set('event_type_map', m, 600)
+        return m
+
     @property
     def color(self):
-        return self.EVENT_COLORS.get(self.event_type, '#7B8AA5')
+        nc = self._type_map().get(self.event_type)
+        return nc[1] if nc else self.EVENT_COLORS.get(self.event_type, '#7B8AA5')
+
+    @property
+    def type_label(self):
+        """Назва типу: спершу з EventType, інакше — зі старих choices, інакше сам slug."""
+        nc = self._type_map().get(self.event_type)
+        if nc:
+            return nc[0]
+        return dict(self.EVENT_TYPE_CHOICES).get(self.event_type, self.event_type)
 
     @property
     def is_past(self):
@@ -77,3 +113,14 @@ class Event(models.Model):
     @property
     def is_multiday(self):
         return bool(self.end_date) and self.end_date.date() != self.start_date.date()
+
+
+# Інвалідуємо кеш мапи типів при зміні EventType
+from django.db.models.signals import post_save, post_delete  # noqa: E402
+from django.dispatch import receiver  # noqa: E402
+
+
+@receiver([post_save, post_delete], sender=EventType)
+def _clear_event_type_cache(**kwargs):
+    from django.core.cache import cache
+    cache.delete('event_type_map')

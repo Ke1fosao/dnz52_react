@@ -80,7 +80,7 @@ export function SpecialistPersonFormPage() {
           <Field label="Життєве кредо / девіз"><input className={inputCls} value={form.motto} onChange={e => set('motto', e.target.value)} /></Field>
         </div>
         <Field label="Освіта"><textarea className={`${inputCls} resize-y`} rows={2} value={form.education} onChange={e => set('education', e.target.value)} /></Field>
-        <Field label="Біографія / опис діяльності" hint="Markdown"><MarkdownEditor value={form.bio} onChange={v => set('bio', v)} rows={6} /></Field>
+        <Field label="Біографія / опис діяльності" hint="Markdown"><MarkdownEditor value={form.bio} onChange={v => set('bio', v)} rows={6} aiKind="bio" /></Field>
 
         {editing ? (
           <div className="pt-2 border-t border-white/40 dark:border-white/10">

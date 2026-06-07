@@ -68,7 +68,7 @@ export function PageFormPage() {
           </Field>
         )}
         <Field label="Обкладинка"><ImageField url={imageUrl} file={image} onPick={setImage} /></Field>
-        <Field label="Контент"><MarkdownEditor value={form.content} onChange={v => set('content', v)} rows={12} /></Field>
+        <Field label="Контент"><MarkdownEditor value={form.content} onChange={v => set('content', v)} rows={12} aiKind="page" /></Field>
         <div className="grid sm:grid-cols-2 gap-5 items-end">
           <Field label="Порядок"><input type="number" className={inputCls} value={form.order} onChange={e => set('order', e.target.value)} /></Field>
           <Toggle checked={form.is_published} onChange={v => set('is_published', v)} label="Опубліковано" />

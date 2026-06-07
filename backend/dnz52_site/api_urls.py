@@ -49,6 +49,7 @@ from main.admin_api import (
     AdminUserViewSet, admin_history, admin_push_subscriptions, admin_push_send,
     admin_profile, admin_change_password,
     admin_2fa_setup, admin_2fa_confirm, admin_2fa_disable,
+    AdminEventTypeViewSet, admin_ai_settings, admin_ai_generate,
 )
 
 
@@ -151,6 +152,7 @@ router.register(r'admin/specialist-albums', AdminSpecialistAlbumViewSet, basenam
 router.register(r'admin/specialist-sections', AdminSpecialistPageSectionViewSet, basename='admin-specialist-section')
 router.register(r'admin/specialist-section-photos', AdminSpecialistPagePhotoViewSet, basename='admin-specialist-section-photo')
 router.register(r'admin/users', AdminUserViewSet, basename='admin-user')
+router.register(r'admin/event-types', AdminEventTypeViewSet, basename='admin-event-type')
 
 
 urlpatterns = [
@@ -173,6 +175,8 @@ urlpatterns = [
     path('admin/2fa/setup/', admin_2fa_setup, name='api-admin-2fa-setup'),
     path('admin/2fa/confirm/', admin_2fa_confirm, name='api-admin-2fa-confirm'),
     path('admin/2fa/disable/', admin_2fa_disable, name='api-admin-2fa-disable'),
+    path('admin/ai-settings/', admin_ai_settings, name='api-admin-ai-settings'),
+    path('admin/ai-generate/', admin_ai_generate, name='api-admin-ai-generate'),
 
     # Окремі endpoints (menu/today/ та menu/week/ тепер як @action в DailyMenuViewSet)
     path('search/', global_search, name='api-search'),

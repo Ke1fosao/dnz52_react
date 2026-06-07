@@ -1,10 +1,12 @@
 import { type ReactNode, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Eye, Pencil, ImagePlus, X, ArrowLeft, Save, Trash2, Loader2,
+  Eye, Pencil, ImagePlus, X, ArrowLeft, Save, Trash2, Loader2, Sparkles,
   File as FileIcon, Download, ChevronUp, ChevronDown, type LucideIcon,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { RichContent } from '@/components/common/RichContent';
+import { adminAiApi } from '../lib/adminApi';
 import { cn } from '@/lib/utils';
 
 export const inputCls =
@@ -38,18 +40,60 @@ function TabBtn({ active, onClick, icon: Icon, children }: {
   );
 }
 
-// Редактор Markdown із перемикачем «Текст ↔ Прев'ю» (рендер через RichContent сайту)
-export function MarkdownEditor({ value, onChange, rows = 10 }: {
-  value: string; onChange: (v: string) => void; rows?: number;
+// Редактор Markdown/HTML із перемикачем «Текст ↔ Прев'ю» + кнопка ШІ-генерації.
+// aiKind вмикає кнопку «✨ ШІ» і визначає стиль/довжину тексту (news/event/faq/page/bio/section).
+export function MarkdownEditor({ value, onChange, rows = 10, aiKind }: {
+  value: string; onChange: (v: string) => void; rows?: number; aiKind?: string;
 }) {
   const [preview, setPreview] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [brief, setBrief] = useState('');
+  const [aiBusy, setAiBusy] = useState(false);
+
+  const openAi = () => { setBrief(value && value.length < 280 ? value : ''); setAiOpen(true); };
+  const runAi = async () => {
+    if (brief.trim().length < 3) { toast.error('Опишіть коротко, про що текст'); return; }
+    setAiBusy(true);
+    try {
+      const r = await adminAiApi.generate(brief.trim(), aiKind || 'generic');
+      onChange(r.text);
+      setAiOpen(false); setPreview(true);
+      toast.success('Готово! Перевірте і за потреби відредагуйте.');
+    } catch (e) {
+      toast.error((e as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'ШІ зараз недоступний');
+    } finally { setAiBusy(false); }
+  };
+
   return (
     <div className="rounded-2xl border border-white/60 dark:border-slate-700 overflow-hidden bg-white/70 dark:bg-slate-800/70">
       <div className="flex items-center gap-1 p-1.5 border-b border-white/60 dark:border-slate-700">
         <TabBtn active={!preview} onClick={() => setPreview(false)} icon={Pencil}>Текст</TabBtn>
         <TabBtn active={preview} onClick={() => setPreview(true)} icon={Eye}>Прев'ю</TabBtn>
-        <span className="ml-auto text-[11px] text-gray-400 dark:text-slate-500 pr-2 font-bold uppercase">Markdown</span>
+        {aiKind && (
+          <button type="button" onClick={openAi}
+            className="inline-flex items-center gap-1.5 text-sm font-bold px-3 py-1.5 rounded-xl text-violet-600 dark:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-colors">
+            <Sparkles size={15} /> ШІ
+          </button>
+        )}
+        <span className="ml-auto text-[11px] text-gray-400 dark:text-slate-500 pr-2 font-bold uppercase">Markdown / HTML</span>
       </div>
+
+      {aiOpen && (
+        <div className="p-3 border-b border-white/60 dark:border-slate-700 bg-violet-50/60 dark:bg-violet-900/10 space-y-2">
+          <p className="text-xs font-bold text-violet-700 dark:text-violet-300">✨ Опишіть коротко, про що текст — ШІ напише гарно з форматуванням:</p>
+          <textarea value={brief} onChange={e => setBrief(e.target.value)} rows={2} autoFocus
+            placeholder="Напр.: свято осені, діти співали й танцювали, батьки були в захваті"
+            className="w-full px-3 py-2 rounded-xl bg-white/80 dark:bg-slate-800/80 border border-violet-200 dark:border-violet-800 outline-none text-sm text-gray-900 dark:text-white resize-y" />
+          <div className="flex gap-2">
+            <button type="button" onClick={runAi} disabled={aiBusy}
+              className="inline-flex items-center gap-1.5 bg-violet-600 hover:bg-violet-700 disabled:opacity-60 text-white font-bold text-sm px-4 py-2 rounded-xl transition-colors">
+              {aiBusy ? <Loader2 className="animate-spin" size={15} /> : <Sparkles size={15} />} Згенерувати
+            </button>
+            <button type="button" onClick={() => setAiOpen(false)} className="font-bold text-sm px-3 py-2 rounded-xl text-gray-500 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-slate-700/60 transition-colors">Скасувати</button>
+          </div>
+        </div>
+      )}
+
       {preview ? (
         <div className="p-4 min-h-[220px]">
           {value.trim() ? <RichContent content={value} /> : <p className="text-gray-400 dark:text-slate-500 italic">Нічого для перегляду…</p>}
@@ -57,7 +101,7 @@ export function MarkdownEditor({ value, onChange, rows = 10 }: {
       ) : (
         <textarea
           value={value} onChange={e => onChange(e.target.value)} rows={rows}
-          placeholder="Текст у форматі Markdown: **жирний**, *курсив*, [посилання](https://…), - списки…"
+          placeholder="Текст у форматі Markdown або HTML: **жирний**, &lt;p&gt;абзац&lt;/p&gt;, списки…"
           className="w-full px-4 py-3 bg-transparent outline-none text-gray-900 dark:text-white resize-y"
         />
       )}

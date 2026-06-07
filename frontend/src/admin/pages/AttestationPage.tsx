@@ -112,10 +112,10 @@ function SettingsForm() {
   return (
     <div className="premium-glass rounded-[1.8rem] p-6 space-y-5">
       <Field label="Підзаголовок під H1 (hero)"><textarea className={`${inputCls} resize-y`} rows={3} value={form.hero_lead} onChange={e => set('hero_lead', e.target.value)} /></Field>
-      <Field label="Вступний блок (синій, ліворуч)" hint="Markdown / HTML"><MarkdownEditor value={form.intro_html} onChange={v => set('intro_html', v)} rows={6} /></Field>
+      <Field label="Вступний блок (синій, ліворуч)" hint="Markdown / HTML"><MarkdownEditor value={form.intro_html} onChange={v => set('intro_html', v)} rows={6} aiKind="page" /></Field>
       <Field label="Підзаголовок секції документів"><input className={inputCls} value={form.docs_section_subtitle} onChange={e => set('docs_section_subtitle', e.target.value)} /></Field>
       <Field label="Заголовок підказки про контакти"><input className={inputCls} value={form.contact_title} onChange={e => set('contact_title', e.target.value)} /></Field>
-      <Field label="Текст підказки про контакти (жовтий блок)" hint="Markdown / HTML"><MarkdownEditor value={form.contact_html} onChange={v => set('contact_html', v)} rows={5} /></Field>
+      <Field label="Текст підказки про контакти (жовтий блок)" hint="Markdown / HTML"><MarkdownEditor value={form.contact_html} onChange={v => set('contact_html', v)} rows={5} aiKind="section" /></Field>
       <button onClick={save} disabled={saving} className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-bold px-5 py-2.5 rounded-xl transition-colors">
         {saving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />} Зберегти
       </button>

@@ -7,7 +7,7 @@ import type {
   AdminDailyMenu, AdminMenuTemplate, AdminGalleryAlbum, AdminGalleryPhoto,
   AdminFlatRow, AdminAttestationSettings, AdminSpecialistPage, AdminSpecialist,
   AdminSpecialistSection, AdminSpecialistSectionPhoto,
-  AdminAccount, AdminHistoryItem, AdminPushStats,
+  AdminAccount, AdminHistoryItem, AdminPushStats, AdminAISettings,
 } from '../types';
 
 const TOKEN_KEY = 'dnz52:adminToken';
@@ -201,3 +201,13 @@ export const adminPushApi = {
   send: (data: { title: string; body: string; topic: string; url?: string }) =>
     http.post<{ sent: number }>('/push/send/', data).then(r => r.data),
 };
+
+// ШІ (Gemini): авто-модерація відгуків + генерація тексту
+export const adminAiApi = {
+  settings: () => http.get<AdminAISettings>('/ai-settings/').then(r => r.data),
+  updateSettings: (data: Partial<AdminAISettings>) => http.patch<AdminAISettings>('/ai-settings/', data).then(r => r.data),
+  generate: (brief: string, kind: string) => http.post<{ text: string }>('/ai-generate/', { brief, kind }).then(r => r.data),
+};
+
+// Типи подій (редагований довідник)
+export const adminEventTypesApi = crud<AdminCategory>('event-types');

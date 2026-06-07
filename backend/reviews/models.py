@@ -21,6 +21,9 @@ class Review(models.Model):
         help_text='Якщо заповнено — публічно показується під відгуком як офіційна відповідь закладу.',
     )
 
+    # Вердикт ШІ-модерації (службове, показується лише в адмінці)
+    ai_moderation = models.CharField('Вердикт ШІ-модерації', max_length=500, blank=True)
+
     class Meta:
         verbose_name = 'Відгук'
         verbose_name_plural = 'Відгуки'

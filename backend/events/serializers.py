@@ -5,7 +5,7 @@ from .models import Event
 
 class EventSerializer(serializers.ModelSerializer):
     color = serializers.CharField(read_only=True)
-    event_type_display = serializers.CharField(source='get_event_type_display', read_only=True)
+    event_type_display = serializers.CharField(source='type_label', read_only=True)
     image = serializers.ImageField(use_url=True, allow_null=True, required=False)
     is_multiday = serializers.BooleanField(read_only=True)
 

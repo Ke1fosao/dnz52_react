@@ -42,7 +42,7 @@ export function SpecialistPageFormPage() {
       <div className="premium-glass rounded-[1.8rem] p-6 space-y-5">
         <Field label="Заголовок сторінки" required><input className={inputCls} value={form.title} onChange={e => set('title', e.target.value)} /></Field>
         <Field label="Вступний текст" hint="Короткий текст під заголовком"><textarea className={`${inputCls} resize-y`} rows={2} value={form.intro} onChange={e => set('intro', e.target.value)} /></Field>
-        <Field label="Опис діяльності" hint="Markdown — програми, методи роботи тощо"><MarkdownEditor value={form.description} onChange={v => set('description', v)} rows={6} /></Field>
+        <Field label="Опис діяльності" hint="Markdown — програми, методи роботи тощо"><MarkdownEditor value={form.description} onChange={v => set('description', v)} rows={6} aiKind="page" /></Field>
         <div className="grid sm:grid-cols-2 gap-5">
           <Field label="Науково-методична тема"><input className={inputCls} value={form.theme_title} onChange={e => set('theme_title', e.target.value)} /></Field>
           <Field label="Період теми" hint="Напр. 2022–2027 роки"><input className={inputCls} value={form.theme_period} onChange={e => set('theme_period', e.target.value)} /></Field>
