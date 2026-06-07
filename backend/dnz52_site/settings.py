@@ -132,6 +132,8 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     # CSP — заголовок Content-Security-Policy (django-csp). Одразу після Security.
     'csp.middleware.CSPMiddleware',
+    # Permissions-Policy + (COOP задається через SECURE_CROSS_ORIGIN_OPENER_POLICY нижче)
+    'dnz52_site.security_headers.PermissionsPolicyMiddleware',
     # WhiteNoise — роздає статичні файли у продакшені (CSS/JS/SVG)
     # Має йти ОДРАЗУ після SecurityMiddleware
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -428,6 +430,9 @@ GEMINI_MODELS = [m.strip() for m in os.environ.get(
 if not DEBUG:
     # HTTPS перенаправлення (тільки якщо у вас точно є HTTPS)
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    # Cross-Origin-Opener-Policy: забороняє іншим вікнам/фреймам отримати посилання
+    # на наш browsing context — захист від cross-origin data leaks.
+    SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_BROWSER_XSS_FILTER = True
