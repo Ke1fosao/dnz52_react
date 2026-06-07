@@ -1,0 +1,59 @@
+# ============================================================================
+# Render Blueprint — деплой ЗДО №52 (Django + зібраний React SPA одним сервісом).
+# БД — Supabase PostgreSQL (через pooler), медіа — Supabase Storage.
+# Render має НЕОБМЕЖЕНИЙ вихід у мережу, тож зовнішній Postgres працює
+# (на відміну від Free PythonAnywhere, який блокує порт 5432).
+#
+# Як задеплоїти: render.com → New → Blueprint → під'єднати репозиторій
+# Ke1fosao/dnz52_react. Render прочитає цей файл і попросить заповнити
+# секретні змінні (позначені sync:false). Решта — автоматично.
+# ============================================================================
+services:
+  - type: web
+    name: dnz52
+    runtime: python
+    plan: free
+    region: frankfurt          # поряд із Supabase eu-central-1 → мінімальна латентність БД
+    rootDir: backend
+    buildCommand: "pip install -r requirements.txt && python manage.py migrate --noinput && python manage.py collectstatic --noinput"
+    startCommand: "gunicorn dnz52_site.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120"
+    healthCheckPath: /api/v1/news/
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+      - key: DEBUG
+        value: "False"
+      # SECRET_KEY Render згенерує сам (сильний) — нічого вводити не треба.
+      - key: SECRET_KEY
+        generateValue: true
+      # .onrender.com покриває будь-який субдомен Render (без chicken-egg із доменом).
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com"
+      - key: CSRF_TRUSTED_ORIGINS
+        value: "https://*.onrender.com"
+      # --- Supabase БД (введеш значення при створенні Blueprint) ---
+      - key: DATABASE_URL
+        sync: false
+      # --- Supabase Storage ---
+      - key: AWS_STORAGE_BUCKET_NAME
+        sync: false
+      - key: AWS_S3_ENDPOINT_URL
+        sync: false
+      - key: AWS_S3_REGION_NAME
+        value: "eu-central-1"
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      # --- ШІ (Gemini) ---
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODELS
+        value: "gemini-2.5-flash-lite,gemini-2.0-flash-lite,gemini-2.5-flash,gemini-flash-latest"
+      # --- Web-push (VAPID) ---
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: VAPID_ADMIN_EMAIL
+        value: "admin@dnz52.rv.ua"
