@@ -12,15 +12,30 @@ from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 from django.utils.text import slugify
 
+from django.conf import settings as django_settings
+
 from rest_framework import viewsets, serializers, mixins
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import (
     api_view, authentication_classes, permission_classes, action,
 )
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
+
+
+class ExpiringTokenAuthentication(TokenAuthentication):
+    """TokenAuthentication з перевіркою терміну дії (ADMIN_TOKEN_TTL у settings)."""
+
+    def authenticate_credentials(self, key):
+        user, token = super().authenticate_credentials(key)
+        ttl = getattr(django_settings, 'ADMIN_TOKEN_TTL', 7 * 24 * 3600)
+        if (timezone.now() - token.created).total_seconds() > ttl:
+            token.delete()
+            raise AuthenticationFailed('Сесія закінчилась. Увійдіть знову.')
+        return user, token
 
 from reviews.models import Review
 from faq.models import FAQQuestionSubmission, FAQItem, FAQCategory
@@ -128,12 +143,14 @@ def admin_login(request):
             return Response({'detail': 'Введіть код із застосунку автентифікації.', 'otp_required': True}, status=401)
         if not any(d.verify_token(otp) for d in confirmed):
             return Response({'detail': 'Невірний код двофакторної автентифікації.', 'otp_required': True}, status=401)
-    token, _ = Token.objects.get_or_create(user=user)
+    # Ротація токена: видаляємо старий і створюємо новий — сесія завжди свіжа
+    Token.objects.filter(user=user).delete()
+    token = Token.objects.create(user=user)
     return Response({'token': token.key, 'user': _user_payload(user)})
 
 
 @api_view(['POST'])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([ExpiringTokenAuthentication])
 @permission_classes([IsAdminUser])
 def admin_logout(request):
     Token.objects.filter(user=request.user).delete()
@@ -141,7 +158,7 @@ def admin_logout(request):
 
 
 @api_view(['GET'])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([ExpiringTokenAuthentication])
 @permission_classes([IsAdminUser])
 def admin_me(request):
     return Response({'user': _user_payload(request.user)})
@@ -154,7 +171,7 @@ _UA_MONTHS = ['січ', 'лют', 'бер', 'кві', 'тра', 'чер', 'ли�
 
 
 @api_view(['GET'])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([ExpiringTokenAuthentication])
 @permission_classes([IsAdminUser])
 def admin_stats(request):
     from news.models import News
@@ -221,7 +238,7 @@ def admin_stats(request):
 # ============================================================================
 class AdminReviewViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                          mixins.DestroyModelMixin, viewsets.GenericViewSet):
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [ExpiringTokenAuthentication]
     permission_classes = [IsAdminUser]
     serializer_class = AdminReviewSerializer
     pagination_class = None
@@ -264,7 +281,7 @@ class AdminReviewViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
 class AdminQuestionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                            mixins.UpdateModelMixin, mixins.DestroyModelMixin,
                            viewsets.GenericViewSet):
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [ExpiringTokenAuthentication]
     permission_classes = [IsAdminUser]
     serializer_class = AdminQuestionSerializer
     pagination_class = None
@@ -369,7 +386,7 @@ class AdminFAQItemSerializer(serializers.ModelSerializer):
 
 class _ContentViewSet(viewsets.ModelViewSet):
     """Спільна база для CRUD контенту: TokenAuth + IsAdminUser + multipart."""
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [ExpiringTokenAuthentication]
     permission_classes = [IsAdminUser]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
     pagination_class = None
@@ -496,7 +513,7 @@ class AdminDocumentViewSet(_ContentViewSet):
 
 
 @api_view(['GET'])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([ExpiringTokenAuthentication])
 @permission_classes([IsAdminUser])
 def admin_meta(request):
     """Дані для випадаючих списків у формах контенту."""
@@ -525,7 +542,7 @@ class AdminContactSerializer(serializers.ModelSerializer):
 
 
 @api_view(['GET', 'PATCH'])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([ExpiringTokenAuthentication])
 @permission_classes([IsAdminUser])
 def admin_contact(request):
     """Єдиний запис контактів (singleton)."""
@@ -746,7 +763,7 @@ class AdminDailyMenuViewSet(_ContentViewSet):
 
 
 @api_view(['GET', 'PUT'])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([ExpiringTokenAuthentication])
 @permission_classes([IsAdminUser])
 def admin_menu_templates(request):
     """Шаблон-основа меню по днях тижня. Завжди повертає 7 днів (Пн-Нд),
@@ -913,7 +930,7 @@ class AdminAttestationLawViewSet(_ContentViewSet):
 
 
 @api_view(['GET', 'PATCH'])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([ExpiringTokenAuthentication])
 @permission_classes([IsAdminUser])
 def admin_attestation_settings(request):
     """Єдиний запис налаштувань сторінки атестації (singleton)."""
@@ -1052,7 +1069,7 @@ def _is_false(data, key):
 class AdminUserViewSet(viewsets.ModelViewSet):
     """Керування акаунтами (лише суперкористувачі). Хеші паролів не віддаються;
     пароль задається окремою дією set_password. Захист від самоблокування."""
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [ExpiringTokenAuthentication]
     permission_classes = [IsSuperUser]
     serializer_class = AdminUserSerializer
     pagination_class = None
@@ -1127,7 +1144,7 @@ def _history_feed(limit=40):
 
 
 @api_view(['GET'])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([ExpiringTokenAuthentication])
 @permission_classes([IsAdminUser])
 def admin_history(request):
     return Response({'items': _history_feed(50)})
@@ -1135,7 +1152,7 @@ def admin_history(request):
 
 # --- Push-розсилка ---
 @api_view(['GET'])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([ExpiringTokenAuthentication])
 @permission_classes([IsAdminUser])
 def admin_push_subscriptions(request):
     from urllib.parse import urlparse
@@ -1153,7 +1170,7 @@ def admin_push_subscriptions(request):
 
 
 @api_view(['POST'])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([ExpiringTokenAuthentication])
 @permission_classes([IsAdminUser])
 def admin_push_send(request):
     title = (request.data.get('title') or '').strip()
@@ -1171,7 +1188,7 @@ def admin_push_send(request):
 # Власний профіль (будь-який персонал) + 2FA (TOTP)
 # ============================================================================
 @api_view(['GET', 'PATCH'])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([ExpiringTokenAuthentication])
 @permission_classes([IsAdminUser])
 def admin_profile(request):
     """Редагування ВЛАСНОГО профілю. Права (is_staff/superuser) тут не змінюються."""
@@ -1193,7 +1210,7 @@ def admin_profile(request):
 
 
 @api_view(['POST'])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([ExpiringTokenAuthentication])
 @permission_classes([IsAdminUser])
 def admin_change_password(request):
     """Зміна власного пароля (з підтвердженням поточного)."""
@@ -1209,7 +1226,7 @@ def admin_change_password(request):
 
 
 @api_view(['POST'])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([ExpiringTokenAuthentication])
 @permission_classes([IsAdminUser])
 def admin_2fa_setup(request):
     """Починає налаштування TOTP: створює непідтверджений пристрій, повертає otpauth-URL для QR."""
@@ -1223,7 +1240,7 @@ def admin_2fa_setup(request):
 
 
 @api_view(['POST'])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([ExpiringTokenAuthentication])
 @permission_classes([IsAdminUser])
 def admin_2fa_confirm(request):
     """Підтверджує TOTP кодом із застосунку → вмикає 2FA."""
@@ -1242,7 +1259,7 @@ def admin_2fa_confirm(request):
 
 
 @api_view(['POST'])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([ExpiringTokenAuthentication])
 @permission_classes([IsAdminUser])
 def admin_2fa_disable(request):
     """Вимикає 2FA (з підтвердженням пароля)."""
@@ -1270,7 +1287,7 @@ class AdminAISettingsSerializer(serializers.ModelSerializer):
 
 
 @api_view(['GET', 'PATCH'])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([ExpiringTokenAuthentication])
 @permission_classes([IsAdminUser])
 def admin_ai_settings(request):
     obj = AISettings.get_solo()
@@ -1283,7 +1300,7 @@ def admin_ai_settings(request):
 
 
 @api_view(['POST'])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([ExpiringTokenAuthentication])
 @permission_classes([IsAdminUser])
 def admin_ai_generate(request):
     """Генерація HTML-тексту з короткого брифу. kind визначає стиль/довжину."""

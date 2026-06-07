@@ -424,6 +424,10 @@ ENFORCE_ADMIN_2FA = os.environ.get('ENFORCE_ADMIN_2FA', 'False').lower() in ('tr
 # Назва видавця для TOTP (показується в Google Authenticator / Authy).
 OTP_TOTP_ISSUER = 'ZDO52 Admin'
 
+# Термін дії токена React-адмінки (секунди). Після спливання токен видаляється,
+# фронт отримує 401 і перенаправляє на /manage/login.
+ADMIN_TOKEN_TTL = int(os.environ.get('ADMIN_TOKEN_TTL', 7 * 24 * 3600))  # 7 днів
+
 # Cloudflare Turnstile — CAPTCHA на публічних формах (відгуки/питання FAQ).
 # Опційно: якщо ключ не задано — форми працюють без перевірки (не ламає локалку).
 TURNSTILE_SECRET_KEY = os.environ.get('TURNSTILE_SECRET_KEY', '')
