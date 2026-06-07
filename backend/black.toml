@@ -1,0 +1,15 @@
+# black.toml — конфігурація Black (авто-форматер Python)
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+# Виключаємо міграції і .venv
+exclude = '''
+/(
+    \.venv
+  | venv
+  | migrations
+  | spa
+  | staticfiles
+  | __pycache__
+)/
+'''

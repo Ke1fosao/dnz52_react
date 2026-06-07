@@ -1,0 +1,5 @@
+# .prettierignore — файли які Prettier не форматує
+dist
+node_modules
+*.min.js
+public

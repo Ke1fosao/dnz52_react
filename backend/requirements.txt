@@ -91,3 +91,8 @@ drf-spectacular>=0.27
 
 # Моніторинг помилок (вмикається якщо задано SENTRY_DSN у .env)
 sentry-sdk[django]>=2.0
+
+# Лінтери та форматери (для розробки; запускаються через pre-commit)
+ruff>=0.11
+black>=26.0
+pre-commit>=4.0

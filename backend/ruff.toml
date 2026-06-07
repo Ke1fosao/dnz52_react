@@ -1,0 +1,41 @@
+# ruff.toml — конфігурація Ruff (лінтер + форматер для Python)
+# Використовуємо замість flake8 + isort + pyupgrade.
+# Запуск: ruff check . або ruff format .
+
+[tool.ruff]
+# Цільова версія Python
+target-version = "py311"
+
+# Максимальна довжина рядка (сумісна з black)
+line-length = 100
+
+# Виключаємо авто-згенеровані і третьосторонні файли
+exclude = [
+    ".venv",
+    "venv",
+    "migrations",
+    "__pycache__",
+    "*.pyc",
+    "spa",
+    "staticfiles",
+]
+
+[tool.ruff.lint]
+# E/W — PEP8, F — Pyflakes, I — isort, UP — pyupgrade, B — bugbear
+select = ["E", "W", "F", "I", "UP", "B"]
+
+ignore = [
+    # E501: рядки можуть бути довшими у SQL/HTML/URL шаблонах
+    "E501",
+    # B008: виклик функції як аргумент (Django: Field(default=list) — норма)
+    "B008",
+    # B904: raise without from (у деяких except блоках OK)
+    "B904",
+    # UP007: X | Y union type hints (потребує Python 3.10+)
+    "UP007",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["main", "news", "gallery", "groups", "specialists",
+                     "circles", "documents", "reviews", "menu", "faq",
+                     "events", "dnz52_site"]

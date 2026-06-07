@@ -1,0 +1,11 @@
+# .prettierrc — конфігурація Prettier для JavaScript/TypeScript фронтенду
+{
+  "singleQuote": true,
+  "semi": true,
+  "trailingComma": "all",
+  "printWidth": 100,
+  "tabWidth": 2,
+  "bracketSpacing": true,
+  "bracketSameLine": false,
+  "endOfLine": "lf"
+}
