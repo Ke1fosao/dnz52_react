@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, MapPin, Clock, CalendarPlus, Download, CalendarX2, CalendarDays } from 'lucide-react';
 import { Seo } from '@/components/common/Seo';
+import { EventLD, BreadcrumbLD } from '@/components/common/JsonLd';
 import { PageHero } from '@/components/common/PageHero';
 import { Spinner } from '@/components/common/Spinner';
 import { RichContent } from '@/components/common/RichContent';
@@ -69,7 +70,29 @@ export function EventsPage() {
 
   return (
     <div className="container mx-auto px-4 max-w-6xl">
-      <Seo title="Календар подій" description="Свята, ранки, батьківські збори та заходи ЗДО №52 — календар подій." />
+      <Seo
+        title="Календар подій"
+        description="Свята, ранки, батьківські збори та заходи ЗДО №52, м. Рівне — календар подій дитячого садка."
+        path="/events"
+      />
+      <BreadcrumbLD crumbs={[
+        { name: 'Головна', url: '/' },
+        { name: 'Календар подій', url: '/events' },
+      ]} />
+      {/* JSON-LD для кожної події поточного місяця */}
+      {(events || []).map(ev => (
+        <EventLD
+          key={ev.id}
+          name={ev.title}
+          startDate={ev.start_date}
+          endDate={ev.end_date}
+          location={ev.location}
+          description={ev.description}
+          image={ev.image}
+          slug={ev.slug}
+          eventType={ev.event_type_display}
+        />
+      ))}
       <PageHero title="Календар подій" subtitle="Свята, ранки, збори та цікаві заходи нашого садочка" icon="📅" variant="sky" />
 
       <div className="grid lg:grid-cols-5 gap-6 pb-12">

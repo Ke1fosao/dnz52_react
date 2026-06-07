@@ -1,9 +1,13 @@
 import { useLocation } from 'react-router-dom';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 /**
  * Декоративний фон на весь екран (fixed, позаду контенту, не клікабельний).
  * Для кожної сторінки — своя тема: розмиті градієнтні «плями» + ледь помітні
  * плаваючі емодзі під тематику розділу. Адаптовано під світлу й темну теми.
+ *
+ * При prefers-reduced-motion: reduce — JS-анімації вимкнено (CSS вже заглушує
+ * transition/animation, але rAF/CSS-class-анімації зупиняємо тут явно).
  */
 interface Variant { blobs: [string, string, string]; emojis: string[] }
 
@@ -61,6 +65,10 @@ function pickVariant(pathname: string): Variant {
 export function BackgroundDecor() {
   const { pathname } = useLocation();
   const v = pickVariant(pathname);
+  const reducedMotion = useReducedMotion();
+
+  // При reduced-motion не додаємо клас анімації (CSS теж глушить, але зупиняємо JS-клас явно)
+  const floatClass = reducedMotion ? '' : 'animate-float-complex';
 
   return (
     <div key={pathname} className="fixed inset-0 -z-10 overflow-hidden pointer-events-none" aria-hidden="true">
@@ -68,14 +76,18 @@ export function BackgroundDecor() {
       <div className="absolute inset-0 bg-[#f8fafc] dark:bg-slate-950 transition-colors duration-500" />
       {/* Розмиті градієнтні плями */}
       {v.blobs.map((c, i) => (
-        <div key={i} className={`absolute rounded-full blur-[110px] ${c} ${BLOB_POS[i]} animate-float-complex`} style={{ animationDelay: `${i * 1.5}s`, animationDuration: `${12 + i * 2}s` }} />
+        <div
+          key={i}
+          className={`absolute rounded-full blur-[110px] ${c} ${BLOB_POS[i]} ${floatClass}`}
+          style={reducedMotion ? undefined : { animationDelay: `${i * 1.5}s`, animationDuration: `${12 + i * 2}s` }}
+        />
       ))}
       {/* Ледь помітні плаваючі емодзі під тематику сторінки */}
       {v.emojis.map((e, i) => (
         <span
           key={i}
-          className={`absolute select-none animate-float-complex opacity-[0.13] dark:opacity-[0.09] ${EMOJI_POS[i % EMOJI_POS.length]}`}
-          style={{ animationDelay: `${i * 0.9}s`, animationDuration: `${9 + (i % 4) * 1.6}s` }}
+          className={`absolute select-none opacity-[0.13] dark:opacity-[0.09] ${EMOJI_POS[i % EMOJI_POS.length]} ${floatClass}`}
+          style={reducedMotion ? undefined : { animationDelay: `${i * 0.9}s`, animationDuration: `${9 + (i % 4) * 1.6}s` }}
         >
           {e}
         </span>

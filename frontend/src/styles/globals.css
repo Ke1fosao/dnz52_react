@@ -108,7 +108,7 @@
     --secondary-foreground: 168 60% 18%;
 
     --muted: 210 20% 96%;
-    --muted-foreground: 210 12% 45%;
+    --muted-foreground: 210 14% 38%;
 
     --accent: 35 100% 65%;
     --accent-foreground: 30 80% 15%;
@@ -455,13 +455,4 @@ select:focus-visible,
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
+

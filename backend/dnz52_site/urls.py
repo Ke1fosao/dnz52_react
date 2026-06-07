@@ -18,7 +18,8 @@ from django.contrib.sitemaps.views import sitemap
 from django.views.generic import TemplateView
 
 from main.sitemaps import (
-    StaticViewSitemap, PageSitemap, NewsSitemap, GroupSitemap,
+    StaticViewSitemap, StaticPagesSitemap, PageSitemap, NewsSitemap,
+    GroupSitemap, AlbumSitemap, CircleSitemap, EventSitemap, SpecialistSitemap,
 )
 from news.feeds import LatestNewsFeed
 from dnz52_site.spa_views import spa_index
@@ -37,10 +38,15 @@ if getattr(settings, 'ENFORCE_ADMIN_2FA', False):
 
 
 sitemaps = {
-    'static': StaticViewSitemap,
-    'pages':  PageSitemap,
-    'news':   NewsSitemap,
-    'groups': GroupSitemap,
+    'static':        StaticViewSitemap,
+    'static-pages':  StaticPagesSitemap,
+    'pages':         PageSitemap,
+    'news':          NewsSitemap,
+    'groups':        GroupSitemap,
+    'albums':        AlbumSitemap,
+    'circles':       CircleSitemap,
+    'events':        EventSitemap,
+    'specialists':   SpecialistSitemap,
 }
 
 urlpatterns = [

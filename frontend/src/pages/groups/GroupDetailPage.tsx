@@ -33,7 +33,12 @@ export function GroupDetailPage() {
 
   return (
     <div className="mesh-bg-gallery min-h-screen -mt-24 md:-mt-28 pb-20 animate-page-fade-in">
-      <Seo title={data.name} description={data.motto || data.description} />
+      <Seo
+        title={data.name}
+        description={data.motto ? `${data.name} — ${data.motto}. Дошкільна освіта №52, м. Рівне.` : `${data.name} — група дитячого садка №52 «ЗДО №52», м. Рівне.`}
+        image={data.cover ? (data.cover.startsWith('http') ? data.cover : `https://dnz52.onrender.com${data.cover}`) : undefined}
+        path={`/groups/${data.slug}`}
+      />
 
       {/* --- HERO: обкладинка + скляна панель, що наїжджає --- */}
       <section className="relative w-full">

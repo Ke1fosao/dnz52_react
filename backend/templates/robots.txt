@@ -1,7 +1,11 @@
 User-agent: *
 Allow: /
+
 Disallow: /admin/
 Disallow: /manage/
 Disallow: /api/
+Disallow: /api/docs/
+Disallow: /api/redoc/
+Disallow: /api/schema/
 
-Sitemap: /sitemap.xml
+Sitemap: https://dnz52.onrender.com/sitemap.xml

@@ -101,20 +101,20 @@ export function Navbar() {
           scrolled ? 'ultra-glass rounded-[2rem] px-4 py-2' : 'bg-transparent px-2 py-2',
         )}>
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3 relative z-50 group shrink-0">
-            <div className="w-12 h-12 bg-gray-900 dark:bg-white rounded-2xl flex items-center justify-center text-white dark:text-gray-900 font-black text-xl shadow-[0_10px_20px_rgba(0,0,0,0.2)] dark:shadow-[0_10px_20px_rgba(255,255,255,0.1)] group-hover:rotate-[15deg] transition-all duration-300">
+          <Link to="/" aria-label="ЗДО №52 — Головна сторінка" className="flex items-center gap-3 relative z-50 group shrink-0">
+            <div className="w-12 h-12 bg-gray-900 dark:bg-white rounded-2xl flex items-center justify-center text-white dark:text-gray-900 font-black text-xl shadow-[0_10px_20px_rgba(0,0,0,0.2)] dark:shadow-[0_10px_20px_rgba(255,255,255,0.1)] group-hover:rotate-[15deg] transition-all duration-300" aria-hidden="true">
               52
             </div>
             <div className="hidden sm:block">
-              <h1 className="font-extrabold text-gray-900 dark:text-white text-xl tracking-tight leading-none">ЗДО №52</h1>
-              <div className="flex items-center gap-1 text-[10px] text-gray-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">
+              <span className="font-extrabold text-gray-900 dark:text-white text-xl tracking-tight leading-none">ЗДО №52</span>
+              <div className="flex items-center gap-1 text-[10px] text-gray-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1" aria-hidden="true">
                 <MapPin size={10} /> Рівне
               </div>
             </div>
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden xl:flex items-center gap-1 bg-white/40 dark:bg-slate-900/40 backdrop-blur-md p-1.5 rounded-full border border-white/50 dark:border-slate-700/50 shadow-sm">
+          <nav aria-label="Основна навігація" className="hidden xl:flex items-center gap-1 bg-white/40 dark:bg-slate-900/40 backdrop-blur-md p-1.5 rounded-full border border-white/50 dark:border-slate-700/50 shadow-sm">
             <NavPill to="/" label="Головна" active={isActive('/')} />
 
             <NavDrop label="Про заклад">
@@ -189,11 +189,21 @@ export function Navbar() {
           {/* Right actions */}
           <div className="hidden xl:flex items-center gap-3 shrink-0">
             <NotificationBell />
-            <button onClick={toggleTheme} className="w-12 h-12 rounded-full flex items-center justify-center text-gray-900 dark:text-white shadow-sm hover:scale-105 transition-transform bg-white dark:bg-slate-800 border border-white dark:border-slate-700" aria-label="Тема">
-              {isDark ? <Sun size={20} /> : <Moon size={20} />}
+            <button
+              onClick={toggleTheme}
+              className="w-12 h-12 rounded-full flex items-center justify-center text-gray-900 dark:text-white shadow-sm hover:scale-105 transition-transform bg-white dark:bg-slate-800 border border-white dark:border-slate-700"
+              aria-label={isDark ? 'Увімкнути світлу тему' : 'Увімкнути темну тему'}
+            >
+              {isDark ? <Sun size={20} aria-hidden="true" /> : <Moon size={20} aria-hidden="true" />}
             </button>
-            <button onClick={() => setSearchOpen(true)} className="w-12 h-12 rounded-full flex items-center justify-center text-gray-900 dark:text-white shadow-sm hover:scale-105 transition-transform bg-white dark:bg-slate-800 border border-white dark:border-slate-700" aria-label="Пошук">
-              <Search size={20} />
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="w-12 h-12 rounded-full flex items-center justify-center text-gray-900 dark:text-white shadow-sm hover:scale-105 transition-transform bg-white dark:bg-slate-800 border border-white dark:border-slate-700"
+              aria-label="Відкрити пошук"
+              aria-expanded={searchOpen}
+              aria-controls="search-panel"
+            >
+              <Search size={20} aria-hidden="true" />
             </button>
             <Link to="/contacts" onMouseEnter={() => prefetchRoute('/contacts')} className={cn(
               'px-6 py-3 rounded-full font-bold text-sm shadow-[0_10px_20px_rgba(0,0,0,0.2)] dark:shadow-[0_10px_20px_rgba(255,255,255,0.1)] hover:-translate-y-1 transition-all whitespace-nowrap',
@@ -205,14 +215,30 @@ export function Navbar() {
 
           {/* Mobile toggles */}
           <div className="xl:hidden flex items-center gap-2">
-            <button onClick={() => setSearchOpen(true)} className="w-10 h-10 rounded-full flex items-center justify-center text-gray-900 dark:text-white shadow-sm bg-white dark:bg-slate-800 border border-white dark:border-slate-700 relative z-50" aria-label="Пошук">
-              <Search size={18} />
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="w-10 h-10 rounded-full flex items-center justify-center text-gray-900 dark:text-white shadow-sm bg-white dark:bg-slate-800 border border-white dark:border-slate-700 relative z-50"
+              aria-label="Відкрити пошук"
+              aria-expanded={searchOpen}
+              aria-controls="search-panel"
+            >
+              <Search size={18} aria-hidden="true" />
             </button>
-            <button onClick={toggleTheme} className="w-10 h-10 rounded-full flex items-center justify-center text-gray-900 dark:text-white shadow-sm bg-white dark:bg-slate-800 border border-white dark:border-slate-700 relative z-50" aria-label="Тема">
-              {isDark ? <Sun size={18} /> : <Moon size={18} />}
+            <button
+              onClick={toggleTheme}
+              className="w-10 h-10 rounded-full flex items-center justify-center text-gray-900 dark:text-white shadow-sm bg-white dark:bg-slate-800 border border-white dark:border-slate-700 relative z-50"
+              aria-label={isDark ? 'Увімкнути світлу тему' : 'Увімкнути темну тему'}
+            >
+              {isDark ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />}
             </button>
-            <button onClick={() => setMobileOpen(!mobileOpen)} className="w-12 h-12 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center text-gray-900 dark:text-white shadow-md relative z-50 border border-white dark:border-slate-700" aria-label="Меню">
-              {mobileOpen ? <X size={24} /> : <MenuIcon size={24} />}
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="w-12 h-12 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center text-gray-900 dark:text-white shadow-md relative z-50 border border-white dark:border-slate-700"
+              aria-label={mobileOpen ? 'Закрити меню' : 'Відкрити меню'}
+              aria-expanded={mobileOpen}
+              aria-controls="mobile-menu"
+            >
+              {mobileOpen ? <X size={24} aria-hidden="true" /> : <MenuIcon size={24} aria-hidden="true" />}
             </button>
           </div>
         </div>
@@ -221,12 +247,14 @@ export function Navbar() {
       {/* Пошук — overlay панель (поверх навбару, не ламає layout) */}
       {searchOpen && (
         <>
-          <div className="fixed inset-0 z-[105] bg-black/30 backdrop-blur-sm animate-page-fade-in" onClick={() => setSearchOpen(false)} />
-          <div ref={searchTrapRef} className="fixed top-0 left-0 right-0 z-[110] pt-4">
+          <div className="fixed inset-0 z-[105] bg-black/30 backdrop-blur-sm animate-page-fade-in" onClick={() => setSearchOpen(false)} aria-hidden="true" />
+          <div ref={searchTrapRef} id="search-panel" role="search" className="fixed top-0 left-0 right-0 z-[110] pt-4">
             <div className="container mx-auto px-4">
               <form onSubmit={handleSearch} className="mx-auto max-w-3xl glass-dropdown rounded-[1.5rem] sm:rounded-[2rem] p-2 flex items-center gap-1.5 sm:gap-2 shadow-2xl">
-                <div className="pl-2 sm:pl-4 text-gray-400 shrink-0"><Search size={20} /></div>
+                <div className="pl-2 sm:pl-4 text-gray-400 shrink-0" aria-hidden="true"><Search size={20} /></div>
+                <label htmlFor="nav-search-input" className="sr-only">Пошук по сайту</label>
                 <input
+                  id="nav-search-input"
                   autoFocus
                   value={query}
                   onChange={e => setQuery(e.target.value)}
@@ -234,10 +262,10 @@ export function Navbar() {
                   className="flex-1 min-w-0 h-12 sm:h-14 bg-transparent outline-none text-base sm:text-lg font-bold text-gray-800 dark:text-slate-100 placeholder:text-gray-400 placeholder:font-medium"
                 />
                 <button type="submit" className="h-11 sm:h-12 px-4 sm:px-6 rounded-full bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors shrink-0 flex items-center gap-2" aria-label="Знайти">
-                  <Search size={18} /><span className="hidden sm:inline">Знайти</span>
+                  <Search size={18} aria-hidden="true" /><span className="hidden sm:inline">Знайти</span>
                 </button>
-                <button type="button" onClick={() => setSearchOpen(false)} className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-800 shrink-0" aria-label="Закрити">
-                  <X size={20} />
+                <button type="button" onClick={() => setSearchOpen(false)} className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-800 shrink-0" aria-label="Закрити пошук">
+                  <X size={20} aria-hidden="true" />
                 </button>
               </form>
             </div>
@@ -246,15 +274,22 @@ export function Navbar() {
       )}
 
       {/* Mobile menu */}
-      <div ref={mobileTrapRef} className={cn('xl:hidden fixed inset-0 z-[120] bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl transition-all duration-500', mobileOpen ? 'opacity-100 visible' : 'opacity-0 invisible')}>
+      <div
+        ref={mobileTrapRef}
+        id="mobile-menu"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Мобільне меню навігації"
+        className={cn('xl:hidden fixed inset-0 z-[120] bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl transition-all duration-500', mobileOpen ? 'opacity-100 visible' : 'opacity-0 invisible')}
+      >
         {/* Власний хедер меню з логотипом і кнопкою закриття (завжди видима) */}
         <div className="flex items-center justify-between px-6 h-20 border-b border-gray-100 dark:border-slate-800">
-          <Link to="/" onClick={closeMobile} className="flex items-center gap-3">
-            <div className="w-11 h-11 bg-gray-900 dark:bg-white rounded-2xl flex items-center justify-center text-white dark:text-gray-900 font-black text-lg">52</div>
+          <Link to="/" onClick={closeMobile} className="flex items-center gap-3" aria-label="ЗДО №52 — Головна сторінка">
+            <div className="w-11 h-11 bg-gray-900 dark:bg-white rounded-2xl flex items-center justify-center text-white dark:text-gray-900 font-black text-lg" aria-hidden="true">52</div>
             <span className="font-extrabold text-gray-900 dark:text-white text-lg">ЗДО №52</span>
           </Link>
           <button onClick={closeMobile} className="w-12 h-12 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-gray-900 dark:text-white hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/40 transition-colors" aria-label="Закрити меню">
-            <X size={24} />
+            <X size={24} aria-hidden="true" />
           </button>
         </div>
         <div className="flex flex-col h-[calc(100%-5rem)] px-6 pt-6 pb-10 overflow-y-auto">
@@ -294,14 +329,20 @@ function NavPill({ to, label, active }: { to: string; label: string; active: boo
 }
 
 function NavDrop({ label, children }: { label: string; children: ReactNode }) {
+  const dropId = `nav-drop-${label.replace(/\s+/g, '-').toLowerCase()}`;
   return (
     <div className="relative group/nav">
-      <button className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-sm font-bold text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800/50 transition-all">
+      <button
+        className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-sm font-bold text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800/50 transition-all"
+        aria-haspopup="true"
+        aria-expanded="false"
+        aria-controls={dropId}
+      >
         {label}
-        <ChevronDown size={14} className="opacity-50 group-hover/nav:rotate-180 transition-transform" />
+        <ChevronDown size={14} className="opacity-50 group-hover/nav:rotate-180 transition-transform" aria-hidden="true" />
       </button>
-      <div className="absolute top-full left-1/2 -translate-x-1/2 w-full h-6" />
-      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 opacity-0 translate-y-4 invisible group-hover/nav:opacity-100 group-hover/nav:translate-y-0 group-hover/nav:visible transition-all duration-300 z-50 origin-top">
+      <div className="absolute top-full left-1/2 -translate-x-1/2 w-full h-6" aria-hidden="true" />
+      <div id={dropId} className="absolute top-full left-1/2 -translate-x-1/2 mt-3 opacity-0 translate-y-4 invisible group-hover/nav:opacity-100 group-hover/nav:translate-y-0 group-hover/nav:visible transition-all duration-300 z-50 origin-top">
         {children}
       </div>
     </div>
@@ -340,19 +381,24 @@ function MobileGroup({ label, id, icon: Icon, color, expanded, setExpanded, item
   setExpanded: (v: string | null) => void; items: DropItem[]; onNav: () => void;
 }) {
   const open = expanded === id;
+  const panelId = `mobile-group-${id}`;
   return (
     <div className="mb-2">
-      <button onClick={() => setExpanded(open ? null : id)}
-        className="w-full flex items-center gap-4 p-3 rounded-3xl font-extrabold text-xl text-gray-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-800/50 transition-all">
-        <div className={cn('w-11 h-11 rounded-2xl flex items-center justify-center shrink-0', color)}><Icon size={20} /></div>
+      <button
+        onClick={() => setExpanded(open ? null : id)}
+        aria-expanded={open}
+        aria-controls={panelId}
+        className="w-full flex items-center gap-4 p-3 rounded-3xl font-extrabold text-xl text-gray-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-800/50 transition-all"
+      >
+        <div className={cn('w-11 h-11 rounded-2xl flex items-center justify-center shrink-0', color)} aria-hidden="true"><Icon size={20} /></div>
         <span className="flex-1 text-left">{label}</span>
-        <ChevronDown size={24} className={cn('transition-transform', open && 'rotate-180')} />
+        <ChevronDown size={24} className={cn('transition-transform', open && 'rotate-180')} aria-hidden="true" />
       </button>
       {open && (
-        <div className="p-2 grid gap-2 mt-2">
+        <div id={panelId} className="p-2 grid gap-2 mt-2">
           {items.map(it => (
             <Link key={it.to} to={it.to} onClick={onNav} className="flex items-center gap-4 p-4 bg-white/50 dark:bg-slate-800/50 rounded-3xl">
-              <div className={cn('w-12 h-12 rounded-2xl flex items-center justify-center', it.color)}><it.icon size={20} /></div>
+              <div className={cn('w-12 h-12 rounded-2xl flex items-center justify-center', it.color)} aria-hidden="true"><it.icon size={20} /></div>
               <div className="font-bold text-gray-800 dark:text-slate-200">{it.title}</div>
             </Link>
           ))}

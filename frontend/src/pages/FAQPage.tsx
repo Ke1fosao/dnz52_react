@@ -6,6 +6,7 @@ import { ChevronDown, ThumbsUp, Search, HelpCircle, Send, MessageCircle } from '
 import { AxiosError } from 'axios';
 import { toast } from 'sonner';
 import { Seo } from '@/components/common/Seo';
+import { FAQPageLD, BreadcrumbLD } from '@/components/common/JsonLd';
 import { PageHero } from '@/components/common/PageHero';
 import { Spinner } from '@/components/common/Spinner';
 import { EmptyState } from '@/components/common/EmptyState';
@@ -79,14 +80,21 @@ export function FAQPage() {
 
   return (
     <div className="container mx-auto px-4 max-w-5xl">
-      <Seo title="Поширені запитання" description="Відповіді на поширені запитання батьків про заклад дошкільної освіти №52" />
+      <Seo title="Поширені запитання" description="Відповіді на поширені запитання батьків про заклад дошкільної освіти №52, м. Рівне: прийом, зарахунок, розклад, правила" path="/faq" />
+      {groups && groups.length > 0 && <FAQPageLD groups={groups} />}
+      <BreadcrumbLD crumbs={[
+        { name: 'Головна', url: '/' },
+        { name: 'Поширені запитання', url: '/faq' },
+      ]} />
       <PageHero title="Поширені запитання" subtitle="Відповіді на те, що батьки питають найчастіше" icon="❓" />
 
       <div className="pb-12 space-y-6">
         {totalItems > 0 && (
           <div className="relative">
-            <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" size={20} aria-hidden="true" />
+            <label htmlFor="faq-search" className="sr-only">Пошук серед поширених запитань</label>
             <input
+              id="faq-search"
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder="Пошук серед запитань…"

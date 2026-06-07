@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { Calendar, Eye, ArrowLeft, Tag } from 'lucide-react';
 import { Seo } from '@/components/common/Seo';
+import { NewsArticleLD, BreadcrumbLD } from '@/components/common/JsonLd';
 import { PageSpinner } from '@/components/common/Spinner';
 import { ZoomableImage } from '@/components/common/ZoomableImage';
 import { ReadingProgress } from '@/components/common/ReadingProgress';
@@ -19,8 +20,26 @@ export function NewsDetailPage() {
 
   return (
     <>
-      <Seo title={data.title} description={data.title} image={data.image || undefined}
-        type="article" path={`/news/${data.slug}`} publishedTime={data.created_at} />
+      <Seo
+        title={data.title}
+        description={`${data.title} — читайте новини дитячого садочка №52, м. Рівне`}
+        image={data.image ? (data.image.startsWith('http') ? data.image : `https://dnz52.onrender.com${data.image}`) : undefined}
+        type="article"
+        path={`/news/${data.slug}`}
+        publishedTime={data.created_at}
+      />
+      <NewsArticleLD
+        headline={data.title}
+        datePublished={data.created_at}
+        dateModified={data.updated_at}
+        image={data.image}
+        slug={data.slug}
+      />
+      <BreadcrumbLD crumbs={[
+        { name: 'Головна', url: '/' },
+        { name: 'Новини', url: '/news' },
+        { name: data.title, url: `/news/${data.slug}` },
+      ]} />
       <ReadingProgress />
 
       <article className="container mx-auto px-4 max-w-4xl pb-16">

@@ -10,7 +10,7 @@ export function AboutPage() {
 
   return (
     <div className="container mx-auto px-4 max-w-4xl">
-      <Seo title="Про заклад" description="Інформація про заклад дошкільної освіти №52" />
+      <Seo title="Про заклад" description="Заклад дошкільної освіти №52 фізкультурно-оздоровчого напрямку, м. Рівне — наша місія, цінності та коротка історія закладу" path="/about" />
       <PageHero title={data?.title || 'Про наш заклад'} subtitle="Затишний дім для маленьких сердець" icon="🏡" variant="sky" />
 
       <div className="pb-12">

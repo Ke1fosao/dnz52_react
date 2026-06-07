@@ -35,7 +35,12 @@ export function AlbumDetailPage() {
 
   return (
     <div className="mesh-bg-gallery min-h-screen pb-16 -mt-24 md:-mt-28 pt-28 md:pt-32 animate-page-fade-in">
-      <Seo title={data.title} description={data.description} image={data.cover} />
+      <Seo
+        title={data.title}
+        description={data.description || `Фотоальбом «${data.title}» — ЗДО №52, дитячий садок №52, м. Рівне`}
+        image={data.cover ? (data.cover.startsWith('http') ? data.cover : `https://dnz52.onrender.com${data.cover}`) : undefined}
+        path={`/gallery/album/${data.slug}`}
+      />
 
       <div className="container mx-auto px-4 max-w-7xl">
         <button
