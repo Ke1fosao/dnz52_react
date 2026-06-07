@@ -36,7 +36,7 @@ gunicorn==23.0.0
 
 # Роздача статики (CSS/JS/SVG) безпосередньо Django.
 # При DEBUG=False сервер не віддає статику — це робить whitenoise
-whitenoise==6.8.2
+whitenoise[brotli]==6.8.2
 
 # Парсинг DATABASE_URL — потрібно для Render/Railway/Heroku-подібних
 dj-database-url==2.3.0
