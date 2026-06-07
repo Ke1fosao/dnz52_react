@@ -8,6 +8,7 @@ class MainConfig(AppConfig):
         """Налаштування Django-адмінки під ЗДО №52 — виконується одразу при старті."""
         from django.contrib import admin
         from .admin_helpers import customize_app_list
+        from .image_signals import register_image_signals
 
         # Брендинг адмінки (з'являється у хедері та в title вкладки)
         admin.site.site_header = 'ЗДО №52 — Адміністрування'
@@ -19,3 +20,6 @@ class MainConfig(AppConfig):
 
         # Перегрупуємо й перейменуємо розділи у бічному списку
         customize_app_list(admin.site)
+
+        # Авто-ресайз зображень при завантаженні (pre_save-сигнали)
+        register_image_signals()
