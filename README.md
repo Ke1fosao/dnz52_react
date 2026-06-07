@@ -1,215 +1,196 @@
-# ЗДО №52 — повний проект (React + Django)
+# 🌈 ЗДО №52 — сайт закладу дошкільної освіти (м. Рівне)
 
-Сайт закладу дошкільної освіти №52 (м. Рівне) — **монорепо** з двох частин:
-**`frontend/`** (React) і **`backend/`** (Django REST API + адмінка).
+### 🔗 Живий сайт: **[dnz52.pythonanywhere.com](https://dnz52.pythonanywhere.com/)**
 
-## 🎨 Технологічний стек
+Сучасний повнофункціональний вебсайт дитячого садка: преміум-дизайн зі світлою й
+темною темами, власна React-адмінпанель, розумний пошук, PWA з офлайн-режимом та
+push-сповіщеннями, інтеграція з ШІ. **Монорепо** з двох частин — React-фронтенд і
+Django REST API, який також роздає зібраний фронт одним вебзастосунком.
 
-**Frontend** (`/frontend/`):
-- React 18 + TypeScript + Vite 6
-- Tailwind CSS + shadcn/ui
-- React Router v6, TanStack Query, Axios
-- React Hook Form + Zod, Framer Motion
-- Lucide React (іконки), `yet-another-react-lightbox` (фото-zoom)
-- sonner (тостери), canvas-confetti (конфетті), темна тема
+<p>
+  <img alt="React" src="https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white">
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white">
+  <img alt="Vite" src="https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white">
+  <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-3-06B6D4?logo=tailwindcss&logoColor=white">
+  <img alt="Django" src="https://img.shields.io/badge/Django-5.2-092E20?logo=django&logoColor=white">
+  <img alt="DRF" src="https://img.shields.io/badge/DRF-3.15-A30000?logo=django&logoColor=white">
+  <img alt="PWA" src="https://img.shields.io/badge/PWA-ready-5A0FC8?logo=pwa&logoColor=white">
+</p>
 
-**Backend** (`/backend/`):
-- Django 5.2 + Django REST Framework
-- SQLite (для розробки), PostgreSQL (для прода)
-- CKEditor для адмінки
-- CORS налаштовано для React фронтенду
+---
 
-## 📦 Що встановити перед запуском
+## ✨ Можливості
 
-### Обов'язково:
-1. **Node.js 20+ LTS** — https://nodejs.org *(перевірте: `node --version`)*
-2. **Python 3.11–3.13** — https://python.org *(перевірте: `py --version`)*
-   - ⚠️ Python 3.14 теж працює, але `psycopg2-binary` не зібрається (для SQLite не потрібен)
+### 🏠 Публічний сайт
+- **Головна** з hero-слайдером (фото/відео), «бенто»-сіткою розділів і тематичним фоном-декором.
+- **Новини** — категорії, теги, схожі матеріали, лічильник переглядів, архів за місяцями, **RSS-стрічка**.
+- **Календар подій** — сітка з типами подій + експорт в **iCal / Google Calendar**.
+- **Групи** (скляний дизайн, bento-статистика, команда групи), **Гуртки** (розклад, переваги, заняття).
+- **Галерея** альбомів з повноекранним лайтбоксом і zoom.
+- **Меню харчування** — майстер-деталь по днях тижня з адаптивом і анімаціями.
+- **Спеціалісти**, **Керівництво/Штат**, **Атестація**, розділ **Батькам**, **Документи** (з лічильником завантажень).
+- **Відгуки** із зірковим рейтингом, лайками, модерацією та відповіддю адміністрації.
+- **FAQ** з лайками відповідей і формою запитання.
+- **Розумний глобальний пошук** — розуміє відмінки, друкарські помилки (відстань Левенштейна),
+  підказки «можливо, ви мали на увазі», ранжування й підсвічування результатів.
+- **Контакти** з вбудованою Google-картою.
 
-### Рекомендовано (IDE та інструменти):
+### 🎨 Дизайн та UX
+- Повноцінна **світла й темна тема** (синхронна, без миготіння, з повагою до системних налаштувань).
+- Преміум дизайн-система: шрифт Manrope, скляні картки, плавні анімації, градієнтні акценти.
+- **Доступність (a11y):** skip-link, фокус-пастки в модалках, видимий фокус, **режим великого шрифту**, alt у всіх зображень.
+- **PWA:** встановлення на телефон, офлайн-режим, service worker (stale-while-revalidate).
+- **Push-сповіщення** за темами (новини / події) через Web-Push (VAPID).
+- Юридичні сторінки: політика конфіденційності, умови, декларація доступності + cookie-банер.
 
-**VS Code** (https://code.visualstudio.com) — найкращий безкоштовний IDE.
-Розширення для встановлення (Ctrl+Shift+X):
-- `bradlc.vscode-tailwindcss` — Tailwind IntelliSense
-- `dsznajder.es7-react-js-snippets` — React snippets
-- `esbenp.prettier-vscode` — Prettier
-- `dbaeumer.vscode-eslint` — ESLint
-- `formulahendry.auto-rename-tag` — синхронне перейменування JSX тегів
-- `usernamehw.errorlens` — інлайн помилки
-- `ms-python.python` — для Django частини
-- `rangav.vscode-thunder-client` — тестування REST API
+### 🛠️ Власна React-адмінпанель (`/manage`)
+Окрема адмінка у стилі сайту — повне керування контентом **без Django-адмінки**:
+- Новини, події, FAQ, документи, **галерея** (масове завантаження + поворот фото), меню + шаблон тижня,
+  групи, гуртки, спеціалісти, атестація, розділ «Батькам», слайдер, штат, сторінки, контакти.
+- **Drag-and-drop** сортування скрізь, інлайн-створення категорій/тегів, пошук у списках.
+- **Markdown-редактор** з прев'ю та завантаженням зображень.
+- **Користувачі та права**, **історія змін**, **push-розсилка**, **профіль + 2FA (TOTP/QR)**.
+- **Інтеграція з ШІ (Google Gemini):** авто-модерація відгуків і генерація тексту у фірмовому стилі сайту.
 
-**Альтернативи**:
-- **WebStorm** (платний) — https://jetbrains.com/webstorm
-- **Cursor** (VS Code з AI) — https://cursor.com
-- **PyCharm** (для Django) — https://jetbrains.com/pycharm
+### 🔒 Безпека
+- Захист від брутфорсу входу (**django-axes**), **Content-Security-Policy** (django-csp).
+- **2FA / TOTP** для адмінки (django-otp, вмикається через `.env`).
+- HTTPS-захист у проді: HSTS, secure-cookies, nosniff, anti-clickjacking.
+- Throttling API, ETag → `304 Not Modified`, антиспам форм (honeypot + rate-limit).
 
-## 🚀 Швидкий старт
+---
 
-### Варіант 1: Подвійний клік (найпростіше)
+## 🧰 Технологічний стек
 
-```
-1. Подвійний клік на start-all.bat
-   → відкриються 2 вікна: Django + Vite
-   → автоматично встановиться все потрібне при першому запуску
+| Шар | Технології |
+|-----|-----------|
+| **Frontend** | React 18 · TypeScript 5 · Vite 6 · Tailwind CSS 3 · React Router 6 · TanStack Query 5 · Framer Motion · React Hook Form + Zod · Radix UI · Lucide & Bootstrap Icons |
+| **Backend** | Django 5.2 · Django REST Framework · SQLite · WhiteNoise · django-markdownx · simple-history · django-filter · pywebpush |
+| **PWA / офлайн** | vite-plugin-pwa · Workbox (кастомний service worker) |
+| **Безпека** | django-axes · django-csp · django-otp (TOTP) |
+| **ШІ** | Google Gemini API (модерація + генерація тексту) |
+| **Деплой** | PythonAnywhere (Django + зібраний SPA одним вебзастосунком) |
 
-2. Відкрий http://localhost:5173 у браузері
-```
+---
 
-### Варіант 2: Вручну (для розуміння процесу)
+## 🚀 Швидкий старт (локально)
 
-**Термінал 1 — Django backend:**
+### Передумови
+- **Node.js 20+ LTS** — https://nodejs.org
+- **Python 3.11–3.13** — https://python.org
+
+### Варіант 1 — подвійний клік
+Запустіть `start-all.bat` — відкриються два вікна (Django :8000 + Vite :5173).
+Потім відкрийте **http://localhost:5173**.
+
+### Варіант 2 — вручну
+
+**Термінал 1 — Django (бекенд):**
 ```powershell
-cd F:\Project\dnz52-react\backend
-py -m venv .venv                           # одноразово
-.\.venv\Scripts\activate                   # активувати venv
-pip install -r requirements.txt            # одноразово
-python manage.py migrate                   # одноразово
-python manage.py runserver                 # → http://localhost:8000
+cd backend
+py -m venv .venv
+.\.venv\Scripts\activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py createsuperuser   # одноразово, для входу в адмінку
+python manage.py runserver         # → http://localhost:8000
 ```
 
-**Термінал 2 — React frontend:**
+**Термінал 2 — React (фронтенд):**
 ```powershell
-cd F:\Project\dnz52-react\frontend
-npm install                                # одноразово
-npm run dev                                # → http://localhost:5173
+cd frontend
+npm install
+npm run dev                        # → http://localhost:5173
 ```
 
-## 📁 Структура проекту
+Vite проксує `/api` та `/media` на Django, тож CORS-проблем у розробці немає.
+
+---
+
+## 📦 Збірка та деплой
+
+Фронт компілюється й кладеться в `backend/spa/`, який Django роздає у проді
+(WhiteNoise + SPA-фолбек). Зручний скрипт — `build-prod.bat`.
+
+```powershell
+cd frontend
+npm run build      # tsc + vite build → frontend/dist
+# скопіювати свіжий dist у backend/spa, потім:
+git add -A && git commit -m "..." && git push
+```
+
+**Оновлення на PythonAnywhere:**
+```bash
+cd ~/dnz52_react && git pull
+workon dnz52
+cd backend
+python manage.py migrate            # якщо були міграції
+python manage.py collectstatic --noinput
+# Web → 🔄 Reload
+```
+
+Секрети задаються у `backend/.env` (ніколи не в git): `SECRET_KEY`, `DEBUG`,
+`ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS`, `VAPID_*` (push), `GEMINI_API_KEY` (ШІ).
+
+---
+
+## 🗂️ Структура проєкту
 
 ```
-dnz52-react/                      ← КОРІНЬ ПРОЕКТУ
-├── backend/                      ← 🐍 Django бекенд (API + адмінка)
-│   ├── dnz52_site/               ← основні налаштування
-│   │   ├── settings.py
-│   │   ├── urls.py               ← admin + API + SPA fallback
-│   │   ├── api_urls.py           ← REST API роутер
-│   │   └── spa_views.py          ← віддає React index.html
-│   ├── main/, news/, gallery/,
-│   │   groups/, specialists/,
-│   │   circles/, documents/,
-│   │   reviews/, menu/, …        ← Django apps: models, admin,
-│   │                                serializers, api_views
-│   ├── spa/                      ← зібраний React білд (для прода)
-│   ├── media/                    ← завантажені фото (НЕ в git)
-│   ├── static/                   ← CSS для Django адмінки
-│   ├── templates/                ← 404.html, 500.html, robots.txt
-│   ├── db.sqlite3                ← база (НЕ в git)
-│   ├── manage.py
-│   ├── requirements.txt
-│   └── .venv/                    ← Python venv (НЕ в git)
+dnz52-react/
+├── backend/                  # Django: REST API + адмінка + роздача SPA
+│   ├── dnz52_site/           # settings, urls, api_urls, wsgi
+│   ├── main/ news/ gallery/  # додатки: models, serializers, api_views
+│   ├── groups/ circles/ …    #   specialists, documents, reviews, menu,
+│   │                         #   events, faq
+│   ├── spa/                  # зібраний React-білд (для прода)
+│   ├── media/                # завантажені фото/файли (НЕ в git)
+│   └── requirements.txt
 │
-├── frontend/                     ← ⚛️ React фронтенд
-│   ├── src/
-│   │   ├── api/                  ← axios клієнт + endpoints
-│   │   ├── components/
-│   │   │   ├── ui/               ← shadcn/ui (Button, Card, Dialog…)
-│   │   │   ├── layout/           ← Navbar, Footer, MobileMenu
-│   │   │   ├── common/           ← Logo, ThemeToggle, ShareButtons…
-│   │   │   ├── home/             ← HeroSlider, ParallaxDecor, QuickLinks
-│   │   │   ├── news/             ← NewsCard
-│   │   │   └── gallery/          ← AlbumCard
-│   │   ├── pages/                ← усі сторінки (11 модулів)
-│   │   ├── hooks/                ← useApi, useTheme, useVotedReviews
-│   │   ├── types/                ← TypeScript типи
-│   │   ├── lib/                  ← utils, confetti
-│   │   ├── styles/globals.css    ← Tailwind + темна тема
-│   │   ├── App.tsx               ← роутинг (lazy-loaded)
-│   │   └── main.tsx
-│   ├── public/                   ← favicon
-│   ├── package.json
-│   ├── vite.config.ts            ← proxy /api → Django + code splitting
-│   ├── tailwind.config.js
-│   └── node_modules/             ← npm пакети (НЕ в git)
+├── frontend/                 # React + Vite + TypeScript
+│   └── src/
+│       ├── pages/            # усі сторінки сайту
+│       ├── admin/            # React-адмінпанель (/manage)
+│       ├── components/       # ui / layout / common / home / …
+│       ├── hooks/  api/  lib/  types/
+│       ├── styles/globals.css
+│       └── sw.ts             # service worker (PWA)
 │
-├── public/                       ← статика фронтенду
-├── tailwind.config.js            ← дитячі кольори, шрифти
-├── vite.config.ts                ← proxy /api → Django + code splitting
-├── package.json
-├── start-backend.bat             ← запустити лише Django
-├── start-frontend.bat            ← запустити лише Vite
-├── start-all.bat                 ← запустити обидва одразу
-└── README.md
+├── start-all.bat             # запустити Django + Vite
+└── build-prod.bat            # зібрати фронт у backend/spa
 ```
 
-## 🖼️ Що нового: клік на фото відкриває lightbox
+---
 
-У ЦІЙ версії всі фото на сайті клікабельні — натисни щоб збільшити:
-- ✅ Галерея → альбом → фото
-- ✅ Сторінка спеціаліста → фото в розділах + аватарки спеціалістів
-- ✅ Сторінка батькам → оголошення, зразки заяв, фото адаптації
-- ✅ Деталі групи → обкладинка, фото персоналу
-- ✅ Сторінка керівництва → фото директора та працівників
-- ✅ Деталі новини → обкладинка
-- ✅ Про заклад → фото + інлайн галерея
+## 🌐 Огляд API
 
-## 🎨 Дизайн-система
+Базовий URL: `/api/v1/`
 
-**Кольори** (Tailwind):
-- `primary` — синій `#4A90E2` *(зберігаємо стиль)*
-- `secondary` — бірюзовий `#50E3C2`
-- `accent` — помаранчевий `#FFB84D`
-- `sun` — жовтий, `coral` — рожевий, `mint`, `cream` — теплі акценти
-
-**Шрифти**:
-- `font-sans` → Nunito *(дружній основний)*
-- `font-display` → Fredoka *(грайливий для заголовків)*
-
-**Утиліти**: `bg-gradient-primary`, `shadow-soft`, `animate-float`, `animate-wiggle`.
-
-## 🌐 API маршрути
-
-Базовий URL: `http://localhost:8000/api/v1/`
-
-| Endpoint | Що повертає |
-|----------|-------------|
-| `GET /news/` | Список новин (пагінація 12) |
-| `GET /news/<slug>/` | Деталі новини (+ інкремент переглядів) |
-| `GET /news-categories/` | Категорії новин |
-| `GET /gallery/albums/` | Список альбомів |
-| `GET /gallery/albums/<slug>/` | Альбом з фото |
-| `GET /gallery/categories/` | Категорії галереї |
-| `GET /groups/` | Усі групи |
-| `GET /groups/<slug>/` | Деталі групи + персонал |
-| `GET /specialists/<page_type>/` | Сторінка спеціаліста (5 типів) |
-| `GET /circles/` | Гуртки |
-| `GET /circles/<slug>/` | Деталі гуртка |
+| Endpoint | Опис |
+|----------|------|
+| `GET /news/`, `/news/<slug>/` | Новини (пагінація) і деталі |
+| `GET /events/` | Календар подій |
+| `GET /gallery/albums/`, `/gallery/albums/<slug>/` | Альбоми та фото |
+| `GET /groups/`, `/groups/<slug>/` | Групи й персонал |
+| `GET /circles/`, `/circles/<slug>/` | Гуртки |
 | `GET /documents/` | Документи |
-| `POST /documents/<id>/track_download/` | +1 завантаження |
-| `GET /reviews/` | Опубліковані відгуки |
-| `POST /reviews/` | Залишити відгук (модерація + rate-limit) |
-| `POST /reviews/<id>/like/` | Лайк відгуку |
-| `GET /menu/today/` | Меню на сьогодні |
-| `GET /menu/week/?start=YYYY-MM-DD` | Меню на тиждень |
-| `GET /search/?q=...` | Глобальний пошук |
-| `GET /contacts/`, `/staff/`, `/parents/...` | Інші endpoints |
+| `GET /reviews/` · `POST /reviews/` | Відгуки (з модерацією) |
+| `GET /menu/today/`, `/menu/week/` | Меню харчування |
+| `GET /faq/` | Поширені запитання |
+| `GET /search/?q=` | Розумний глобальний пошук |
+| `/api/v1/admin/*` | Захищене API React-адмінки (TokenAuth + IsAdminUser) |
 
-**Адмінка Django**: http://localhost:8000/admin/ — додавайте новини, фото, документи.
+Також: `/rss/` (стрічка новин), `sitemap.xml`, `robots.txt`.
+Резервна Django-адмінка — `/admin/`.
 
-## 🔧 npm команди
+---
 
-```powershell
-npm run dev       # dev сервер на http://localhost:5173
-npm run build     # production білд у dist/
-npm run preview   # перегляд production білду
-npm run lint      # перевірка ESLint
-```
+## 👨‍💻 Автор
 
-## 🐛 Усунення проблем
+**Дмитро Ковтунович**
 
-**"py: command not found"**: встановіть Python з https://python.org і перезапустіть термінал.
+- 📧 Email: [dima.kovtunovych@gmail.com](mailto:dima.kovtunovych@gmail.com)
+- 💬 Telegram: [@Ke1fosao](https://t.me/Ke1fosao)
+- 🐙 GitHub: [@Ke1fosao](https://github.com/Ke1fosao)
 
-**`psycopg2-binary` не встановлюється**: він закоментований у `requirements.txt`, бо потрібен лише для PostgreSQL. Для локального SQLite не потрібен.
-
-**Картинки не відображаються**: переконайтесь що Django запущено на 8000 порту. Vite проксує `/media` → Django.
-
-**CORS помилки**: перевірте що `CORS_ALLOWED_ORIGINS` у `backend/dnz52_site/settings.py` містить `http://localhost:5173`.
-
-**`npm install` зависає**: видаліть `node_modules` і `package-lock.json`, потім знову `npm install`.
-
-**Адмінка не відкривається**: створіть суперюзера: `cd backend && .\.venv\Scripts\python manage.py createsuperuser`.
-
-## 📝 Що залишилося як було
-
-Папка `F:\Project\dnz52` (оригінал) залишається недоторканою — можна
-користуватись паралельно або видалити після перевірки що нова версія працює.
+> Проєкт розроблено як дипломну роботу. Усі права на дизайн і код належать автору.
