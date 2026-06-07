@@ -1,0 +1,39 @@
+# .dockerignore — виключаємо непотрібне з Docker-контексту
+# Зменшує розмір образу і час збірки.
+
+# Середовища та кеш Python
+**/.venv
+**/venv
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/.pytest_cache
+**/.coverage
+**/htmlcov
+
+# Git і IDE
+.git
+.gitignore
+**/.idea
+**/.vscode
+
+# Бекапи та тимчасові файли
+**/backups
+**/*.sqlite3-wal
+**/*.sqlite3-shm
+
+# Фронтенд (у Dockerfile копіюємо тільки backend/)
+frontend/node_modules
+frontend/dist
+
+# Документація і CI конфіги (не потрібні в Docker образі)
+plans/
+docs/
+*.md
+.github/
+
+# .env файли (секрети передаються через --env-file або docker compose)
+**/.env
+**/.env.*
+!backend/.env.example

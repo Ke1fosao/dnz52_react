@@ -1,0 +1,71 @@
+# ════════════════════════════════════════════════════════════════════
+# docker-compose.yml для локальної розробки ЗДО №52
+#
+# Сервіси:
+#   web  — Django + Gunicorn (або runserver у dev-режимі)
+#   db   — PostgreSQL 16 (заміна Supabase для локальної розробки)
+#   redis — кеш (опціонально, якщо підключити django-redis)
+#
+# Запуск:
+#   docker compose up
+#   docker compose up --build     # після зміни Dockerfile або requirements
+#   docker compose exec web python manage.py createsuperuser
+#
+# .env файл (backend/.env) завантажується автоматично через env_file.
+# ════════════════════════════════════════════════════════════════════
+
+services:
+  # ── База даних (локальна) ──────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: dnz52_dev
+      POSTGRES_USER: dnz52
+      POSTGRES_PASSWORD: dnz52_local_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dnz52 -d dnz52_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Django застосунок ──────────────────────────────────────────────
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production          # для розробки можна замінити на builder
+    restart: unless-stopped
+    env_file:
+      - backend/.env              # локальні секрети (SECRET_KEY тощо)
+    environment:
+      # Перевизначаємо DATABASE_URL для підключення до локального db
+      DATABASE_URL: "postgresql://dnz52:dnz52_local_pass@db:5432/dnz52_dev"
+      DEBUG: "True"
+      ALLOWED_HOSTS: "localhost,127.0.0.1,0.0.0.0"
+    ports:
+      - "8000:8000"
+    volumes:
+      # Монтуємо код для hot-reload у dev
+      - ./backend:/app
+      # Media-файли зберігаємо локально (не в контейнері)
+      - media_files:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "
+        python manage.py migrate --noinput &&
+        python manage.py collectstatic --noinput --clear 2>/dev/null || true &&
+        gunicorn --bind 0.0.0.0:8000 --workers 2 --reload dnz52_site.wsgi:application
+      "
+
+volumes:
+  postgres_data:
+    driver: local
+  media_files:
+    driver: local
