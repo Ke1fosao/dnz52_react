@@ -424,6 +424,10 @@ ENFORCE_ADMIN_2FA = os.environ.get('ENFORCE_ADMIN_2FA', 'False').lower() in ('tr
 # Назва видавця для TOTP (показується в Google Authenticator / Authy).
 OTP_TOTP_ISSUER = 'ZDO52 Admin'
 
+# Cloudflare Turnstile — CAPTCHA на публічних формах (відгуки/питання FAQ).
+# Опційно: якщо ключ не задано — форми працюють без перевірки (не ламає локалку).
+TURNSTILE_SECRET_KEY = os.environ.get('TURNSTILE_SECRET_KEY', '')
+
 # ── Google AI Studio (Gemini): авто-модерація відгуків + генерація тексту ──
 # Ключ ЛИШЕ через .env (ніколи не в git). Ланцюг моделей пробується по черзі:
 # спершу flash-lite (найвищі безкоштовні ліміти), при 429/помилці — наступна.

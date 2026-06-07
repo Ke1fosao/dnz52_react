@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -10,6 +10,7 @@ import { PageHero } from '@/components/common/PageHero';
 import { Spinner } from '@/components/common/Spinner';
 import { EmptyState } from '@/components/common/EmptyState';
 import { Pagination } from '@/components/common/Pagination';
+import { Turnstile } from '@/components/common/Turnstile';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -44,10 +45,14 @@ export function ReviewsPage() {
     resolver: zodResolver(reviewSchema), defaultValues: { rating: 5 },
   });
   const rating = watch('rating');
+  const turnstileTokenRef = useRef('');
 
   const onSubmit = async (formData: FormData) => {
     try {
-      await createReview.mutateAsync(formData);
+      await createReview.mutateAsync({
+        ...formData,
+        'cf-turnstile-response': turnstileTokenRef.current,
+      } as FormData & { 'cf-turnstile-response': string });
       reset({ rating: 5 });
       celebrate();
       toast.success('Дякуємо! Ваш відгук відправлено на модерацію.', {
@@ -192,6 +197,10 @@ export function ReviewsPage() {
                 <Textarea id="text" placeholder="Поділіться вашими враженнями про садочок..." rows={5} {...register('text')} />
                 {errors.text && <p className="text-xs text-red-500 mt-1 font-medium">{errors.text.message}</p>}
               </div>
+              <Turnstile
+                onToken={t => { turnstileTokenRef.current = t; }}
+                onExpire={() => { turnstileTokenRef.current = ''; }}
+              />
               <button type="submit" disabled={createReview.isPending}
                 className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-rose-500 text-white font-bold py-3.5 rounded-full shadow-lg hover:-translate-y-0.5 transition-transform disabled:opacity-60">
                 {createReview.isPending ? 'Надсилаємо...' : <>Надіслати відгук <Send size={16} /></>}

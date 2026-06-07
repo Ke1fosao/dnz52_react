@@ -4,6 +4,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
+from dnz52_site.turnstile import verify_turnstile
 from .models import FAQItem, FAQCategory
 from .serializers import FAQItemSerializer, FAQAskSerializer
 
@@ -51,6 +52,14 @@ def faq_ask(request):
         return Response(
             {'detail': 'Зачекайте трохи перед наступним запитанням.'},
             status=status.HTTP_429_TOO_MANY_REQUESTS,
+        )
+
+    # Cloudflare Turnstile — якщо ключ заданий, токен обовʼязковий
+    turnstile_token = request.data.get('cf-turnstile-response', '')
+    if not verify_turnstile(turnstile_token, ip):
+        return Response(
+            {'detail': 'Перевірка captcha не пройдена. Спробуйте ще раз.'},
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
     serializer = FAQAskSerializer(data=request.data)

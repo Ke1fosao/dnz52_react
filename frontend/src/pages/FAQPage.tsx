@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -10,6 +10,7 @@ import { PageHero } from '@/components/common/PageHero';
 import { Spinner } from '@/components/common/Spinner';
 import { EmptyState } from '@/components/common/EmptyState';
 import { RichContent } from '@/components/common/RichContent';
+import { Turnstile } from '@/components/common/Turnstile';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -46,6 +47,7 @@ export function FAQPage() {
   const [liked, setLiked] = useState<number[]>(() => readLiked());
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<AskForm>({ resolver: zodResolver(askSchema) });
+  const turnstileTokenRef = useRef('');
 
   const onLike = (id: number) => {
     if (liked.includes(id)) return;
@@ -56,7 +58,10 @@ export function FAQPage() {
 
   const onAsk = async (data: AskForm) => {
     try {
-      await askQuestion.mutateAsync(data);
+      await askQuestion.mutateAsync({
+        ...data,
+        'cf-turnstile-response': turnstileTokenRef.current,
+      } as AskForm & { 'cf-turnstile-response': string });
       reset();
       celebrate();
       toast.success('Дякуємо! Ми отримали ваше запитання.', { description: 'Незабаром зателефонуємо вам.', duration: 6000 });
@@ -165,6 +170,12 @@ export function FAQPage() {
               <Label htmlFor="faq-q">Ваше запитання *</Label>
               <Textarea id="faq-q" rows={4} placeholder="Що б ви хотіли дізнатися?" {...register('question')} />
               {errors.question && <p className="text-xs text-red-500 mt-1 font-medium">{errors.question.message}</p>}
+            </div>
+            <div className="sm:col-span-2">
+              <Turnstile
+                onToken={t => { turnstileTokenRef.current = t; }}
+                onExpire={() => { turnstileTokenRef.current = ''; }}
+              />
             </div>
             <button type="submit" disabled={askQuestion.isPending}
               className="sm:col-span-2 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold py-3.5 rounded-full shadow-lg hover:-translate-y-0.5 transition-transform disabled:opacity-60">
