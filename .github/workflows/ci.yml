@@ -24,7 +24,7 @@ jobs:
 
     steps:
       - name: Отримати код
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Налаштувати Python 3.11
         uses: actions/setup-python@v5
@@ -53,7 +53,7 @@ jobs:
 
     steps:
       - name: Отримати код
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Налаштувати Node.js 20
         uses: actions/setup-node@v4
