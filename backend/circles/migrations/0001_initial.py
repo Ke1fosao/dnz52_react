@@ -1,6 +1,6 @@
 from django.db import migrations, models
 import django.db.models.deletion
-import ckeditor.fields
+import markdownx.models
 
 class Migration(migrations.Migration):
     initial = True
@@ -15,8 +15,8 @@ class Migration(migrations.Migration):
             ('schedule', models.CharField(blank=True, max_length=200, verbose_name='Розклад')),
             ('icon', models.CharField(default='bi-star', max_length=50, verbose_name='Іконка')),
             ('color', models.CharField(default='#4A90E2', max_length=7, verbose_name='Колір')),
-            ('goal', ckeditor.fields.RichTextField(verbose_name='Мета та завдання')),
-            ('description', ckeditor.fields.RichTextField(verbose_name='Опис діяльності')),
+            ('goal', markdownx.models.MarkdownxField(verbose_name='Мета та завдання')),
+            ('description', markdownx.models.MarkdownxField(verbose_name='Опис діяльності')),
             ('order', models.IntegerField(default=0, verbose_name='Порядок')),
             ('is_published', models.BooleanField(default=True, verbose_name='Опубліковано')),
             ('album', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='gallery.galleryalbum', verbose_name='Фотоальбом')),

@@ -1,6 +1,6 @@
 from django.db import migrations, models
 import django.db.models.deletion
-import ckeditor.fields
+import markdownx.models
 
 
 class Migration(migrations.Migration):
@@ -40,7 +40,7 @@ class Migration(migrations.Migration):
                 ('experience', models.CharField(blank=True, max_length=100, verbose_name='Педагогічний стаж')),
                 ('category', models.CharField(blank=True, max_length=100, verbose_name='Кваліфікаційна категорія')),
                 ('motto', models.CharField(blank=True, max_length=500, verbose_name='Життєве кредо / девіз')),
-                ('bio', ckeditor.fields.RichTextField(blank=True, verbose_name='Біографія / опис діяльності')),
+                ('bio', markdownx.models.MarkdownxField(blank=True, verbose_name='Біографія / опис діяльності')),
                 ('order', models.IntegerField(default=0, verbose_name='Порядок')),
                 ('page', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
                                            related_name='specialists',
