@@ -82,11 +82,17 @@ class AdminQuestionSerializer(serializers.ModelSerializer):
         return obj.handled_by.get_full_name() or obj.handled_by.username if obj.handled_by else None
 
 
+def _has_2fa(user):
+    from django_otp.plugins.otp_totp.models import TOTPDevice
+    return TOTPDevice.objects.filter(user=user, confirmed=True).exists()
+
+
 def _user_payload(user):
     return {
         'username': user.username,
         'full_name': user.get_full_name() or user.username,
         'is_superuser': user.is_superuser,
+        'has_2fa': _has_2fa(user),
     }
 
 
@@ -113,6 +119,15 @@ def admin_login(request):
         return Response({'detail': 'Невірний логін або пароль.'}, status=400)
     if not user.is_staff:
         return Response({'detail': 'У цього акаунта немає доступу до адмінпанелі.'}, status=403)
+    # Двофакторна автентифікація: якщо є підтверджений TOTP-пристрій — вимагаємо код
+    from django_otp.plugins.otp_totp.models import TOTPDevice
+    confirmed = TOTPDevice.objects.filter(user=user, confirmed=True)
+    if confirmed.exists():
+        otp = (request.data.get('otp_token') or '').strip().replace(' ', '')
+        if not otp:
+            return Response({'detail': 'Введіть код із застосунку автентифікації.', 'otp_required': True}, status=401)
+        if not any(d.verify_token(otp) for d in confirmed):
+            return Response({'detail': 'Невірний код двофакторної автентифікації.', 'otp_required': True}, status=401)
     token, _ = Token.objects.get_or_create(user=user)
     return Response({'token': token.key, 'user': _user_payload(user)})
 
@@ -1136,3 +1151,90 @@ def admin_push_send(request):
     from .push import send_to_all, send_to_topic
     sent = send_to_topic(topic, title, body, url) if topic else send_to_all(title, body, url)
     return Response({'sent': sent})
+
+
+# ============================================================================
+# Власний профіль (будь-який персонал) + 2FA (TOTP)
+# ============================================================================
+@api_view(['GET', 'PATCH'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAdminUser])
+def admin_profile(request):
+    """Редагування ВЛАСНОГО профілю. Права (is_staff/superuser) тут не змінюються."""
+    u = request.user
+    if request.method == 'PATCH':
+        for f in ('first_name', 'last_name', 'email'):
+            if f in request.data:
+                setattr(u, f, (request.data.get(f) or '').strip())
+        new_username = (request.data.get('username') or '').strip()
+        if new_username and new_username != u.username:
+            if User.objects.exclude(pk=u.pk).filter(username=new_username).exists():
+                return Response({'detail': 'Такий логін уже зайнятий.'}, status=400)
+            u.username = new_username
+        u.save()
+    return Response({
+        'username': u.username, 'first_name': u.first_name, 'last_name': u.last_name,
+        'email': u.email, 'is_superuser': u.is_superuser, 'has_2fa': _has_2fa(u),
+    })
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAdminUser])
+def admin_change_password(request):
+    """Зміна власного пароля (з підтвердженням поточного)."""
+    u = request.user
+    if not u.check_password(request.data.get('old_password') or ''):
+        return Response({'detail': 'Поточний пароль невірний.'}, status=400)
+    new = request.data.get('new_password') or ''
+    if len(new) < 6:
+        return Response({'detail': 'Новий пароль має містити щонайменше 6 символів.'}, status=400)
+    u.set_password(new)
+    u.save(update_fields=['password'])
+    return Response({'detail': 'Пароль змінено.'})
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAdminUser])
+def admin_2fa_setup(request):
+    """Починає налаштування TOTP: створює непідтверджений пристрій, повертає otpauth-URL для QR."""
+    from django_otp.plugins.otp_totp.models import TOTPDevice
+    u = request.user
+    if _has_2fa(u):
+        return Response({'detail': '2FA вже увімкнено.'}, status=400)
+    TOTPDevice.objects.filter(user=u, confirmed=False).delete()
+    dev = TOTPDevice.objects.create(user=u, name='default', confirmed=False)
+    return Response({'config_url': dev.config_url})
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAdminUser])
+def admin_2fa_confirm(request):
+    """Підтверджує TOTP кодом із застосунку → вмикає 2FA."""
+    from django_otp.plugins.otp_totp.models import TOTPDevice
+    u = request.user
+    token = (request.data.get('token') or '').strip().replace(' ', '')
+    dev = TOTPDevice.objects.filter(user=u, confirmed=False).order_by('-id').first()
+    if not dev:
+        return Response({'detail': 'Спершу почніть налаштування 2FA.'}, status=400)
+    if not token or not dev.verify_token(token):
+        return Response({'detail': 'Невірний код. Спробуйте ще раз.'}, status=400)
+    dev.confirmed = True
+    dev.save()
+    TOTPDevice.objects.filter(user=u, confirmed=False).delete()
+    return Response({'detail': 'Двофакторну автентифікацію увімкнено.', 'has_2fa': True})
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAdminUser])
+def admin_2fa_disable(request):
+    """Вимикає 2FA (з підтвердженням пароля)."""
+    from django_otp.plugins.otp_totp.models import TOTPDevice
+    u = request.user
+    if not u.check_password(request.data.get('password') or ''):
+        return Response({'detail': 'Введіть поточний пароль для вимкнення 2FA.'}, status=400)
+    TOTPDevice.objects.filter(user=u).delete()
+    return Response({'detail': 'Двофакторну автентифікацію вимкнено.', 'has_2fa': False})

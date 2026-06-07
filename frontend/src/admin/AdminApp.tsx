@@ -38,6 +38,7 @@ import { UsersListPage } from './pages/UsersListPage';
 import { UserFormPage } from './pages/UserFormPage';
 import { PushPage } from './pages/PushPage';
 import { HistoryPage } from './pages/HistoryPage';
+import { ProfilePage } from './pages/ProfilePage';
 
 function Guarded() {
   const { user, loading } = useAdminAuth();
@@ -108,6 +109,7 @@ export default function AdminApp() {
           <Route path="users/:id/edit" element={<UserFormPage />} />
           <Route path="push" element={<PushPage />} />
           <Route path="history" element={<HistoryPage />} />
+          <Route path="profile" element={<ProfilePage />} />
           <Route path="*" element={<Navigate to="/manage" replace />} />
         </Route>
       </Routes>

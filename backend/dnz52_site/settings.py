@@ -400,6 +400,9 @@ CONTENT_SECURITY_POLICY = {
 # постав ENFORCE_ADMIN_2FA=True у .env і перезапусти сайт.
 ENFORCE_ADMIN_2FA = os.environ.get('ENFORCE_ADMIN_2FA', 'False').lower() in ('true', '1', 'yes')
 
+# Назва видавця для TOTP (показується в Google Authenticator / Authy).
+OTP_TOTP_ISSUER = 'ZDO52 Admin'
+
 
 # ----------------------------------------------------------------------------
 # Безпека у продакшені (вмикається коли DEBUG=False)

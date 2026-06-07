@@ -114,10 +114,10 @@ export function AdminLayout() {
             </nav>
 
             <div className="pt-4 mt-4 border-t border-white/40 dark:border-white/10 flex items-center justify-between gap-2">
-              <div className="min-w-0">
-                <p className="font-bold truncate">{user?.full_name}</p>
-                <p className="text-xs text-gray-400 truncate">@{user?.username}</p>
-              </div>
+              <Link to="/manage/profile" onClick={() => setOpen(false)} className="min-w-0 group/prof" title="Мій профіль">
+                <p className="font-bold truncate group-hover/prof:text-blue-600 dark:group-hover/prof:text-blue-400 transition-colors">{user?.full_name}</p>
+                <p className="text-xs text-gray-400 truncate">@{user?.username}{!user?.has_2fa && <span className="ml-1 text-amber-500" title="2FA вимкнено">●</span>}</p>
+              </Link>
               <div className="flex gap-1 shrink-0">
                 <button onClick={toggleTheme} className="hidden lg:grid place-items-center w-9 h-9 rounded-xl hover:bg-white/50 dark:hover:bg-slate-800/50" aria-label="Тема">
                   {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}

@@ -4,6 +4,16 @@ export interface AdminUser {
   username: string;
   full_name: string;
   is_superuser: boolean;
+  has_2fa?: boolean;
+}
+
+export interface AdminProfile {
+  username: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  is_superuser: boolean;
+  has_2fa: boolean;
 }
 
 export interface ChartPoint { label: string; value: number }

@@ -47,6 +47,8 @@ from main.admin_api import (
     AdminSpecialistPageViewSet, AdminSpecialistViewSet, AdminSpecialistAlbumViewSet,
     AdminSpecialistPageSectionViewSet, AdminSpecialistPagePhotoViewSet,
     AdminUserViewSet, admin_history, admin_push_subscriptions, admin_push_send,
+    admin_profile, admin_change_password,
+    admin_2fa_setup, admin_2fa_confirm, admin_2fa_disable,
 )
 
 
@@ -166,6 +168,11 @@ urlpatterns = [
     path('admin/history/', admin_history, name='api-admin-history'),
     path('admin/push/subscriptions/', admin_push_subscriptions, name='api-admin-push-subs'),
     path('admin/push/send/', admin_push_send, name='api-admin-push-send'),
+    path('admin/profile/', admin_profile, name='api-admin-profile'),
+    path('admin/change-password/', admin_change_password, name='api-admin-change-password'),
+    path('admin/2fa/setup/', admin_2fa_setup, name='api-admin-2fa-setup'),
+    path('admin/2fa/confirm/', admin_2fa_confirm, name='api-admin-2fa-confirm'),
+    path('admin/2fa/disable/', admin_2fa_disable, name='api-admin-2fa-disable'),
 
     # Окремі endpoints (menu/today/ та menu/week/ тепер як @action в DailyMenuViewSet)
     path('search/', global_search, name='api-search'),

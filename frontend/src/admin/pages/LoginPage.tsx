@@ -9,6 +9,8 @@ export function LoginPage() {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [otp, setOtp] = useState('');
+  const [otpRequired, setOtpRequired] = useState(false);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => { if (user) navigate('/manage', { replace: true }); }, [user, navigate]);
@@ -17,11 +19,12 @@ export function LoginPage() {
     e.preventDefault();
     setBusy(true);
     try {
-      await login(username.trim(), password);
+      await login(username.trim(), password, otpRequired ? otp.trim() : undefined);
       navigate('/manage', { replace: true });
     } catch (err) {
-      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-      toast.error(detail || 'Не вдалося увійти. Перевірте логін і пароль.');
+      const data = (err as { response?: { data?: { detail?: string; otp_required?: boolean } } })?.response?.data;
+      if (data?.otp_required) { setOtpRequired(true); toast.message(data.detail || 'Введіть код двофакторної автентифікації.'); }
+      else toast.error(data?.detail || 'Не вдалося увійти. Перевірте логін і пароль.');
     } finally {
       setBusy(false);
     }
@@ -44,9 +47,16 @@ export function LoginPage() {
         <input value={username} onChange={e => setUsername(e.target.value)} autoFocus autoComplete="username" className={`${field} mb-4`} />
 
         <label className="block text-sm font-bold mb-1.5 text-gray-700 dark:text-slate-300">Пароль</label>
-        <input type="password" value={password} onChange={e => setPassword(e.target.value)} autoComplete="current-password" className={`${field} mb-6`} />
+        <input type="password" value={password} onChange={e => setPassword(e.target.value)} autoComplete="current-password" className={`${field} ${otpRequired ? 'mb-4' : 'mb-6'}`} />
 
-        <button type="submit" disabled={busy || !username || !password}
+        {otpRequired && (
+          <>
+            <label className="block text-sm font-bold mb-1.5 text-gray-700 dark:text-slate-300">Код двофакторної автентифікації</label>
+            <input value={otp} onChange={e => setOtp(e.target.value)} autoFocus inputMode="numeric" autoComplete="one-time-code" placeholder="6-значний код" className={`${field} mb-6 text-center font-mono tracking-[0.3em]`} />
+          </>
+        )}
+
+        <button type="submit" disabled={busy || !username || !password || (otpRequired && !otp)}
           className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-bold py-3 rounded-2xl flex items-center justify-center gap-2 transition-colors">
           {busy ? <Loader2 className="animate-spin" size={20} /> : <LogIn size={20} />} Увійти
         </button>

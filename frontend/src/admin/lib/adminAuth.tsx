@@ -5,8 +5,9 @@ import type { AdminUser } from '../types';
 interface AdminAuthCtx {
   user: AdminUser | null;
   loading: boolean;
-  login: (username: string, password: string) => Promise<void>;
+  login: (username: string, password: string, otp?: string) => Promise<void>;
   logout: () => void;
+  refresh: () => void;
 }
 
 const Ctx = createContext<AdminAuthCtx | null>(null);
@@ -29,8 +30,8 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       .finally(() => setLoading(false));
   }, []);
 
-  const login = async (username: string, password: string) => {
-    const d = await adminAuthApi.login(username, password);
+  const login = async (username: string, password: string, otp?: string) => {
+    const d = await adminAuthApi.login(username, password, otp);
     setToken(d.token);
     setUser(d.user);
   };
@@ -41,5 +42,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
-  return <Ctx.Provider value={{ user, loading, login, logout }}>{children}</Ctx.Provider>;
+  const refresh = () => { adminAuthApi.me().then(d => setUser(d.user)).catch(() => {}); };
+
+  return <Ctx.Provider value={{ user, loading, login, logout, refresh }}>{children}</Ctx.Provider>;
 }

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import type {
-  AdminStats, AdminReview, AdminQuestion, AdminUser, QuestionStatus,
+  AdminStats, AdminReview, AdminQuestion, AdminUser, AdminProfile, QuestionStatus,
   AdminMeta, AdminNews, AdminEvent, AdminFAQItem, AdminCategory, AdminDocument,
   AdminContact, AdminSlider, AdminStaffMember, AdminPage, AdminPageImage,
   AdminGroup, AdminGroupStaff, AdminCircle, AdminCircleBenefit, AdminCircleSession,
@@ -40,10 +40,23 @@ http.interceptors.response.use(
 );
 
 export const adminAuthApi = {
-  login: (username: string, password: string) =>
-    http.post<{ token: string; user: AdminUser }>('/auth/login/', { username, password }).then(r => r.data),
+  login: (username: string, password: string, otp_token?: string) =>
+    http.post<{ token: string; user: AdminUser }>('/auth/login/', { username, password, otp_token }).then(r => r.data),
   logout: () => http.post('/auth/logout/').then(r => r.data),
   me: () => http.get<{ user: AdminUser }>('/auth/me/').then(r => r.data),
+};
+
+// Власний профіль + 2FA
+export const adminProfileApi = {
+  get: () => http.get<AdminProfile>('/profile/').then(r => r.data),
+  update: (data: object) => http.patch<AdminProfile>('/profile/', data).then(r => r.data),
+  changePassword: (old_password: string, new_password: string) =>
+    http.post<{ detail: string }>('/change-password/', { old_password, new_password }).then(r => r.data),
+};
+export const admin2faApi = {
+  setup: () => http.post<{ config_url: string }>('/2fa/setup/').then(r => r.data),
+  confirm: (token: string) => http.post<{ has_2fa: boolean }>('/2fa/confirm/', { token }).then(r => r.data),
+  disable: (password: string) => http.post<{ has_2fa: boolean }>('/2fa/disable/', { password }).then(r => r.data),
 };
 
 export const adminStatsApi = {
