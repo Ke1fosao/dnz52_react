@@ -62,6 +62,15 @@ ALLOWED_HOSTS = [
     ).split(',') if h.strip()
 ]
 
+# Хард-фейл небезпечних налаштувань у проді — навмисний захист:
+# якщо ці змінні не задані на PA, reload впаде одразу, а не тихо.
+from django.core.exceptions import ImproperlyConfigured
+if not DEBUG:
+    if SECRET_KEY.startswith('django-insecure'):
+        raise ImproperlyConfigured('У проді задайте SECRET_KEY у .env')
+    if ALLOWED_HOSTS in ([], ['localhost', '127.0.0.1']):
+        raise ImproperlyConfigured('У проді задайте ALLOWED_HOSTS у .env')
+
 # CSRF — для HTTPS-сайтів обовʼязково
 # У .env: CSRF_TRUSTED_ORIGINS=https://dnz52.pythonanywhere.com
 CSRF_TRUSTED_ORIGINS = [
