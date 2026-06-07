@@ -20,7 +20,7 @@ class Document(models.Model):
     """Документи для завантаження"""
     title = models.CharField('Назва документа', max_length=200)
     category = models.ForeignKey(DocumentCategory, on_delete=models.SET_NULL, null=True, verbose_name='Категорія')
-    file = models.FileField('Файл', upload_to='documents/')
+    file = models.FileField('Файл', upload_to='documents/', max_length=255)
     description = models.TextField('Опис', blank=True)
     created_at = models.DateTimeField('Дата додавання', auto_now_add=True)
     is_published = models.BooleanField('Опубліковано', default=True)

@@ -41,11 +41,17 @@ whitenoise==6.8.2
 # Парсинг DATABASE_URL — потрібно для Render/Railway/Heroku-подібних
 dj-database-url==2.3.0
 
-# PostgreSQL-драйвер (для Render/Railway, які пропонують postgres безкоштовно)
-# На PythonAnywhere не обовʼязково — там SQLite або MySQL
-# УВАГА: psycopg2-binary не зібрається на Python 3.14, але для локального запуску
-# на SQLite він не потрібен. Розкоментуйте лише якщо деплоїте з PostgreSQL.
-# psycopg2-binary==2.9.10
+# PostgreSQL-драйвер (Supabase). psycopg 3 збирається на Python 3.11–3.14
+# (psycopg2-binary НЕ збирається на 3.14). Django 5 нативно підтримує psycopg 3.
+psycopg[binary]==3.2.13
+
+# ============================================================================
+# Supabase: віддалена БД (PostgreSQL через пулер) + сховище медіа (S3 Storage)
+# ============================================================================
+# Медіа зберігаються у Supabase Storage через django-storages (S3 backend).
+# Вмикається лише якщо у .env задано AWS_STORAGE_BUCKET_NAME (інакше — локальні файли).
+django-storages==1.14.4
+boto3==1.35.99
 
 # ============================================================================
 # REST API (для React фронтенду dnz52-react)
