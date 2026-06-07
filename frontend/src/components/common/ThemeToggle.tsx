@@ -1,5 +1,6 @@
 import { Moon, Sun } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
+import { m as motion } from '@/lib/motion';
 import { useTheme } from '@/hooks/useTheme';
 import { cn } from '@/lib/utils';
 

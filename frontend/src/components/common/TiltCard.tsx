@@ -1,5 +1,6 @@
 import { ReactNode, useRef } from 'react';
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { m as motion } from '@/lib/motion';
 import { cn } from '@/lib/utils';
 
 interface Props {

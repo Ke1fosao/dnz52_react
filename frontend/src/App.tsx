@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { RootLayout } from '@/components/layout/RootLayout';
 import { PageSpinner } from '@/components/common/Spinner';
+import { MotionProvider } from '@/lib/motion';
 
 // Eager — головна сторінка завантажується одразу
 import { HomePage } from '@/pages/HomePage';
@@ -45,6 +46,7 @@ const AdminApp = lazy(() => import('@/admin/AdminApp'));
 
 export default function App() {
   return (
+    <MotionProvider>
     <Routes>
       {/* Адмінпанель — окремий layout (без публічного навбару/футера) */}
       <Route path="/manage/*" element={<Suspense fallback={<PageSpinner />}><AdminApp /></Suspense>} />
@@ -89,5 +91,6 @@ export default function App() {
         <Route element={<Suspense fallback={<PageSpinner />}><NotFoundPage /></Suspense>} path="*" />
       </Route>
     </Routes>
+    </MotionProvider>
   );
 }

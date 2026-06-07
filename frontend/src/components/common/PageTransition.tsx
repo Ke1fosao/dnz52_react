@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { motion } from 'framer-motion';
+import { m as motion } from '@/lib/motion';
 
 /**
  * Обгортка для плавної появи сторінки при переході.
