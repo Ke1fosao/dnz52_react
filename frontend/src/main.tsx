@@ -6,6 +6,7 @@ import { HelmetProvider } from 'react-helmet-async';
 
 import App from './App';
 import { ThemeProvider } from './hooks/useTheme';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import './styles/globals.css';
 
@@ -25,7 +26,9 @@ createRoot(document.getElementById('root')!).render(
       <HelmetProvider>
         <QueryClientProvider client={queryClient}>
           <BrowserRouter>
-            <App />
+            <ErrorBoundary>
+              <App />
+            </ErrorBoundary>
           </BrowserRouter>
         </QueryClientProvider>
       </HelmetProvider>
