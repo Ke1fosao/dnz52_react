@@ -138,6 +138,7 @@ _GEN_SYSTEM = (
 
 
 def generate_text(brief: str, kind: str = 'generic') -> str:
+    from .sanitize import clean_html
     label, guide = _KIND_GUIDE.get(kind, _KIND_GUIDE['generic'])
     prompt = f'Напиши {label}. {guide}\n\nКоротка вказівка від працівника (про що текст):\n"""{brief}"""'
     out = _generate(prompt, system=_GEN_SYSTEM, max_tokens=2048, temperature=0.85).strip()
@@ -146,4 +147,4 @@ def generate_text(brief: str, kind: str = 'generic') -> str:
         out = out.split('\n', 1)[-1] if '\n' in out else out
         if out.rstrip().endswith('```'):
             out = out.rstrip()[:-3]
-    return out.strip()
+    return clean_html(out.strip())
