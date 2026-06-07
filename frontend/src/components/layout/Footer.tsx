@@ -97,7 +97,7 @@ export function Footer() {
         </div>
         <div className="flex flex-col md:flex-row justify-between items-center text-gray-500 font-medium text-sm gap-3">
           <p>© {year} ЗДО №52, м. Рівне. Усі права захищено.</p>
-          <p className="opacity-80">Made by Kovtunovych Dmytro Valeriyovych</p>
+          <p className="opacity-80 inline-flex items-center gap-1.5">Design &amp; development by Dmytro Kovtunovych <span className="text-rose-400">❤️</span></p>
         </div>
       </div>
     </footer>

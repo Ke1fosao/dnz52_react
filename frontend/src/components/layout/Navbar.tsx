@@ -177,8 +177,8 @@ export function Navbar() {
             <NavPill to="/news" label="Новини" active={isActive('/news')} />
 
             <NavDrop label="Сервіси">
-              <div className="w-[380px] glass-dropdown rounded-[2rem] p-3">
-                <div className="flex flex-col gap-1">
+              <div className="w-[540px] glass-dropdown rounded-[2rem] p-3">
+                <div className="grid grid-cols-2 gap-1">
                   {SERVICE_ITEMS.map(it => <DropLink key={it.to} {...it} />)}
                 </div>
               </div>

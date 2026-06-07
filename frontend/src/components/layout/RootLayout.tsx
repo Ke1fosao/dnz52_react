@@ -5,6 +5,7 @@ import { Toaster } from 'sonner';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
 import { ScrollToTopButton } from '@/components/common/ScrollToTopButton';
+import { BackgroundDecor } from '@/components/common/BackgroundDecor';
 import { StructuredData } from '@/components/common/StructuredData';
 import { Analytics } from '@/components/common/Analytics';
 import { CookieConsent } from '@/components/common/CookieConsent';
@@ -20,7 +21,10 @@ export function RootLayout() {
   }, [location.pathname]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#f8fafc] dark:bg-slate-950 text-gray-900 dark:text-slate-200 transition-colors duration-500 selection:bg-blue-300 dark:selection:bg-blue-900 selection:text-gray-900 dark:selection:text-white">
+    <div className="flex min-h-screen flex-col text-gray-900 dark:text-slate-200 transition-colors duration-500 selection:bg-blue-300 dark:selection:bg-blue-900 selection:text-gray-900 dark:selection:text-white">
+      {/* Декоративний тематичний фон (за контентом) */}
+      <BackgroundDecor />
+
       {/* Skip-link — для навігації з клавіатури / скрінрідерів */}
       <a
         href="#main-content"
