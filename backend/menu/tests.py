@@ -1,51 +1,46 @@
-"""Тести app menu — щоденне меню."""
+"""Тести меню: API (сьогодні/тиждень) + юніт-тести моделі.
 
-from datetime import date, timedelta
+API-частину переписано зі старих template-тестів (`reverse('menu:index')`) під `/api/v1/menu/`.
+Юніт-тести моделі (has_any_meal, унікальність дати) збережено.
+"""
+from datetime import date
+
 from django.test import TestCase
-from django.urls import reverse
+from rest_framework.test import APITestCase
 
 from .models import DailyMenu
 
 
-class MenuPageTests(TestCase):
-
+class MenuApiTests(APITestCase):
     def setUp(self):
         self.today = date.today()
-        self.today_menu = DailyMenu.objects.create(
-            date=self.today,
-            breakfast='Каша молочна',
-            lunch='Борщ та котлета',
-            snack='Сирники',
-            is_published=True,
-        )
+        DailyMenu.objects.create(date=self.today, breakfast='Каша молочна',
+                                 lunch='Борщ та котлета', is_published=True)
 
-    def test_menu_page_returns_200(self):
-        response = self.client.get(reverse('menu:index'))
-        self.assertEqual(response.status_code, 200)
+    def test_today_returns_menu(self):
+        r = self.client.get('/api/v1/menu/today/')
+        self.assertEqual(r.status_code, 200)
+        self.assertIsNotNone(r.data['menu'])
+        self.assertEqual(r.data['menu']['breakfast'], 'Каша молочна')
 
-    def test_today_menu_displayed(self):
-        response = self.client.get(reverse('menu:index'))
-        self.assertContains(response, 'Каша молочна')
-        self.assertContains(response, 'Борщ та котлета')
+    def test_week_returns_menus(self):
+        r = self.client.get('/api/v1/menu/week/')
+        self.assertEqual(r.status_code, 200)
+        self.assertIn('menus', r.data)
+        self.assertTrue(any(m['breakfast'] == 'Каша молочна' for m in r.data['menus']))
 
-    def test_unpublished_menu_not_displayed(self):
-        # Створюємо завтрашнє меню але не публікуємо
-        DailyMenu.objects.create(
-            date=self.today + timedelta(days=1),
-            breakfast='ТАЄМНИЙ СНІДАНОК',
-            is_published=False,
-        )
-        response = self.client.get(reverse('menu:index'))
-        self.assertNotContains(response, 'ТАЄМНИЙ СНІДАНОК')
+    def test_week_invalid_start_returns_400(self):
+        r = self.client.get('/api/v1/menu/week/?start=notadate')
+        self.assertEqual(r.status_code, 400)
 
-    def test_date_param_changes_week(self):
-        """Параметр ?date=YYYY-MM-DD має переключати тиждень."""
-        far_date = self.today + timedelta(days=21)
-        response = self.client.get(reverse('menu:index') + f'?date={far_date.isoformat()}')
-        self.assertEqual(response.status_code, 200)
+    def test_unpublished_menu_not_in_today(self):
+        DailyMenu.objects.filter(date=self.today).update(is_published=False)
+        r = self.client.get('/api/v1/menu/today/')
+        self.assertIsNone(r.data['menu'])
 
 
 class DailyMenuModelTests(TestCase):
+    """Юніт-тести моделі (не залежать від API)."""
 
     def test_has_any_meal_true_when_any_field_set(self):
         m = DailyMenu(date=date.today(), breakfast='Каша')
@@ -56,7 +51,6 @@ class DailyMenuModelTests(TestCase):
         self.assertFalse(m.has_any_meal)
 
     def test_unique_date_constraint(self):
-        """В один день не може бути два меню."""
         from django.db import IntegrityError
         d = date(2030, 1, 1)
         DailyMenu.objects.create(date=d, breakfast='1')

@@ -1,62 +1,59 @@
-"""Тести app news: список новин, деталі, лічильник переглядів."""
+"""API-тести новин: список (лише live), деталі, лічильник переглядів, прев'ю чернеток.
 
-from django.test import TestCase
-from django.urls import reverse
+Переписано зі старих template-тестів (`reverse('news:...')`) під `/api/v1/news/`.
+"""
+from django.core.cache import cache
+from rest_framework.test import APITestCase
 
-from .models import News, NewsCategory
+from .models import News
 
 
-class NewsListTests(TestCase):
-
+class NewsApiTests(APITestCase):
     def setUp(self):
-        self.cat = NewsCategory.objects.create(name='Свята', slug='svyata')
-        for i in range(3):
-            News.objects.create(
-                title=f'Новина {i}', slug=f'novyna-{i}',
-                content=f'Текст {i}', category=self.cat,
-                is_published=True,
-            )
+        cache.clear()
+        self.pub = News.objects.create(
+            title='Свято осені', slug='svjato-oseni',
+            content='Текст новини про осіннє свято у садочку.',
+            status=News.Status.PUBLISHED)
+        self.draft = News.objects.create(
+            title='Чернетка новини', slug='chernetka',
+            content='Ще не готово до публікації', status=News.Status.DRAFT)
 
-    def test_news_list_returns_200(self):
-        response = self.client.get(reverse('news:news_list'))
-        self.assertEqual(response.status_code, 200)
+    def test_list_returns_200(self):
+        r = self.client.get('/api/v1/news/')
+        self.assertEqual(r.status_code, 200)
 
-    def test_news_list_shows_all_published(self):
-        response = self.client.get(reverse('news:news_list'))
-        for i in range(3):
-            self.assertContains(response, f'Новина {i}')
+    def test_list_shows_published_only(self):
+        r = self.client.get('/api/v1/news/')
+        slugs = [n['slug'] for n in r.data['results']]
+        self.assertIn('svjato-oseni', slugs)
+        self.assertNotIn('chernetka', slugs)
 
-    def test_unpublished_news_not_shown(self):
-        News.objects.create(title='Прихована', slug='prykhovana', content='', is_published=False)
-        response = self.client.get(reverse('news:news_list'))
-        self.assertNotContains(response, 'Прихована')
+    def test_detail_returns_200(self):
+        r = self.client.get('/api/v1/news/svjato-oseni/')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.data['title'], 'Свято осені')
 
+    def test_draft_detail_is_preview(self):
+        """Чернетку можна відкрити за прямим slug (прев'ю для адміна), з позначкою."""
+        r = self.client.get('/api/v1/news/chernetka/')
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(r.data.get('is_preview'))
 
-class NewsDetailTests(TestCase):
+    def test_view_counter_increments_with_count_param(self):
+        self.assertEqual(self.pub.views, 0)
+        self.client.get('/api/v1/news/svjato-oseni/?count=1')
+        self.pub.refresh_from_db()
+        self.assertEqual(self.pub.views, 1)
 
-    def setUp(self):
-        self.news = News.objects.create(
-            title='Цікава новина', slug='cikava',
-            content='<p>Зміст новини</p>', is_published=True,
-        )
+    def test_view_counter_not_incremented_without_param(self):
+        self.client.get('/api/v1/news/svjato-oseni/')
+        self.pub.refresh_from_db()
+        self.assertEqual(self.pub.views, 0)
 
-    def test_news_detail_returns_200(self):
-        response = self.client.get(reverse('news:news_detail', args=['cikava']))
-        self.assertEqual(response.status_code, 200)
-
-    def test_news_detail_shows_content(self):
-        response = self.client.get(reverse('news:news_detail', args=['cikava']))
-        self.assertContains(response, 'Зміст новини')
-
-    def test_view_counter_increments(self):
-        """Лічильник переглядів має збільшуватись на 1 при кожному заході."""
-        initial = News.objects.get(pk=self.news.pk).views
-        self.client.get(reverse('news:news_detail', args=['cikava']))
-        self.client.get(reverse('news:news_detail', args=['cikava']))
-        self.news.refresh_from_db()
-        self.assertEqual(self.news.views, initial + 2)
-
-    def test_unpublished_news_returns_404(self):
-        News.objects.create(title='Чорновик', slug='draft-news', content='', is_published=False)
-        response = self.client.get(reverse('news:news_detail', args=['draft-news']))
-        self.assertEqual(response.status_code, 404)
+    def test_view_counter_deduplicated_per_ip(self):
+        """Повторний ?count=1 з того ж IP протягом 6 год НЕ накручує лічильник."""
+        self.client.get('/api/v1/news/svjato-oseni/?count=1')
+        self.client.get('/api/v1/news/svjato-oseni/?count=1')
+        self.pub.refresh_from_db()
+        self.assertEqual(self.pub.views, 1)
