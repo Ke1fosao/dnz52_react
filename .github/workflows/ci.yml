@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ──────────────────────────────────────────────────────────
+  # 1. Бекенд: Django тести
+  # ──────────────────────────────────────────────────────────
+  backend:
+    name: "Бекенд (Django тести)"
+    runs-on: ubuntu-latest
+
+    env:
+      DJANGO_SETTINGS_MODULE: dnz52_site.settings
+      SECRET_KEY: ci-test-secret-key-not-for-production
+      DEBUG: "True"
+      ALLOWED_HOSTS: localhost,127.0.0.1
+      # DATABASE_URL не задано → SQLite (pooler Supabase не має прав CREATE DATABASE)
+      PYTHONUTF8: "1"
+
+    steps:
+      - name: Отримати код
+        uses: actions/checkout@v4
+
+      - name: Налаштувати Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Встановити залежності
+        run: pip install -r backend/requirements.txt
+
+      - name: Запустити тести Django
+        working-directory: backend
+        run: python manage.py test --verbosity=2
+
+      - name: Запустити pytest з покриттям
+        working-directory: backend
+        run: pytest gallery documents groups specialists circles main/test_search.py main/test_ai.py -q --tb=short
+
+  # ──────────────────────────────────────────────────────────
+  # 2. Фронтенд: лінт + Vitest + білд
+  # ──────────────────────────────────────────────────────────
+  frontend:
+    name: "Фронтенд (лінт + тести + білд)"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Отримати код
+        uses: actions/checkout@v4
+
+      - name: Налаштувати Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Встановити залежності
+        working-directory: frontend
+        run: npm ci
+
+      - name: Запустити лінтер
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Запустити Vitest
+        working-directory: frontend
+        run: npm run test:run
+
+      - name: Зібрати продакшн-білд
+        working-directory: frontend
+        run: npm run build
