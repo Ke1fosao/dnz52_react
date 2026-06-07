@@ -11,6 +11,7 @@ import { useGroups } from '@/hooks/useApi';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { NotificationBell } from '@/components/common/NotificationBell';
 import { cn } from '@/lib/utils';
+import { prefetchRoute } from '@/lib/prefetch';
 
 interface DropItem { title: string; desc: string; icon: typeof Info; to: string; color: string; }
 
@@ -133,7 +134,7 @@ export function Navbar() {
                       <Star size={12} className="fill-current" /> Групи
                     </div>
                     <ul className="space-y-2">
-                      <li><Link to="/groups" className="text-sm font-extrabold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Усі групи →</Link></li>
+                      <li><Link to="/groups" onMouseEnter={() => prefetchRoute('/groups')} className="text-sm font-extrabold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Усі групи →</Link></li>
                       {groups?.slice(0, 5).map(g => (
                         <li key={g.id}>
                           <Link to={`/groups/${g.slug}`} className="text-sm font-bold text-gray-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors line-clamp-1">{g.name}</Link>
@@ -149,7 +150,7 @@ export function Navbar() {
                     <ul className="space-y-2.5">
                       {SPECIALISTS.map(s => (
                         <li key={s.to}>
-                          <Link to={s.to} className="flex items-center gap-2.5 text-sm font-bold text-gray-700 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-400 group/spec">
+                          <Link to={s.to} onMouseEnter={() => prefetchRoute(s.to)} className="flex items-center gap-2.5 text-sm font-bold text-gray-700 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-400 group/spec">
                             <div className="p-1.5 bg-white dark:bg-slate-800 rounded-lg shadow-sm group-hover/spec:scale-110 transition-transform shrink-0"><s.icon size={15} className="text-purple-500 dark:text-purple-400" /></div>
                             <span className="line-clamp-1">{s.title}</span>
                           </Link>
@@ -159,12 +160,12 @@ export function Navbar() {
                   </div>
                   {/* Активності */}
                   <div className="flex flex-col gap-3">
-                    <Link to="/circles" className="flex-1 p-4 rounded-2xl bg-gradient-to-br from-coral/15 to-accent/15 hover:from-coral/25 hover:to-accent/25 transition-colors">
+                    <Link to="/circles" onMouseEnter={() => prefetchRoute('/circles')} className="flex-1 p-4 rounded-2xl bg-gradient-to-br from-coral/15 to-accent/15 hover:from-coral/25 hover:to-accent/25 transition-colors">
                       <Palette size={26} className="text-pink-500 mb-2" />
                       <div className="font-extrabold text-sm text-gray-900 dark:text-white">Гуртки та секції</div>
                       <div className="text-xs text-gray-500 dark:text-slate-400">Творчість і розвиток</div>
                     </Link>
-                    <Link to="/gallery" className="flex-1 p-4 rounded-2xl bg-gradient-to-br from-blue-500/15 to-cyan-500/15 hover:from-blue-500/25 hover:to-cyan-500/25 transition-colors">
+                    <Link to="/gallery" onMouseEnter={() => prefetchRoute('/gallery')} className="flex-1 p-4 rounded-2xl bg-gradient-to-br from-blue-500/15 to-cyan-500/15 hover:from-blue-500/25 hover:to-cyan-500/25 transition-colors">
                       <ImageIcon size={26} className="text-blue-500 mb-2" />
                       <div className="font-extrabold text-sm text-gray-900 dark:text-white">Галерея</div>
                       <div className="text-xs text-gray-500 dark:text-slate-400">Фото та відео</div>
@@ -194,7 +195,7 @@ export function Navbar() {
             <button onClick={() => setSearchOpen(true)} className="w-12 h-12 rounded-full flex items-center justify-center text-gray-900 dark:text-white shadow-sm hover:scale-105 transition-transform bg-white dark:bg-slate-800 border border-white dark:border-slate-700" aria-label="Пошук">
               <Search size={20} />
             </button>
-            <Link to="/contacts" className={cn(
+            <Link to="/contacts" onMouseEnter={() => prefetchRoute('/contacts')} className={cn(
               'px-6 py-3 rounded-full font-bold text-sm shadow-[0_10px_20px_rgba(0,0,0,0.2)] dark:shadow-[0_10px_20px_rgba(255,255,255,0.1)] hover:-translate-y-1 transition-all whitespace-nowrap',
               isActive('/contacts') ? 'bg-blue-600 text-white' : 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-blue-600 dark:hover:bg-blue-500 hover:text-white dark:hover:text-white',
             )}>
@@ -282,7 +283,7 @@ export function Navbar() {
 
 function NavPill({ to, label, active }: { to: string; label: string; active: boolean }) {
   return (
-    <NavLink to={to} end={to === '/'} className={cn(
+    <NavLink to={to} end={to === '/'} onMouseEnter={() => prefetchRoute(to)} onFocus={() => prefetchRoute(to)} className={cn(
       'px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300',
       active ? 'bg-white dark:bg-slate-800 text-gray-900 dark:text-white shadow-sm'
              : 'text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800/50',
@@ -309,7 +310,7 @@ function NavDrop({ label, children }: { label: string; children: ReactNode }) {
 
 function DropLink({ to, title, desc, icon: Icon, color }: DropItem) {
   return (
-    <Link to={to} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-white/60 dark:hover:bg-slate-800/60 transition-colors group/link">
+    <Link to={to} onMouseEnter={() => prefetchRoute(to)} onFocus={() => prefetchRoute(to)} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-white/60 dark:hover:bg-slate-800/60 transition-colors group/link">
       <div className={cn('w-12 h-12 rounded-[1rem] flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover/link:scale-110 group-hover/link:rotate-3', color)}>
         <Icon size={20} />
       </div>

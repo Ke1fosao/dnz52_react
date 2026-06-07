@@ -65,6 +65,7 @@ export function HeroSlider() {
               src={slide.image}
               alt={slide.title}
               loading={i === 0 ? 'eager' : 'lazy'}
+              fetchPriority={i === 0 ? 'high' : 'auto'}
               className={cn('w-full h-full object-cover', i === current ? 'animate-hero-zoom' : 'scale-100')}
             />
           ) : (
