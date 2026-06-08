@@ -504,11 +504,73 @@ def _chat_source_url(type_, slug):
     return tpl.format(slug) if '{}' in tpl else tpl
 
 
+_CHAT_WD = ['понеділок', 'вівторок', 'середа', 'четвер', "п'ятниця", 'субота', 'неділя']
+_CHAT_MO = ['січня', 'лютого', 'березня', 'квітня', 'травня', 'червня', 'липня',
+            'серпня', 'вересня', 'жовтня', 'листопада', 'грудня']
+
+
+def _chat_ambient():
+    """Завжди-актуальний контекст: поточна дата/день, меню на сьогодні, контакти, найближчі події."""
+    from django.utils import timezone
+    now = timezone.localtime()
+    today = now.date()
+    parts = [
+        f'Поточна дата: сьогодні {_CHAT_WD[today.weekday()]}, {today.day} {_CHAT_MO[today.month - 1]} '
+        f'{today.year} року (час {now.strftime("%H:%M")}, Київ).'
+    ]
+
+    # Меню на сьогодні (DailyMenu або шаблон тижня)
+    try:
+        from menu.api_views import _template_map, _menu_for_date
+        from menu.models import DailyMenu
+        daily = DailyMenu.objects.filter(is_published=True, date=today).first()
+        menu = _menu_for_date(today, {today: daily} if daily else {}, _template_map())
+        meals = []
+        if menu:
+            for label, key in [('Сніданок', 'breakfast'), ('II сніданок', 'second_breakfast'),
+                               ('Обід', 'lunch'), ('Полуденок', 'snack'), ('Вечеря', 'dinner')]:
+                v = (menu.get(key) or '').strip()
+                if v:
+                    meals.append(f'• {label}: {v}')
+        if meals:
+            parts.append('Меню на сьогодні (детальніше: /menu):\n' + '\n'.join(meals))
+        else:
+            parts.append('Меню на сьогодні ще не опубліковано (сторінка /menu).')
+    except Exception:
+        pass
+
+    # Контакти закладу
+    try:
+        c = Contact.objects.first()
+        if c:
+            ci = [f'{lbl}: {val}' for lbl, val in [
+                ('Адреса', c.address), ('Телефон', c.phone), ('Email', c.email),
+                ('Режим роботи', c.working_hours)] if val]
+            if ci:
+                parts.append('Контакти закладу (сторінка /contacts):\n' + '\n'.join(ci))
+    except Exception:
+        pass
+
+    # Найближчі події
+    try:
+        from events.models import Event
+        upcoming = Event.objects.filter(is_published=True, start_date__gte=now).order_by('start_date')[:3]
+        ev = [f'• {e.title} — {e.start_date.strftime("%d.%m.%Y")}' for e in upcoming]
+        if ev:
+            parts.append('Найближчі події (сторінка /events):\n' + '\n'.join(ev))
+    except Exception:
+        pass
+
+    return '\n\n'.join(parts)
+
+
 def _chat_context(question, limit=6):
-    """Топ-N релевантних шматків контенту сайту + джерела (реюз індексу пошуку)."""
+    """Контекст для ШІ-чату: завжди-актуальні дані (дата/меню/контакти/події) +
+    топ-N релевантних розділів з індексу пошуку (із вказаними посиланнями)."""
+    ambient = _chat_ambient()
     qtokens = [t for t in _search_tokens(question) if t not in _SEARCH_STOPWORDS] or _search_tokens(question)
     if not qtokens:
-        return '', []
+        return ambient, []
     index = cache.get_or_set('search_index_v1', _build_search_index, 600)
     scored = []
     for it in index:
@@ -526,13 +588,16 @@ def _chat_context(question, limit=6):
         body = (it.get('excerpt_src') or '').strip()
         if len(body) > 600:
             body = body[:600].rsplit(' ', 1)[0] + '…'
-        chunks.append(f'[{it["title"]}]\n{body}'.strip())
         url = _chat_source_url(it['type'], it['slug'])
+        head = f'[{it["title"]}]' + (f' (посилання: {url})' if url else '')
+        chunks.append(f'{head}\n{body}'.strip())
         key = (it['title'], url)
         if url and key not in seen:
             seen.add(key)
             sources.append({'title': it['title'], 'url': url, 'type': it['type']})
-    return '\n\n'.join(c for c in chunks if c), sources[:4]
+
+    full = ambient + '\n\n--- Релевантні розділи сайту ---\n\n' + '\n\n'.join(c for c in chunks if c)
+    return full.strip(), sources[:5]
 
 
 @api_view(['POST'])

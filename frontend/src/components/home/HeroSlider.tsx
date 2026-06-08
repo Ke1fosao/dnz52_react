@@ -117,7 +117,7 @@ export function HeroSlider() {
               <MagneticButton
                 onClick={() => navigate('/groups')}
                 aria-label="Наші групи"
-                className="px-8 py-4 bg-white text-gray-900 font-black text-base rounded-full shadow-[0_20px_40px_rgba(0,0,0,0.3)] hover:bg-blue-600 hover:text-white transition-colors duration-300 flex items-center gap-2 group"
+                className="px-8 py-4 bg-white text-gray-900 dark:text-white font-black text-base rounded-full shadow-[0_20px_40px_rgba(0,0,0,0.3)] hover:bg-blue-600 hover:text-white transition-colors duration-300 flex items-center gap-2 group"
               >
                 <span className="flex items-center gap-2 pointer-events-none">
                   Наші групи <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />

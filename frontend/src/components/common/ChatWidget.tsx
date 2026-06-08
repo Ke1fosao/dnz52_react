@@ -61,7 +61,14 @@ export function ChatWidget() {
     const t = setTimeout(() => inputRef.current?.focus(), 120);
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
     window.addEventListener('keydown', onKey);
-    return () => { clearTimeout(t); window.removeEventListener('keydown', onKey); };
+    // На мобільному (повноекранний чат) блокуємо прокрутку фону
+    const lockScroll = window.matchMedia('(max-width: 639px)').matches;
+    if (lockScroll) document.body.style.overflow = 'hidden';
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = '';
+    };
   }, [open]);
 
   const send = async (text: string) => {
@@ -131,12 +138,12 @@ export function ChatWidget() {
             animate={reduced ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
             exit={reduced ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.96 }}
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed z-50 flex flex-col overflow-hidden
-                       inset-x-3 bottom-3 top-3
+            className="fixed z-[70] flex flex-col overflow-hidden
+                       inset-0 rounded-none
                        sm:inset-auto sm:bottom-24 sm:right-6 sm:top-auto
-                       sm:w-[384px] sm:h-[min(72vh,580px)]
-                       rounded-3xl border border-white/40 dark:border-slate-700/60
-                       bg-white/85 dark:bg-slate-900/90 backdrop-blur-2xl
+                       sm:w-[384px] sm:h-[min(72vh,580px)] sm:rounded-3xl
+                       border border-white/40 dark:border-slate-700/60
+                       bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl
                        shadow-[0_24px_60px_rgba(0,0,0,0.28)]"
           >
             {/* Шапка */}
