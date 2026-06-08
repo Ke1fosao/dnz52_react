@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   MessageSquare, HelpCircle, Newspaper, CalendarDays, Camera,
-  Users, Sparkles, HelpCircle as Faq, Plus, ArrowRight, BellRing, History,
+  Users, Sparkles, HelpCircle as Faq, Plus, ArrowRight, BellRing, History, ClipboardList,
 } from 'lucide-react';
 import { adminStatsApi } from '../lib/adminApi';
 import { BarChart } from '../components/AdminUI';
@@ -37,9 +37,10 @@ export function DashboardPage() {
       </div>
 
       {/* Швидкі дії з лічильниками */}
-      <div className="grid sm:grid-cols-3 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <QuickCard to="/manage/reviews" icon={MessageSquare} gradient="from-violet-500 to-purple-600" label="Відгуки на модерації" value={data?.pending_reviews} />
         <QuickCard to="/manage/questions" icon={HelpCircle} gradient="from-blue-500 to-cyan-500" label="Нові питання" value={data?.new_questions} />
+        <QuickCard to="/manage/enrollment" icon={ClipboardList} gradient="from-amber-500 to-orange-600" label="Нові заявки" value={data?.new_applications} />
         <QuickCard to="/manage/push" icon={BellRing} gradient="from-emerald-500 to-teal-500" label="Активних підписок" value={data?.subscriptions} />
       </div>
 
