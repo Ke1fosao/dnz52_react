@@ -42,6 +42,8 @@ export function ChatWidget() {
   });
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  // Розмір видимої області (visualViewport) — щоб на мобільному чат підлаштовувався під клавіатуру
+  const [vp, setVp] = useState<{ height: number; top: number } | null>(null);
 
   const reduced = useReducedMotion();
   const trapRef = useFocusTrap<HTMLDivElement>(open);
@@ -54,7 +56,23 @@ export function ChatWidget() {
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: reduced ? 'auto' : 'smooth' });
-  }, [messages, loading, open, reduced]);
+  }, [messages, loading, open, reduced, vp]);
+
+  // Мобільна клавіатура: тримаємо панель у межах видимої області (visualViewport)
+  useEffect(() => {
+    if (!open) { setVp(null); return; }
+    const vv = window.visualViewport;
+    const isMobile = window.matchMedia('(max-width: 639px)').matches;
+    if (!isMobile || !vv) { setVp(null); return; }
+    const update = () => setVp({ height: vv.height, top: vv.offsetTop });
+    update();
+    vv.addEventListener('resize', update);
+    vv.addEventListener('scroll', update);
+    return () => {
+      vv.removeEventListener('resize', update);
+      vv.removeEventListener('scroll', update);
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -134,11 +152,14 @@ export function ChatWidget() {
             role="dialog"
             aria-modal="false"
             aria-label="Чат-помічник Сонечко"
-            initial={reduced ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.96 }}
-            animate={reduced ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
-            exit={reduced ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.96 }}
-            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed z-[70] flex flex-col overflow-hidden
+            initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.35 }}
+            animate={reduced ? { opacity: 1 } : { opacity: 1, scale: 1 }}
+            exit={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.35 }}
+            transition={reduced
+              ? { duration: 0.2 }
+              : { scale: { type: 'spring', stiffness: 360, damping: 30, mass: 0.85 }, opacity: { duration: 0.18 } }}
+            style={{ transformOrigin: 'bottom right', ...(vp ? { top: vp.top, height: vp.height, bottom: 'auto' } : {}) }}
+            className="fixed z-[130] flex flex-col overflow-hidden
                        inset-0 rounded-none
                        sm:inset-auto sm:bottom-24 sm:right-6 sm:top-auto
                        sm:w-[384px] sm:h-[min(72vh,580px)] sm:rounded-3xl
