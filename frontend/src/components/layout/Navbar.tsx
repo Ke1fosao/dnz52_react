@@ -1,5 +1,7 @@
 import { useState, useEffect, ReactNode } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
+import { m } from '@/lib/motion';
 import {
   MapPin, Search, Menu as MenuIcon, X, ChevronDown, Sun, Moon,
   Info, Users, GraduationCap, Utensils, Heart, FileText, MessageSquare,
@@ -9,6 +11,7 @@ import {
 import { useTheme } from '@/hooks/useTheme';
 import { useGroups } from '@/hooks/useApi';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { NotificationBell } from '@/components/common/NotificationBell';
 import { cn } from '@/lib/utils';
 import { prefetchRoute } from '@/lib/prefetch';
@@ -38,7 +41,7 @@ const SPECIALISTS = [
   { title: 'Медична сестра', icon: Stethoscope, to: '/specialists/medical' },
 ];
 
-export function Navbar() {
+export function Navbar({ onOpenPalette }: { onOpenPalette?: () => void }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [expandedMobile, setExpandedMobile] = useState<string | null>(null);
@@ -50,6 +53,7 @@ export function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { data: groups } = useGroups();
+  const reduced = useReducedMotion();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -196,14 +200,16 @@ export function Navbar() {
             >
               {isDark ? <Sun size={20} aria-hidden="true" /> : <Moon size={20} aria-hidden="true" />}
             </button>
+            {/* Кнопка пошуку/палітри з підказкою ⌘K */}
             <button
-              onClick={() => setSearchOpen(true)}
-              className="w-12 h-12 rounded-full flex items-center justify-center text-gray-900 dark:text-white shadow-sm hover:scale-105 transition-transform bg-white dark:bg-slate-800 border border-white dark:border-slate-700"
-              aria-label="Відкрити пошук"
-              aria-expanded={searchOpen}
-              aria-controls="search-panel"
+              onClick={onOpenPalette || (() => setSearchOpen(true))}
+              className="group flex items-center gap-2 px-4 py-2.5 rounded-full text-gray-900 dark:text-white shadow-sm hover:scale-105 transition-transform bg-white dark:bg-slate-800 border border-white dark:border-slate-700"
+              aria-label="Відкрити командну палітру (Ctrl+K)"
             >
-              <Search size={20} aria-hidden="true" />
+              <Search size={18} aria-hidden="true" />
+              <span className="hidden lg:flex items-center gap-1 text-xs text-gray-400 dark:text-slate-500 font-bold">
+                <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-slate-700 rounded text-[10px]">⌘K</kbd>
+              </span>
             </button>
             <Link to="/contacts" onMouseEnter={() => prefetchRoute('/contacts')} className={cn(
               'px-6 py-3 rounded-full font-bold text-sm shadow-[0_10px_20px_rgba(0,0,0,0.2)] dark:shadow-[0_10px_20px_rgba(255,255,255,0.1)] hover:-translate-y-1 transition-all whitespace-nowrap',
@@ -216,11 +222,9 @@ export function Navbar() {
           {/* Mobile toggles */}
           <div className="xl:hidden flex items-center gap-2">
             <button
-              onClick={() => setSearchOpen(true)}
+              onClick={onOpenPalette || (() => setSearchOpen(true))}
               className="w-10 h-10 rounded-full flex items-center justify-center text-gray-900 dark:text-white shadow-sm bg-white dark:bg-slate-800 border border-white dark:border-slate-700 relative z-50"
-              aria-label="Відкрити пошук"
-              aria-expanded={searchOpen}
-              aria-controls="search-panel"
+              aria-label="Відкрити пошук / командну палітру"
             >
               <Search size={18} aria-hidden="true" />
             </button>
@@ -317,13 +321,34 @@ export function Navbar() {
 // ---------- helpers ----------
 
 function NavPill({ to, label, active }: { to: string; label: string; active: boolean }) {
+  // useReducedMotion зі scope — підхоплюємо через контекст Navbar
+  const reduced = useReducedMotion();
   return (
-    <NavLink to={to} end={to === '/'} onMouseEnter={() => prefetchRoute(to)} onFocus={() => prefetchRoute(to)} className={cn(
-      'px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300',
-      active ? 'bg-white dark:bg-slate-800 text-gray-900 dark:text-white shadow-sm'
-             : 'text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800/50',
-    )}>
-      {label}
+    <NavLink
+      to={to}
+      end={to === '/'}
+      onMouseEnter={() => prefetchRoute(to)}
+      onFocus={() => prefetchRoute(to)}
+      className={cn(
+        'relative px-5 py-2.5 rounded-full text-sm font-bold transition-colors duration-200',
+        active
+          ? 'text-gray-900 dark:text-white'
+          : 'text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white',
+      )}
+    >
+      {/* Анімований підсвічений фон */}
+      {active && (
+        reduced ? (
+          <span className="absolute inset-0 rounded-full bg-white dark:bg-slate-800 shadow-sm" />
+        ) : (
+          <m.span
+            layoutId="nav-pill-indicator"
+            className="absolute inset-0 rounded-full bg-white dark:bg-slate-800 shadow-sm"
+            transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+          />
+        )
+      )}
+      <span className="relative z-10">{label}</span>
     </NavLink>
   );
 }

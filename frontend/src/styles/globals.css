@@ -455,4 +455,72 @@ select:focus-visible,
   }
 }
 
+/* ========================================================================
+   SPOTLIGHT-ЕФЕКТ на картках (Фаза 6)
+   Радіальний гелій слідує за курсором через CSS-змінні --mx/--my.
+   Лише десктоп; reduced-motion — ефект не застосовується в JS.
+   ======================================================================== */
+.spotlight-card {
+  position: relative;
+  overflow: hidden;
+}
+.spotlight-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  background: radial-gradient(
+    600px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(255, 255, 255, 0.12) 0%,
+    transparent 60%
+  );
+  border-radius: inherit;
+}
+.spotlight-card:hover::before {
+  opacity: 1;
+}
+.dark .spotlight-card::before {
+  background: radial-gradient(
+    600px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(148, 163, 184, 0.08) 0%,
+    transparent 60%
+  );
+}
+@media (hover: none) {
+  /* На сенсорних екранах — прибираємо spotlight */
+  .spotlight-card::before { display: none; }
+}
 
+/* ========================================================================
+   МІКРО-ПОЛІШ (Фаза 7)
+   ======================================================================== */
+
+/* Легкий active:scale для кнопок */
+button:not([disabled]):active,
+a[role="button"]:active {
+  transform: scale(0.97);
+  transition: transform 0.1s ease;
+}
+
+/* Плавний scroll до якорів */
+html { scroll-behavior: smooth; }
+
+/* Консистентний hover-підйом карток */
+.card-hover {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+}
+.card-hover:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.15);
+}
+.dark .card-hover:hover {
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* gradient-primary утиліта для ReadingProgress */
+.bg-gradient-primary {
+  background: linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 100%);
+}

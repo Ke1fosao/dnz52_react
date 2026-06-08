@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, ArrowRight, Phone } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useSliders } from '@/hooks/useApi';
+import { MagneticButton } from '@/components/common/MagneticButton';
 import { cn } from '@/lib/utils';
 
 // Дефолтні слайди — показуються якщо в адмінці ще немає жодного слайда.
@@ -80,7 +82,7 @@ export function HeroSlider() {
 
       {/* Текст */}
       <div className="container mx-auto px-4 relative z-30 flex flex-col items-center text-center">
-        <div className="h-[320px] md:h-[420px] relative w-full flex flex-col justify-center items-center mt-10">
+        <div className="h-[340px] md:h-[440px] relative w-full flex flex-col justify-center items-center mt-10">
           {slides.map((slide, i) => (
             <div key={slide.id} className={cn('absolute w-full transition-all duration-1000 ease-out', i === current ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-8 scale-95 pointer-events-none')}>
               <div className="inline-flex items-center gap-2 px-5 py-2 bg-white/20 backdrop-blur-md rounded-full text-white font-extrabold text-xs md:text-sm mb-6 border border-white/30 shadow-sm uppercase tracking-wider">
@@ -90,9 +92,41 @@ export function HeroSlider() {
                 {slide.title}
               </h1>
               {slide.description && (
-                <p className="text-base md:text-xl lg:text-2xl text-gray-200 font-medium max-w-3xl mx-auto drop-shadow-md leading-snug">
+                <p className="text-base md:text-xl lg:text-2xl text-gray-200 font-medium max-w-3xl mx-auto drop-shadow-md leading-snug mb-8">
                   {slide.description}
                 </p>
+              )}
+
+              {/* CTA кнопки з магнітним ефектом — показуємо на першому слайді */}
+              {i === 0 && (
+                <div className="flex flex-col sm:flex-row items-center gap-4 justify-center mt-2">
+                  <MagneticButton
+                    strength={0.35}
+                    className="px-8 py-4 bg-white text-gray-900 font-black text-base rounded-full shadow-[0_20px_40px_rgba(0,0,0,0.3)] hover:bg-blue-600 hover:text-white transition-colors duration-300 flex items-center gap-2 group"
+                  >
+                    <Link to="/groups" className="flex items-center gap-2 pointer-events-none">
+                      Наші групи <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                  </MagneticButton>
+                  <MagneticButton
+                    strength={0.35}
+                    className="px-8 py-4 bg-white/15 backdrop-blur-md text-white font-bold text-base rounded-full border border-white/30 hover:bg-white/25 transition-colors duration-300 flex items-center gap-2"
+                  >
+                    <Link to="/contacts" className="flex items-center gap-2 pointer-events-none">
+                      <Phone size={18} /> Контакти
+                    </Link>
+                  </MagneticButton>
+                </div>
+              )}
+              {i !== 0 && slide.link && (
+                <div className="mt-2">
+                  <MagneticButton
+                    strength={0.3}
+                    className="px-8 py-4 bg-white/15 backdrop-blur-md text-white font-bold text-base rounded-full border border-white/30 hover:bg-white/25 transition-colors duration-300"
+                  >
+                    <Link to={slide.link} className="pointer-events-none">Дізнатись більше</Link>
+                  </MagneticButton>
+                </div>
               )}
             </div>
           ))}

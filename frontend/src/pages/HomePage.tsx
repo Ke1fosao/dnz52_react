@@ -4,6 +4,7 @@ import { KineticMarquee } from '@/components/home/KineticMarquee';
 import { AdvancedBento } from '@/components/home/AdvancedBento';
 import { NewsSection } from '@/components/home/NewsSection';
 import { Philosophy } from '@/components/home/Philosophy';
+import { StatsSection } from '@/components/home/StatsSection';
 
 export function HomePage() {
   return (
@@ -15,6 +16,7 @@ export function HomePage() {
       <HeroSlider />
       <KineticMarquee />
       <AdvancedBento />
+      <StatsSection />
       <NewsSection />
       <Philosophy />
     </>

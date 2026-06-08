@@ -10,11 +10,13 @@ import { StructuredData } from '@/components/common/StructuredData';
 import { Analytics } from '@/components/common/Analytics';
 import { CookieConsent } from '@/components/common/CookieConsent';
 import { PWAInstallPrompt } from '@/components/common/PWAInstallPrompt';
+import { CommandPalette, useCommandPalette } from '@/components/common/CommandPalette';
 import { cn } from '@/lib/utils';
 
 export function RootLayout() {
   const location = useLocation();
   const isHome = location.pathname === '/';
+  const { open: paletteOpen, setOpen: setPaletteOpen } = useCommandPalette();
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -35,7 +37,7 @@ export function RootLayout() {
 
       <StructuredData />
       <Analytics />
-      <Navbar />
+      <Navbar onOpenPalette={() => setPaletteOpen(true)} />
 
       {/* Home керує власним hero на весь екран; інші сторінки — відступ під fixed navbar */}
       <main id="main-content" tabIndex={-1} className={cn('outline-none', isHome ? 'flex-1' : 'flex-1 pt-24 md:pt-28')}>
@@ -54,6 +56,9 @@ export function RootLayout() {
       <ScrollToTopButton />
       <PWAInstallPrompt />
       <CookieConsent />
+
+      {/* Command Palette */}
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
 
       <Toaster
         position="top-center"
