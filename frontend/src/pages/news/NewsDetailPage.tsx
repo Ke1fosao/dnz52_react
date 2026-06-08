@@ -4,7 +4,6 @@ import { Seo } from '@/components/common/Seo';
 import { NewsArticleLD, BreadcrumbLD } from '@/components/common/JsonLd';
 import { PageSpinner } from '@/components/common/Spinner';
 import { ZoomableImage } from '@/components/common/ZoomableImage';
-import { ReadingProgress } from '@/components/common/ReadingProgress';
 import { ShareButtons } from '@/components/common/ShareButtons';
 import { RichContent } from '@/components/common/RichContent';
 import { useNewsDetail } from '@/hooks/useApi';
@@ -40,7 +39,6 @@ export function NewsDetailPage() {
         { name: 'Новини', url: '/news' },
         { name: data.title, url: `/news/${data.slug}` },
       ]} />
-      <ReadingProgress />
 
       <article className="container mx-auto px-4 max-w-4xl pb-16">
         <Link to="/news" className="group inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors mb-6 bg-white dark:bg-slate-800 py-2 px-4 rounded-full shadow-sm border border-gray-100 dark:border-slate-700">

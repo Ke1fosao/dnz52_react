@@ -7,23 +7,29 @@ import { cn } from '@/lib/utils';
 interface MagneticButtonProps {
   children: ReactNode;
   className?: string;
-  /** Сила магнітного притяжіння (0–1, дефолт 0.4) */
+  /** Сила притягання (0–1). Дефолт 0.25 — м'яко, без різких ривків. */
   strength?: number;
+  /** Максимальне зміщення у px (обмежує «стрибок» при різких рухах миші). Дефолт 12. */
+  maxOffset?: number;
   onClick?: () => void;
   type?: 'button' | 'submit' | 'reset';
   'aria-label'?: string;
   disabled?: boolean;
 }
 
+const clamp = (v: number, max: number) => Math.max(-max, Math.min(max, v));
+
 /**
- * Кнопка, що «притягується» до курсора.
- * При prefers-reduced-motion — звичайна кнопка без руху.
- * На мобільних (touchscreen) — ефект вимкнено.
+ * Кнопка, що м'яко «притягується» до курсора.
+ * Зміщення обмежене (clamp) і згладжене добре задемпфованою пружиною —
+ * тож на різких/швидких рухах миші кнопка НЕ смикається.
+ * При prefers-reduced-motion і на тач-екранах — звичайна кнопка без руху.
  */
 export function MagneticButton({
   children,
   className,
-  strength = 0.4,
+  strength = 0.25,
+  maxOffset = 12,
   onClick,
   type = 'button',
   'aria-label': ariaLabel,
@@ -34,8 +40,10 @@ export function MagneticButton({
 
   const rawX = useMotionValue(0);
   const rawY = useMotionValue(0);
-  const x = useSpring(rawX, { stiffness: 300, damping: 20, mass: 0.5 });
-  const y = useSpring(rawY, { stiffness: 300, damping: 20, mass: 0.5 });
+  // М'яка, добре задемпфована пружина (без overshoot/тремтіння).
+  const spring = { stiffness: 120, damping: 20, mass: 0.6 };
+  const x = useSpring(rawX, spring);
+  const y = useSpring(rawY, spring);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (reduced) return;
@@ -44,11 +52,11 @@ export function MagneticButton({
     const rect = el.getBoundingClientRect();
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
-    rawX.set((e.clientX - cx) * strength);
-    rawY.set((e.clientY - cy) * strength);
+    rawX.set(clamp((e.clientX - cx) * strength, maxOffset));
+    rawY.set(clamp((e.clientY - cy) * strength, maxOffset));
   };
 
-  const handleMouseLeave = () => {
+  const reset = () => {
     rawX.set(0);
     rawY.set(0);
   };
@@ -77,7 +85,8 @@ export function MagneticButton({
       disabled={disabled}
       style={{ x, y }}
       onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
+      onMouseLeave={reset}
+      onBlur={reset}
       whileTap={{ scale: 0.96 }}
       className={cn('relative select-none', className)}
     >

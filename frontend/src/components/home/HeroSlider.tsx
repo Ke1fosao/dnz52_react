@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Sparkles, ArrowRight, Phone } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useSliders } from '@/hooks/useApi';
 import { MagneticButton } from '@/components/common/MagneticButton';
 import { cn } from '@/lib/utils';
@@ -35,6 +35,14 @@ export function HeroSlider() {
   const { data } = useSliders();
   const slides = data && data.length > 0 ? data : FALLBACK;
   const [current, setCurrent] = useState(0);
+  const navigate = useNavigate();
+
+  // Перехід за посиланням слайда: зовнішнє — повний редірект, внутрішнє — SPA-навігація.
+  const go = (link: string) => {
+    if (!link) return;
+    if (/^https?:\/\//.test(link)) window.location.href = link;
+    else navigate(link);
+  };
 
   useEffect(() => {
     if (slides.length <= 1) return;
@@ -100,54 +108,59 @@ export function HeroSlider() {
           ))}
         </div>
 
-        {/* CTA кнопки — завжди нижче тексту слайдів */}
-        <div className="relative z-30 mt-8 flex flex-col sm:flex-row items-center gap-4 justify-center">
+        {/* CTA кнопки — фіксована мін-висота, щоб блок не «стрибав» між слайдами
+            (на 0 слайді — 2 кнопки, на інших — 1 або жодної). */}
+        <div className="relative z-30 mt-8 min-h-[60px] flex flex-col sm:flex-row items-center gap-4 justify-center">
           {/* На першому слайді — основні CTA */}
           {current === 0 ? (
             <>
               <MagneticButton
-                strength={0.35}
+                onClick={() => navigate('/groups')}
+                aria-label="Наші групи"
                 className="px-8 py-4 bg-white text-gray-900 font-black text-base rounded-full shadow-[0_20px_40px_rgba(0,0,0,0.3)] hover:bg-blue-600 hover:text-white transition-colors duration-300 flex items-center gap-2 group"
               >
-                <Link to="/groups" className="flex items-center gap-2 pointer-events-none">
+                <span className="flex items-center gap-2 pointer-events-none">
                   Наші групи <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                </Link>
+                </span>
               </MagneticButton>
               <MagneticButton
-                strength={0.35}
+                onClick={() => navigate('/contacts')}
+                aria-label="Контакти"
                 className="px-8 py-4 bg-white/15 backdrop-blur-md text-white font-bold text-base rounded-full border border-white/30 hover:bg-white/25 transition-colors duration-300 flex items-center gap-2"
               >
-                <Link to="/contacts" className="flex items-center gap-2 pointer-events-none">
+                <span className="flex items-center gap-2 pointer-events-none">
                   <Phone size={18} /> Контакти
-                </Link>
+                </span>
               </MagneticButton>
             </>
           ) : (
             slides[current]?.link ? (
               <MagneticButton
-                strength={0.3}
+                onClick={() => go(slides[current].link)}
+                aria-label="Дізнатись більше"
                 className="px-8 py-4 bg-white/15 backdrop-blur-md text-white font-bold text-base rounded-full border border-white/30 hover:bg-white/25 transition-colors duration-300"
               >
-                <Link to={slides[current].link} className="pointer-events-none">Дізнатись більше</Link>
+                <span className="pointer-events-none">Дізнатись більше</span>
               </MagneticButton>
             ) : null
           )}
         </div>
-
-        {/* Точки — під кнопками */}
-        {slides.length > 1 && (
-          <div className="flex items-center gap-3 mt-6 relative z-30">
-            {slides.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setCurrent(i)}
-                aria-label={`Слайд ${i + 1}`}
-                className={cn('h-2 rounded-full transition-all duration-500 ease-out', i === current ? 'w-16 bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.6)]' : 'w-4 bg-white/40 hover:bg-white/70')}
-              />
-            ))}
-          </div>
-        )}
       </div>
+
+      {/* Точки слайдера — АБСОЛЮТНО зафіксовані внизу секції (над хвилею).
+          Не залежать від висоти тексту/кнопок, тож НЕ стрибають при зміні слайда. */}
+      {slides.length > 1 && (
+        <div className="absolute left-1/2 -translate-x-1/2 bottom-24 md:bottom-32 z-30 flex items-center gap-3">
+          {slides.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrent(i)}
+              aria-label={`Слайд ${i + 1}`}
+              className={cn('h-2 rounded-full transition-all duration-500 ease-out', i === current ? 'w-16 bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.6)]' : 'w-4 bg-white/40 hover:bg-white/70')}
+            />
+          ))}
+        </div>
+      )}
 
       {/* SVG-хвиля знизу */}
       <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-none z-30 translate-y-1">
