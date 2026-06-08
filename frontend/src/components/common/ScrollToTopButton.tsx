@@ -32,7 +32,7 @@ export function ScrollToTopButton() {
           whileHover={{ scale: 1.1, y: -4 }}
           whileTap={{ scale: 0.92 }}
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="group fixed bottom-6 right-6 z-30 w-16 h-16 rounded-full flex items-center justify-center
+          className="group fixed bottom-24 right-6 z-30 w-16 h-16 rounded-full flex items-center justify-center
                      bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700
                      text-gray-900 dark:text-white
                      shadow-[0_10px_30px_rgba(0,0,0,0.18)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)]

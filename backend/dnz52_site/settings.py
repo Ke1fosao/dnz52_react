@@ -355,6 +355,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_THROTTLE_RATES': {
         'anon': '600/min',
+        'chat': '20/min',   # ШІ-чат — окремий, стриманіший ліміт
     },
     # ВАЖЛИВО: вимикаємо SessionAuthentication щоб React міг робити POST
     # без CSRF токена. Для публічного API це нормально (відгуки, лайки).

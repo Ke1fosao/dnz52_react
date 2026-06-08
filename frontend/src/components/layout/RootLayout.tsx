@@ -5,6 +5,7 @@ import { Toaster } from 'sonner';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
 import { ScrollToTopButton } from '@/components/common/ScrollToTopButton';
+import { ChatWidget } from '@/components/common/ChatWidget';
 import { BackgroundDecor } from '@/components/common/BackgroundDecor';
 import { StructuredData } from '@/components/common/StructuredData';
 import { Analytics } from '@/components/common/Analytics';
@@ -54,6 +55,7 @@ export function RootLayout() {
       <Footer />
 
       <ScrollToTopButton />
+      <ChatWidget />
       <PWAInstallPrompt />
       <CookieConsent />
 

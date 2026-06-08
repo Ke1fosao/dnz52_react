@@ -13,7 +13,7 @@ from main.api_views import (
     StaffMemberViewSet,
     AttestationDocumentViewSet, AttestationStepViewSet,
     AttestationCategoryViewSet, AttestationLawViewSet,
-    attestation_settings, global_search,
+    attestation_settings, global_search, chat,
     push_vapid_key, push_subscribe, push_unsubscribe,
 )
 from news.api_views import NewsViewSet, NewsCategoryViewSet
@@ -180,6 +180,7 @@ urlpatterns = [
 
     # Окремі endpoints (menu/today/ та menu/week/ тепер як @action в DailyMenuViewSet)
     path('search/', global_search, name='api-search'),
+    path('chat/', chat, name='api-chat'),
     path('attestation/settings/', attestation_settings, name='api-attestation-settings'),
 
     # FAQ

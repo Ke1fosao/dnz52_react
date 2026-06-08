@@ -1,9 +1,10 @@
 from django.core.cache import cache
 
 from rest_framework import viewsets, mixins
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle
 
 from .models import (
     Page, Slider, Contact,
@@ -477,3 +478,92 @@ def push_unsubscribe(request):
     if endpoint:
         PushSubscription.objects.filter(endpoint=endpoint).update(is_active=False)
     return Response({'detail': 'Відписано'})
+
+
+# ============================================================================
+# ШІ-чат-помічник для батьків (Gemini + контекст із індексу пошуку)
+# ============================================================================
+class ChatRateThrottle(AnonRateThrottle):
+    """Окремий ліміт для чату (rate береться з DEFAULT_THROTTLE_RATES['chat'])."""
+    scope = 'chat'
+
+
+# type → шлях у SPA (для блоку «джерела» під відповіддю)
+_CHAT_URL_MAP = {
+    'news': '/news/{}', 'page': '/page/{}', 'group': '/groups/{}',
+    'circle': '/circles/{}', 'specialist': '/specialists/{}',
+    'album': '/gallery/album/{}', 'event': '/events', 'faq': '/faq',
+    'document': '/documents',
+}
+
+
+def _chat_source_url(type_, slug):
+    tpl = _CHAT_URL_MAP.get(type_)
+    if not tpl:
+        return None
+    return tpl.format(slug) if '{}' in tpl else tpl
+
+
+def _chat_context(question, limit=6):
+    """Топ-N релевантних шматків контенту сайту + джерела (реюз індексу пошуку)."""
+    qtokens = [t for t in _search_tokens(question) if t not in _SEARCH_STOPWORDS] or _search_tokens(question)
+    if not qtokens:
+        return '', []
+    index = cache.get_or_set('search_index_v1', _build_search_index, 600)
+    scored = []
+    for it in index:
+        s = 0.0
+        for qt in qtokens:
+            bt = max((_search_match_quality(qt, w) for w in it['title_tokens']), default=0.0)
+            bb = max((_search_match_quality(qt, w) for w in it['body_tokens']), default=0.0)
+            s += bt * 3 + bb
+        if s > 0:
+            scored.append((s * it.get('weight', 1.0), it))
+    scored.sort(key=lambda x: x[0], reverse=True)
+
+    chunks, sources, seen = [], [], set()
+    for _, it in scored[:limit]:
+        body = (it.get('excerpt_src') or '').strip()
+        if len(body) > 600:
+            body = body[:600].rsplit(' ', 1)[0] + '…'
+        chunks.append(f'[{it["title"]}]\n{body}'.strip())
+        url = _chat_source_url(it['type'], it['slug'])
+        key = (it['title'], url)
+        if url and key not in seen:
+            seen.add(key)
+            sources.append({'title': it['title'], 'url': url, 'type': it['type']})
+    return '\n\n'.join(c for c in chunks if c), sources[:4]
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+@throttle_classes([ChatRateThrottle])
+def chat(request):
+    """ШІ-помічник: відповідає на запитання батьків на основі контенту сайту.
+    Якщо ШІ не налаштований/недоступний — повертає дружній fallback (HTTP 200)."""
+    from main import ai
+
+    question = (request.data.get('question') or '').strip()
+    if len(question) < 2:
+        return Response({'detail': 'Поставте, будь ласка, запитання.'}, status=400)
+    question = question[:500]
+
+    if not ai.is_configured():
+        return Response({
+            'answer': 'Вибачте, помічник зараз недоступний 😔 Скористайтеся пошуком угорі сайту '
+                      'або зверніться до нас на сторінці «Контакти».',
+            'sources': [], 'available': False,
+        })
+
+    history = request.data.get('history')
+    history = history if isinstance(history, list) else None
+    context, sources = _chat_context(question)
+    try:
+        answer = ai.answer_question(question, context, history=history)
+    except ai.AIError:
+        return Response({
+            'answer': 'Вибачте, зараз не вдалося отримати відповідь 😔 Спробуйте трохи згодом, '
+                      'скористайтеся пошуком або зверніться на сторінці «Контакти».',
+            'sources': [], 'available': True,
+        })
+    return Response({'answer': answer, 'sources': sources, 'available': True})
