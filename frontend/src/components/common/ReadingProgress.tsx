@@ -23,10 +23,17 @@ export function ReadingProgress() {
   }, []);
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-transparent pointer-events-none">
+    <div
+      className="fixed top-0 left-0 right-0 z-[999] h-[3px] bg-transparent pointer-events-none"
+      aria-hidden="true"
+    >
       <div
-        className="h-full bg-gradient-primary transition-[width] duration-150 ease-out"
-        style={{ width: `${progress}%` }}
+        className="h-full transition-[width] duration-150 ease-out"
+        style={{
+          width: `${progress}%`,
+          background: 'linear-gradient(90deg, #3b82f6 0%, #8b5cf6 50%, #06b6d4 100%)',
+          boxShadow: '0 0 8px rgba(59,130,246,0.7)',
+        }}
       />
     </div>
   );

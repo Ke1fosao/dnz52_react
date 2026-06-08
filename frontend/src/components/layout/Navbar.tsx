@@ -199,16 +199,12 @@ export function Navbar({ onOpenPalette }: { onOpenPalette?: () => void }) {
             >
               {isDark ? <Sun size={20} aria-hidden="true" /> : <Moon size={20} aria-hidden="true" />}
             </button>
-            {/* Кнопка пошуку/палітри з підказкою ⌘K */}
             <button
               onClick={onOpenPalette || (() => setSearchOpen(true))}
-              className="group flex items-center gap-2 px-4 py-2.5 rounded-full text-gray-900 dark:text-white shadow-sm hover:scale-105 transition-transform bg-white dark:bg-slate-800 border border-white dark:border-slate-700"
+              className="w-11 h-11 rounded-full flex items-center justify-center text-gray-900 dark:text-white shadow-sm hover:scale-105 transition-transform bg-white dark:bg-slate-800 border border-white dark:border-slate-700"
               aria-label="Відкрити командну палітру (Ctrl+K)"
             >
-              <Search size={18} aria-hidden="true" />
-              <span className="hidden lg:flex items-center gap-1 text-xs text-gray-400 dark:text-slate-500 font-bold">
-                <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-slate-700 rounded text-[10px]">⌘K</kbd>
-              </span>
+              <Search size={20} aria-hidden="true" />
             </button>
             <Link to="/contacts" onMouseEnter={() => prefetchRoute('/contacts')} className={cn(
               'px-6 py-3 rounded-full font-bold text-sm shadow-[0_10px_20px_rgba(0,0,0,0.2)] dark:shadow-[0_10px_20px_rgba(255,255,255,0.1)] hover:-translate-y-1 transition-all whitespace-nowrap',
@@ -329,7 +325,7 @@ function NavPill({ to, label, active }: { to: string; label: string; active: boo
       onMouseEnter={() => prefetchRoute(to)}
       onFocus={() => prefetchRoute(to)}
       className={cn(
-        'relative px-5 py-2.5 rounded-full text-sm font-bold transition-colors duration-200',
+        'relative px-5 py-2.5 rounded-full text-sm font-bold transition-colors duration-200 whitespace-nowrap',
         active
           ? 'text-gray-900 dark:text-white'
           : 'text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white',
@@ -357,7 +353,7 @@ function NavDrop({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="relative group/nav">
       <button
-        className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-sm font-bold text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800/50 transition-all"
+        className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-sm font-bold text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800/50 transition-all whitespace-nowrap"
         aria-haspopup="true"
         aria-expanded="false"
         aria-controls={dropId}

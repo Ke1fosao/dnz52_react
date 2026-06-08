@@ -76,7 +76,7 @@ export function Reveal({
         variants={staggerContainer}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin }}
+        viewport={{ once: false, margin }}
       >
         {children}
       </m.div>
@@ -89,7 +89,7 @@ export function Reveal({
       variants={variants[variant]}
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, margin }}
+      viewport={{ once: false, margin }}
       transition={{
         duration: 0.5,
         ease: [0.16, 1, 0.3, 1],

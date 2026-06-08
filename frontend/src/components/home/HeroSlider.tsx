@@ -81,8 +81,8 @@ export function HeroSlider() {
       <div className="absolute bottom-1/4 right-6 md:right-10 w-32 h-32 md:w-48 md:h-48 bg-blue-400/20 backdrop-blur-xl rounded-[3rem] rotate-12 animate-float-complex z-20 shadow-2xl border border-white/20" style={{ animationDelay: '1s' }} />
 
       {/* Текст */}
-      <div className="container mx-auto px-4 relative z-30 flex flex-col items-center text-center">
-        <div className="h-[340px] md:h-[440px] relative w-full flex flex-col justify-center items-center mt-10">
+      <div className="container mx-auto px-4 relative z-30 flex flex-col items-center text-center pb-28">
+        <div className="h-[280px] md:h-[380px] relative w-full flex flex-col justify-center items-center mt-10">
           {slides.map((slide, i) => (
             <div key={slide.id} className={cn('absolute w-full transition-all duration-1000 ease-out', i === current ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-8 scale-95 pointer-events-none')}>
               <div className="inline-flex items-center gap-2 px-5 py-2 bg-white/20 backdrop-blur-md rounded-full text-white font-extrabold text-xs md:text-sm mb-6 border border-white/30 shadow-sm uppercase tracking-wider">
@@ -92,47 +92,49 @@ export function HeroSlider() {
                 {slide.title}
               </h1>
               {slide.description && (
-                <p className="text-base md:text-xl lg:text-2xl text-gray-200 font-medium max-w-3xl mx-auto drop-shadow-md leading-snug mb-8">
+                <p className="text-base md:text-xl lg:text-2xl text-gray-200 font-medium max-w-3xl mx-auto drop-shadow-md leading-snug">
                   {slide.description}
                 </p>
-              )}
-
-              {/* CTA кнопки з магнітним ефектом — показуємо на першому слайді */}
-              {i === 0 && (
-                <div className="flex flex-col sm:flex-row items-center gap-4 justify-center mt-2">
-                  <MagneticButton
-                    strength={0.35}
-                    className="px-8 py-4 bg-white text-gray-900 font-black text-base rounded-full shadow-[0_20px_40px_rgba(0,0,0,0.3)] hover:bg-blue-600 hover:text-white transition-colors duration-300 flex items-center gap-2 group"
-                  >
-                    <Link to="/groups" className="flex items-center gap-2 pointer-events-none">
-                      Наші групи <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                    </Link>
-                  </MagneticButton>
-                  <MagneticButton
-                    strength={0.35}
-                    className="px-8 py-4 bg-white/15 backdrop-blur-md text-white font-bold text-base rounded-full border border-white/30 hover:bg-white/25 transition-colors duration-300 flex items-center gap-2"
-                  >
-                    <Link to="/contacts" className="flex items-center gap-2 pointer-events-none">
-                      <Phone size={18} /> Контакти
-                    </Link>
-                  </MagneticButton>
-                </div>
-              )}
-              {i !== 0 && slide.link && (
-                <div className="mt-2">
-                  <MagneticButton
-                    strength={0.3}
-                    className="px-8 py-4 bg-white/15 backdrop-blur-md text-white font-bold text-base rounded-full border border-white/30 hover:bg-white/25 transition-colors duration-300"
-                  >
-                    <Link to={slide.link} className="pointer-events-none">Дізнатись більше</Link>
-                  </MagneticButton>
-                </div>
               )}
             </div>
           ))}
         </div>
 
-        {/* Точки */}
+        {/* CTA кнопки — завжди нижче тексту слайдів */}
+        <div className="relative z-30 mt-8 flex flex-col sm:flex-row items-center gap-4 justify-center">
+          {/* На першому слайді — основні CTA */}
+          {current === 0 ? (
+            <>
+              <MagneticButton
+                strength={0.35}
+                className="px-8 py-4 bg-white text-gray-900 font-black text-base rounded-full shadow-[0_20px_40px_rgba(0,0,0,0.3)] hover:bg-blue-600 hover:text-white transition-colors duration-300 flex items-center gap-2 group"
+              >
+                <Link to="/groups" className="flex items-center gap-2 pointer-events-none">
+                  Наші групи <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </MagneticButton>
+              <MagneticButton
+                strength={0.35}
+                className="px-8 py-4 bg-white/15 backdrop-blur-md text-white font-bold text-base rounded-full border border-white/30 hover:bg-white/25 transition-colors duration-300 flex items-center gap-2"
+              >
+                <Link to="/contacts" className="flex items-center gap-2 pointer-events-none">
+                  <Phone size={18} /> Контакти
+                </Link>
+              </MagneticButton>
+            </>
+          ) : (
+            slides[current]?.link ? (
+              <MagneticButton
+                strength={0.3}
+                className="px-8 py-4 bg-white/15 backdrop-blur-md text-white font-bold text-base rounded-full border border-white/30 hover:bg-white/25 transition-colors duration-300"
+              >
+                <Link to={slides[current].link} className="pointer-events-none">Дізнатись більше</Link>
+              </MagneticButton>
+            ) : null
+          )}
+        </div>
+
+        {/* Точки — під кнопками */}
         {slides.length > 1 && (
           <div className="flex items-center gap-3 mt-6 relative z-30">
             {slides.map((_, i) => (
