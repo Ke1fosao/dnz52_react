@@ -125,6 +125,7 @@ INSTALLED_APPS = [
     'events',
     'faq',
     'enrollment',
+    'tour',
 ]
 
 

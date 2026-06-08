@@ -121,6 +121,15 @@ export interface AdminEnrollment {
   created_at: string;
 }
 
+export interface AdminTourStop {
+  id: number;
+  title: string;
+  description: string;
+  image: string;
+  order: number;
+  is_published: boolean;
+}
+
 // --- Контент ---
 export interface IdName { id: number; name: string }
 export interface ValueLabel { value: string; label: string }

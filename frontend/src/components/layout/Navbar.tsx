@@ -5,7 +5,7 @@ import {
   MapPin, Search, Menu as MenuIcon, X, ChevronDown, Sun, Moon,
   Info, Users, GraduationCap, Utensils, Heart, FileText, MessageSquare,
   Brain, Music, Activity, Star, Zap, BookOpen, Stethoscope, Palette, Image as ImageIcon, HelpCircle, CalendarDays,
-  Home, Newspaper, ClipboardCheck,
+  Home, Newspaper, ClipboardCheck, Compass,
 } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useGroups } from '@/hooks/useApi';
@@ -21,6 +21,7 @@ const ABOUT_ITEMS: DropItem[] = [
   { title: 'Про заклад', desc: 'Історія та місія', icon: Info, to: '/about', color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400' },
   { title: 'Керівництво', desc: 'Адміністрація', icon: Users, to: '/staff', color: 'bg-purple-100 text-purple-600 dark:bg-purple-900/40 dark:text-purple-400' },
   { title: 'Атестація', desc: 'Документи комісії', icon: GraduationCap, to: '/attestation', color: 'bg-pink-100 text-pink-600 dark:bg-pink-900/40 dark:text-pink-400' },
+  { title: 'Віртуальний тур', desc: 'Прогулянка садочком', icon: Compass, to: '/tour', color: 'bg-sky-100 text-sky-600 dark:bg-sky-900/40 dark:text-sky-400' },
 ];
 
 const SERVICE_ITEMS: DropItem[] = [

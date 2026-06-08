@@ -27,6 +27,7 @@ from menu.api_views import DailyMenuViewSet
 from faq.api_views import faq_list, faq_like, faq_ask
 from events.api_views import EventViewSet, event_ical
 from enrollment.api_views import enrollment_create
+from tour.api_views import TourStopViewSet
 from main.admin_api import (
     admin_login, admin_logout, admin_me, admin_stats, admin_meta,
     AdminReviewViewSet, AdminQuestionViewSet,
@@ -51,7 +52,7 @@ from main.admin_api import (
     admin_profile, admin_change_password,
     admin_2fa_setup, admin_2fa_confirm, admin_2fa_disable,
     AdminEventTypeViewSet, admin_ai_settings, admin_ai_generate,
-    AdminEnrollmentViewSet,
+    AdminEnrollmentViewSet, AdminTourStopViewSet,
 )
 
 
@@ -115,6 +116,9 @@ router.register(r'menu', DailyMenuViewSet, basename='menu')
 # Events
 router.register(r'events', EventViewSet, basename='event')
 
+# Віртуальний тур
+router.register(r'tour', TourStopViewSet, basename='tour')
+
 # Адмінпанель (React /manage) — захищені TokenAuth + IsAdminUser
 router.register(r'admin/reviews', AdminReviewViewSet, basename='admin-review')
 router.register(r'admin/questions', AdminQuestionViewSet, basename='admin-question')
@@ -156,6 +160,7 @@ router.register(r'admin/specialist-section-photos', AdminSpecialistPagePhotoView
 router.register(r'admin/users', AdminUserViewSet, basename='admin-user')
 router.register(r'admin/event-types', AdminEventTypeViewSet, basename='admin-event-type')
 router.register(r'admin/enrollment', AdminEnrollmentViewSet, basename='admin-enrollment')
+router.register(r'admin/tour', AdminTourStopViewSet, basename='admin-tour')
 
 
 urlpatterns = [

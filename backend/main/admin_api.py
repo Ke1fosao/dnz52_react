@@ -46,6 +46,7 @@ from circles.models import Circle, CircleBenefit, CircleSession
 from gallery.models import GalleryCategory, GalleryAlbum, GalleryPhoto
 from documents.models import Document, DocumentCategory
 from enrollment.models import EnrollmentApplication
+from tour.models import TourStop
 from menu.models import DailyMenu, MenuTemplate
 from specialists.models import (
     SpecialistPage, Specialist, SpecialistAlbum,
@@ -650,6 +651,19 @@ class AdminPageImageSerializer(serializers.ModelSerializer):
 class AdminSliderViewSet(_ContentViewSet):
     serializer_class = AdminSliderSerializer
     queryset = Slider.objects.all().order_by('order', 'id')
+
+
+class AdminTourStopSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(use_url=True)
+
+    class Meta:
+        model = TourStop
+        fields = ['id', 'title', 'description', 'image', 'order', 'is_published']
+
+
+class AdminTourStopViewSet(_ContentViewSet):
+    serializer_class = AdminTourStopSerializer
+    queryset = TourStop.objects.all().order_by('order', 'id')
 
 
 class AdminStaffMemberViewSet(_ContentViewSet):

@@ -7,7 +7,7 @@ import {
   ExternalLink, Menu as MenuIcon, X, Newspaper, CalendarDays, FileText,
   Files, BookOpen, Images, Phone, UsersRound, Baby, Sparkles,
   UtensilsCrossed, Camera, UserCog, GraduationCap, HeartHandshake,
-  BellRing, History, Users, ClipboardList, type LucideIcon,
+  BellRing, History, Users, ClipboardList, Compass, type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/hooks/useTheme';
@@ -40,6 +40,7 @@ const SECTIONS: { title?: string; items: NavItem[] }[] = [
     { to: '/manage/attestation', label: 'Атестація', icon: GraduationCap },
     { to: '/manage/parents', label: 'Батькам', icon: HeartHandshake },
     { to: '/manage/sliders', label: 'Слайдер', icon: Images },
+    { to: '/manage/tour', label: 'Віртуальний тур', icon: Compass },
     { to: '/manage/staff', label: 'Штат', icon: UsersRound },
     { to: '/manage/contact', label: 'Контакти', icon: Phone },
   ] },

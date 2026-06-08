@@ -38,6 +38,7 @@ const TermsPage = lazy(() => import('@/pages/legal/TermsPage').then(m => ({ defa
 const AccessibilityPage = lazy(() => import('@/pages/legal/AccessibilityPage').then(m => ({ default: m.AccessibilityPage })));
 const MenuPage = lazy(() => import('@/pages/MenuPage').then(m => ({ default: m.MenuPage })));
 const EnrollmentPage = lazy(() => import('@/pages/EnrollmentPage').then(m => ({ default: m.EnrollmentPage })));
+const TourPage = lazy(() => import('@/pages/TourPage').then(m => ({ default: m.TourPage })));
 const SearchPage = lazy(() => import('@/pages/SearchPage').then(m => ({ default: m.SearchPage })));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 const AdminRedirectPage = lazy(() => import('@/pages/AdminRedirectPage').then(m => ({ default: m.AdminRedirectPage })));
@@ -87,6 +88,7 @@ export default function App() {
         <Route element={<Suspense fallback={<PageSpinner />}><AccessibilityPage /></Suspense>} path="accessibility" />
         <Route element={<Suspense fallback={<PageSpinner />}><MenuPage /></Suspense>} path="menu" />
         <Route element={<Suspense fallback={<PageSpinner />}><EnrollmentPage /></Suspense>} path="enrollment" />
+        <Route element={<Suspense fallback={<PageSpinner />}><TourPage /></Suspense>} path="tour" />
         <Route element={<Suspense fallback={<PageSpinner />}><SearchPage /></Suspense>} path="search" />
         <Route element={<Suspense fallback={<PageSpinner />}><AdminRedirectPage /></Suspense>} path="admin" />
 

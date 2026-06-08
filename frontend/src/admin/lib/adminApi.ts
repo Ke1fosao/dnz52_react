@@ -8,7 +8,7 @@ import type {
   AdminFlatRow, AdminAttestationSettings, AdminSpecialistPage, AdminSpecialist,
   AdminSpecialistSection, AdminSpecialistSectionPhoto,
   AdminAccount, AdminHistoryItem, AdminPushStats, AdminAISettings,
-  AdminEnrollment, EnrollmentStatus,
+  AdminEnrollment, EnrollmentStatus, AdminTourStop,
 } from '../types';
 
 const TOKEN_KEY = 'dnz52:adminToken';
@@ -104,6 +104,7 @@ function crud<T>(path: string) {
 export const adminNewsApi = crud<AdminNews>('news');
 export const adminEventsApi = crud<AdminEvent>('events');
 export const adminFaqItemsApi = crud<AdminFAQItem>('faq-items');
+export const adminTourApi = crud<AdminTourStop>('tour');
 
 export const adminDocumentsApi = crud<AdminDocument>('documents');
 export const adminNewsCategoriesApi = crud<AdminCategory>('news-categories');

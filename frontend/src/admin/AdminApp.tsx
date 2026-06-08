@@ -6,6 +6,8 @@ import { DashboardPage } from './pages/DashboardPage';
 import { ReviewsPage } from './pages/ReviewsPage';
 import { QuestionsPage } from './pages/QuestionsPage';
 import { EnrollmentPage } from './pages/EnrollmentPage';
+import { TourListPage } from './pages/TourListPage';
+import { TourFormPage } from './pages/TourFormPage';
 import { NewsListPage } from './pages/NewsListPage';
 import { NewsFormPage } from './pages/NewsFormPage';
 import { EventsListPage } from './pages/EventsListPage';
@@ -80,6 +82,9 @@ export default function AdminApp() {
           <Route path="sliders" element={<SlidersListPage />} />
           <Route path="sliders/new" element={<SliderFormPage />} />
           <Route path="sliders/:id/edit" element={<SliderFormPage />} />
+          <Route path="tour" element={<TourListPage />} />
+          <Route path="tour/new" element={<TourFormPage />} />
+          <Route path="tour/:id/edit" element={<TourFormPage />} />
           <Route path="staff" element={<StaffListPage />} />
           <Route path="staff/new" element={<StaffFormPage />} />
           <Route path="staff/:id/edit" element={<StaffFormPage />} />
