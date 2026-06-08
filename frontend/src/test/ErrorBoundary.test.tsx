@@ -4,7 +4,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
-import { Component } from 'react';
 
 // Компонент-заглушка що навмисно кидає помилку
 function BrokenComponent(): JSX.Element {

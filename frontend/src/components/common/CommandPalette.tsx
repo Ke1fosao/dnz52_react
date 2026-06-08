@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { m } from '@/lib/motion';
@@ -52,7 +52,10 @@ function saveRecent(to: string) {
     const paths: string[] = raw ? JSON.parse(raw) : [];
     const updated = [to, ...paths.filter(p => p !== to)].slice(0, MAX_RECENT);
     localStorage.setItem(RECENT_KEY, JSON.stringify(updated));
-  } catch {}
+  } catch {
+    // localStorage недоступний — нічого не зберігаємо
+  }
+
 }
 
 // ─── Маппінг SearchResultType → URL ──────────────────────────────────────────
@@ -159,7 +162,19 @@ export function CommandPalette({ open, onClose }: Props) {
         }))
       : [];
 
-  const allItems: DisplayItem[] = [...filteredQuick, ...apiItems];
+  const allItems: DisplayItem[] = useMemo(
+    () => [...filteredQuick, ...apiItems],
+    // filteredQuick та apiItems перераховуються при зміні запиту або результатів
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [trimmed, searchResults],
+  );
+
+
+  const goTo = useCallback((to: string) => {
+    saveRecent(to);
+    navigate(to);
+    onClose();
+  }, [navigate, onClose]);
 
   // Клавіатурна навігація
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -173,13 +188,7 @@ export function CommandPalette({ open, onClose }: Props) {
       e.preventDefault();
       goTo(allItems[activeIndex].to);
     }
-  }, [allItems, activeIndex]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const goTo = useCallback((to: string) => {
-    saveRecent(to);
-    navigate(to);
-    onClose();
-  }, [navigate, onClose]);
+  }, [allItems, activeIndex, goTo]);
 
   const overlayMotion = reduced
     ? {}

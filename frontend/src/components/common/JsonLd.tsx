@@ -124,7 +124,7 @@ interface EventLDProps {
  * Розширений результат Google: Event.
  * Розмістіть на EventsPage або сторінці деталей події.
  */
-export function EventLD({ name, startDate, endDate, location, description, image, slug, eventType }: EventLDProps) {
+export function EventLD({ name, startDate, endDate, location, description, image, slug: _slug, eventType }: EventLDProps) {
   const data: Record<string, unknown> = {
     '@context': 'https://schema.org',
     '@type': 'Event',

@@ -59,7 +59,7 @@ export function SearchPage() {
   // Синхронізуємо поле та фільтр коли змінюється запит (навбар / «можливо, ви мали на увазі»)
   useEffect(() => { setInput(q); setActiveType('all'); }, [q]);
 
-  const results = data?.results ?? [];
+  const results = useMemo(() => data?.results ?? [], [data]);
 
   const counts = useMemo(() => {
     const c: Partial<Record<SearchResultType, number>> = {};

@@ -32,8 +32,8 @@ function initGA() {
   document.head.appendChild(s);
 
   window.dataLayer = window.dataLayer || [];
-  window.gtag = function gtag() {
-    window.dataLayer!.push(arguments);
+  window.gtag = function gtag(...args: unknown[]) {
+    window.dataLayer!.push(args);
   };
   window.gtag('js', new Date());
   window.gtag('config', GA_ID, { send_page_view: false });

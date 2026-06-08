@@ -16,7 +16,8 @@ describe('cn — класи Tailwind', () => {
   });
 
   it('ігнорує falsy-значення', () => {
-    expect(cn('foo', false && 'hidden', undefined, null, '')).toBe('foo');
+    const condition = false as boolean;
+    expect(cn('foo', condition && 'hidden', undefined, null, '')).toBe('foo');
   });
 });
 

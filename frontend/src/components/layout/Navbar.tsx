@@ -1,11 +1,10 @@
 import { useState, useEffect, ReactNode } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
 import { m } from '@/lib/motion';
 import {
   MapPin, Search, Menu as MenuIcon, X, ChevronDown, Sun, Moon,
   Info, Users, GraduationCap, Utensils, Heart, FileText, MessageSquare,
-  Brain, Music, Activity, Star, Zap, Phone, BookOpen, Stethoscope, Palette, Image as ImageIcon, HelpCircle, CalendarDays,
+  Brain, Music, Activity, Star, Zap, BookOpen, Stethoscope, Palette, Image as ImageIcon, HelpCircle, CalendarDays,
   Home, Newspaper,
 } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
@@ -53,7 +52,7 @@ export function Navbar({ onOpenPalette }: { onOpenPalette?: () => void }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { data: groups } = useGroups();
-  const reduced = useReducedMotion();
+
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);

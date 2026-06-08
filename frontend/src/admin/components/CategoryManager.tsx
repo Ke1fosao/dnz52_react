@@ -5,7 +5,6 @@ import { toast } from 'sonner';
 import { Field, inputCls, IconPicker, ColorField } from './FormControls';
 import { ListSkeleton, EmptyBox } from './AdminUI';
 import { SortableList, persistOrder } from './SortableList';
-import { cn } from '@/lib/utils';
 import type { AdminCategory } from '../types';
 
 interface CatApi {

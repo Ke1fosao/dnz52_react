@@ -56,7 +56,7 @@ setCatchHandler(async ({ request }) => {
 
 // 5. Push-сповіщення (нові новини)
 self.addEventListener('push', (event: PushEvent) => {
-  let payload: { title?: string; body?: string; url?: string; icon?: string } = {};
+  let payload: { title?: string; body?: string; url?: string; icon?: string };
   try {
     payload = event.data?.json() ?? {};
   } catch {

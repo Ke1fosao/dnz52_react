@@ -19,7 +19,7 @@ interface Props extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'onClick'> {
 export function ZoomableImage({
   zoomSrc,
   zoomTitle,
-  zoomDescription,
+  zoomDescription: _zoomDescription,
   wrapperClassName,
   showHint = true,
   className,
