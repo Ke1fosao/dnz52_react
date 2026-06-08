@@ -7,7 +7,7 @@ import {
   ExternalLink, Menu as MenuIcon, X, Newspaper, CalendarDays, FileText,
   Files, BookOpen, Images, Phone, UsersRound, Baby, Sparkles,
   UtensilsCrossed, Camera, UserCog, GraduationCap, HeartHandshake,
-  BellRing, History, Users, type LucideIcon,
+  BellRing, History, Users, ClipboardList, type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/hooks/useTheme';
@@ -16,12 +16,13 @@ import { adminStatsApi } from './lib/adminApi';
 
 const DJANGO_ADMIN = import.meta.env.DEV ? 'http://localhost:8000/admin/' : '/admin/';
 
-interface NavItem { to: string; label: string; icon: LucideIcon; end?: boolean; badge?: 'pending_reviews' | 'new_questions'; superOnly?: boolean }
+interface NavItem { to: string; label: string; icon: LucideIcon; end?: boolean; badge?: 'pending_reviews' | 'new_questions' | 'new_applications'; superOnly?: boolean }
 const SECTIONS: { title?: string; items: NavItem[] }[] = [
   { items: [{ to: '/manage', label: 'Дашборд', icon: LayoutDashboard, end: true }] },
   { title: 'Модерація', items: [
     { to: '/manage/reviews', label: 'Відгуки', icon: MessageSquare, badge: 'pending_reviews' },
     { to: '/manage/questions', label: 'Питання', icon: HelpCircle, badge: 'new_questions' },
+    { to: '/manage/enrollment', label: 'Заявки', icon: ClipboardList, badge: 'new_applications' },
   ] },
   { title: 'Контент', items: [
     { to: '/manage/news', label: 'Новини', icon: Newspaper },
@@ -88,7 +89,7 @@ export function AdminLayout() {
                     <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-slate-600 px-4 mt-3 mb-1">{section.title}</p>
                   )}
                   {section.items.filter(n => !n.superOnly || user?.is_superuser).map(n => {
-                    const count = n.badge && stats ? stats[n.badge] : 0;
+                    const count = (n.badge && stats ? stats[n.badge] : 0) ?? 0;
                     return (
                       <NavLink
                         key={n.to} to={n.to} end={n.end} onClick={() => setOpen(false)}

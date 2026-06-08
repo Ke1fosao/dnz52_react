@@ -30,6 +30,7 @@ export interface AdminHistoryItem {
 export interface AdminStats {
   pending_reviews: number;
   new_questions: number;
+  new_applications?: number;
   subscriptions?: number;
   totals: Record<string, number>;
   chart: ChartPoint[];
@@ -99,6 +100,25 @@ export interface AdminQuestion {
   handled_at: string | null;
   handled_by_name: string | null;
   admin_note: string;
+}
+
+export type EnrollmentStatus = 'new' | 'processing' | 'approved' | 'rejected' | 'done';
+
+export interface AdminEnrollment {
+  id: number;
+  child_name: string;
+  child_birth_date: string;
+  parent_name: string;
+  phone: string;
+  email: string;
+  desired_start: string;
+  note: string;
+  status: EnrollmentStatus;
+  status_display: string;
+  admin_note: string;
+  handled_by_name: string | null;
+  handled_at: string | null;
+  created_at: string;
 }
 
 // --- Контент ---

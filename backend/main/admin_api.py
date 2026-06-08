@@ -45,6 +45,7 @@ from groups.models import Group, GroupStaff
 from circles.models import Circle, CircleBenefit, CircleSession
 from gallery.models import GalleryCategory, GalleryAlbum, GalleryPhoto
 from documents.models import Document, DocumentCategory
+from enrollment.models import EnrollmentApplication
 from menu.models import DailyMenu, MenuTemplate
 from specialists.models import (
     SpecialistPage, Specialist, SpecialistAlbum,
@@ -186,6 +187,9 @@ def admin_stats(request):
     new_questions = FAQQuestionSubmission.objects.filter(
         status=FAQQuestionSubmission.Status.NEW
     ).count()
+    new_applications = EnrollmentApplication.objects.filter(
+        status=EnrollmentApplication.Status.NEW
+    ).count()
 
     totals = {
         'news': News.objects.count(),
@@ -225,6 +229,7 @@ def admin_stats(request):
     return Response({
         'pending_reviews': pending_reviews,
         'new_questions': new_questions,
+        'new_applications': new_applications,
         'subscriptions': subscriptions,
         'totals': totals,
         'chart': chart,
@@ -298,6 +303,54 @@ class AdminQuestionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         obj = serializer.save()
         # При закритті — фіксуємо хто і коли обробив
         if obj.status == FAQQuestionSubmission.Status.DONE and obj.handled_at is None:
+            obj.handled_at = timezone.now()
+            obj.handled_by = self.request.user
+            obj.save(update_fields=['handled_at', 'handled_by'])
+
+
+# ============================================================================
+# Заявки на зарахування (онлайн-форма від батьків)
+# ============================================================================
+class AdminEnrollmentSerializer(serializers.ModelSerializer):
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    handled_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = EnrollmentApplication
+        fields = ['id', 'child_name', 'child_birth_date', 'parent_name', 'phone',
+                  'email', 'desired_start', 'note', 'status', 'status_display',
+                  'admin_note', 'handled_by_name', 'handled_at', 'created_at']
+        read_only_fields = ['child_name', 'child_birth_date', 'parent_name', 'phone',
+                            'email', 'desired_start', 'note', 'status_display',
+                            'handled_by_name', 'handled_at', 'created_at']
+
+    def get_handled_by_name(self, obj):
+        u = obj.handled_by
+        return (u.get_full_name() or u.username) if u else None
+
+
+class AdminEnrollmentViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
+                             mixins.UpdateModelMixin, mixins.DestroyModelMixin,
+                             viewsets.GenericViewSet):
+    authentication_classes = [ExpiringTokenAuthentication]
+    permission_classes = [IsAdminUser]
+    serializer_class = AdminEnrollmentSerializer
+    pagination_class = None
+    http_method_names = ['get', 'patch', 'delete']
+
+    def get_queryset(self):
+        qs = EnrollmentApplication.objects.all().order_by('-created_at')
+        st = self.request.query_params.get('status')
+        if st in dict(EnrollmentApplication.Status.choices):
+            qs = qs.filter(status=st)
+        return qs
+
+    def perform_update(self, serializer):
+        obj = serializer.save()
+        closed = (EnrollmentApplication.Status.APPROVED,
+                  EnrollmentApplication.Status.REJECTED,
+                  EnrollmentApplication.Status.DONE)
+        if obj.status in closed and obj.handled_at is None:
             obj.handled_at = timezone.now()
             obj.handled_by = self.request.user
             obj.save(update_fields=['handled_at', 'handled_by'])

@@ -8,6 +8,7 @@ import type {
   AdminFlatRow, AdminAttestationSettings, AdminSpecialistPage, AdminSpecialist,
   AdminSpecialistSection, AdminSpecialistSectionPhoto,
   AdminAccount, AdminHistoryItem, AdminPushStats, AdminAISettings,
+  AdminEnrollment, EnrollmentStatus,
 } from '../types';
 
 const TOKEN_KEY = 'dnz52:adminToken';
@@ -76,6 +77,13 @@ export const adminQuestionsApi = {
   update: (id: number, data: Partial<{ status: QuestionStatus; admin_note: string; callback_date: string | null }>) =>
     http.patch<AdminQuestion>(`/questions/${id}/`, data).then(r => r.data),
   remove: (id: number) => http.delete(`/questions/${id}/`).then(r => r.data),
+};
+
+export const adminEnrollmentApi = {
+  list: (status: string) => http.get<AdminEnrollment[]>('/enrollment/', { params: { status } }).then(r => r.data),
+  update: (id: number, data: Partial<{ status: EnrollmentStatus; admin_note: string }>) =>
+    http.patch<AdminEnrollment>(`/enrollment/${id}/`, data).then(r => r.data),
+  remove: (id: number) => http.delete(`/enrollment/${id}/`).then(r => r.data),
 };
 
 export const adminMetaApi = {

@@ -16,6 +16,7 @@ const ROUTE_MAP: Record<string, Loader> = {
   '/groups':               () => import('@/pages/groups/GroupsListPage'),
   '/circles':              () => import('@/pages/circles/CirclesListPage'),
   '/menu':                 () => import('@/pages/MenuPage'),
+  '/enrollment':           () => import('@/pages/EnrollmentPage'),
   '/documents':            () => import('@/pages/DocumentsPage'),
   '/reviews':              () => import('@/pages/ReviewsPage'),
   '/faq':                  () => import('@/pages/FAQPage'),

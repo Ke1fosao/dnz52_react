@@ -26,6 +26,7 @@ from reviews.api_views import ReviewViewSet
 from menu.api_views import DailyMenuViewSet
 from faq.api_views import faq_list, faq_like, faq_ask
 from events.api_views import EventViewSet, event_ical
+from enrollment.api_views import enrollment_create
 from main.admin_api import (
     admin_login, admin_logout, admin_me, admin_stats, admin_meta,
     AdminReviewViewSet, AdminQuestionViewSet,
@@ -50,6 +51,7 @@ from main.admin_api import (
     admin_profile, admin_change_password,
     admin_2fa_setup, admin_2fa_confirm, admin_2fa_disable,
     AdminEventTypeViewSet, admin_ai_settings, admin_ai_generate,
+    AdminEnrollmentViewSet,
 )
 
 
@@ -153,6 +155,7 @@ router.register(r'admin/specialist-sections', AdminSpecialistPageSectionViewSet,
 router.register(r'admin/specialist-section-photos', AdminSpecialistPagePhotoViewSet, basename='admin-specialist-section-photo')
 router.register(r'admin/users', AdminUserViewSet, basename='admin-user')
 router.register(r'admin/event-types', AdminEventTypeViewSet, basename='admin-event-type')
+router.register(r'admin/enrollment', AdminEnrollmentViewSet, basename='admin-enrollment')
 
 
 urlpatterns = [
@@ -181,6 +184,7 @@ urlpatterns = [
     # Окремі endpoints (menu/today/ та menu/week/ тепер як @action в DailyMenuViewSet)
     path('search/', global_search, name='api-search'),
     path('chat/', chat, name='api-chat'),
+    path('enrollment/', enrollment_create, name='api-enrollment'),
     path('attestation/settings/', attestation_settings, name='api-attestation-settings'),
 
     # FAQ

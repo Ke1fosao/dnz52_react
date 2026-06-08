@@ -5,7 +5,7 @@ import {
   MapPin, Search, Menu as MenuIcon, X, ChevronDown, Sun, Moon,
   Info, Users, GraduationCap, Utensils, Heart, FileText, MessageSquare,
   Brain, Music, Activity, Star, Zap, BookOpen, Stethoscope, Palette, Image as ImageIcon, HelpCircle, CalendarDays,
-  Home, Newspaper,
+  Home, Newspaper, ClipboardCheck,
 } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useGroups } from '@/hooks/useApi';
@@ -24,6 +24,7 @@ const ABOUT_ITEMS: DropItem[] = [
 ];
 
 const SERVICE_ITEMS: DropItem[] = [
+  { title: 'Зарахування', desc: 'Подати заявку онлайн', icon: ClipboardCheck, to: '/enrollment', color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400' },
   { title: 'Меню на сьогодні', desc: 'Смачно та корисно', icon: Utensils, to: '/menu', color: 'bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400' },
   { title: 'Документи', desc: 'Офіційні папери', icon: FileText, to: '/documents', color: 'bg-cyan-100 text-cyan-600 dark:bg-cyan-900/40 dark:text-cyan-400' },
   { title: 'Відгуки', desc: 'Думки батьків', icon: MessageSquare, to: '/reviews', color: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400' },
