@@ -138,7 +138,9 @@ export function ChatWidget() {
     setLoading(true);
     
     try {
-      const res = await fetch('/api/v1/chat/', {
+      const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+      const endpoint = baseUrl.endsWith('/') ? baseUrl + 'chat/' : baseUrl + '/chat/';
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question: q, history })

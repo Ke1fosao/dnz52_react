@@ -17,6 +17,15 @@
           document.documentElement.style.fontSize = '112.5%';
         }
       } catch (e) {}
+
+      // Очищення старих Service Workers для гарантії оновлення (наприклад кнопки мікрофону)
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            registration.unregister();
+          }
+        });
+      }
     </script>
     <meta name="theme-color" content="#4A90E2" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
