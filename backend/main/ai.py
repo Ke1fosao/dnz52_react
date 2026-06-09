@@ -26,7 +26,7 @@ def is_configured() -> bool:
 
 
 def get_embedding(text: str) -> list[float]:
-    """Генерує векторне представлення тексту через text-embedding-004."""
+    """Генерує векторне представлення тексту через gemini-embedding-2."""
     key = getattr(settings, 'GEMINI_API_KEY', '')
     if not key or not text.strip():
         return []
@@ -36,12 +36,28 @@ def get_embedding(text: str) -> list[float]:
         "model": "models/text-embedding-004",
         "content": {"parts": [{"text": text}]}
     }
+    # Let's try text-embedding-004 first, fallback to gemini-embedding-2
     try:
         r = requests.post(url, params={'key': key}, json=body, timeout=10)
         if r.status_code == 200:
             return r.json().get('embedding', {}).get('values', [])
+    except Exception:
+        pass
+        
+    url2 = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-2:embedContent'
+    body2 = {
+        "model": "models/gemini-embedding-2",
+        "content": {"parts": [{"text": text}]}
+    }
+    try:
+        r2 = requests.post(url2, params={'key': key}, json=body2, timeout=10)
+        if r2.status_code == 200:
+            return r2.json().get('embedding', {}).get('values', [])
+        else:
+            logger.error(f'Embedding error: {r2.text}')
     except Exception as e:
         logger.error('Gemini Embedding Error: %s', e)
+        
     return []
 
 

@@ -29,6 +29,9 @@ class Command(BaseCommand):
                 skipped += 1
                 continue
 
+            import time
+            time.sleep(1) # Запобігаємо блокуванню API
+
             self.stdout.write(f'Генерація вектора для: [{content_type}] {it["title"][:40]}...')
             emb = get_embedding(text_to_embed)
             if not emb:

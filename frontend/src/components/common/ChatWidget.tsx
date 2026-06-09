@@ -164,16 +164,23 @@ export function ChatWidget() {
             if (line.startsWith('data: ')) {
               try {
                 const data = JSON.parse(line.substring(6));
-                setMessages(prev => prev.map(m => {
-                  if ((m as any)._id === newId) {
-                    return {
-                      ...m,
-                      content: data.text ? m.content + data.text : m.content,
-                      sources: data.sources && data.sources.length ? data.sources : m.sources
-                    };
-                  }
-                  return m;
-                }));
+                
+                if (data.sources && data.sources.length) {
+                   setMessages(prev => prev.map(m => (m as any)._id === newId ? { ...m, sources: data.sources } : m));
+                }
+
+                if (data.text) {
+                    const tokens = data.text.match(/.{1,3}/g) || [];
+                    for (const token of tokens) {
+                        setMessages(prev => prev.map(m => {
+                            if ((m as any)._id === newId) {
+                                return { ...m, content: m.content + token };
+                            }
+                            return m;
+                        }));
+                        await new Promise(r => setTimeout(r, 15));
+                    }
+                }
               } catch (e) {}
             }
           }
