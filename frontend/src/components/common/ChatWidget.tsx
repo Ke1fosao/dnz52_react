@@ -1,9 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useRef, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { m as motion } from '@/lib/motion';
 import { MessageCircle, X, Send, Sparkles, Trash2, ArrowUpRight, Mic } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { api } from '@/api/client';
 import { RichContent } from '@/components/common/RichContent';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
@@ -181,7 +181,7 @@ export function ChatWidget() {
                         await new Promise(r => setTimeout(r, 15));
                     }
                 }
-              } catch (e) {}
+              } catch { /* ignore JSON parse error */ }
             }
           }
         }
