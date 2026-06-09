@@ -57,7 +57,7 @@ from .models import (
     ParentsAnnouncement, ParentsDocument, ParentsAdaptationPhoto,
     ParentsEnrollmentDoc, ParentsApplicationSample,
     AttestationDocument, AttestationStep, AttestationCategory,
-    AttestationLaw, AttestationSettings, AISettings,
+    AttestationLaw, AttestationSettings, AISettings, ChatLog,
 )
 from .serializers import (
     ParentsAnnouncementSerializer, ParentsDocumentSerializer,

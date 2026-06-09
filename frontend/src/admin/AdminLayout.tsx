@@ -7,7 +7,7 @@ import {
   ExternalLink, Menu as MenuIcon, X, Newspaper, CalendarDays, FileText,
   Files, BookOpen, Images, Phone, UsersRound, Baby, Sparkles,
   UtensilsCrossed, Camera, UserCog, GraduationCap, HeartHandshake,
-  BellRing, History, Users, ClipboardList, Compass, type LucideIcon,
+  BellRing, History, Users, ClipboardList, Compass, LineChart, type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/hooks/useTheme';
@@ -45,6 +45,7 @@ const SECTIONS: { title?: string; items: NavItem[] }[] = [
     { to: '/manage/contact', label: 'Контакти', icon: Phone },
   ] },
   { title: 'Система', items: [
+    { to: '/manage/chat-analytics', label: 'Аналітика ШІ', icon: LineChart },
     { to: '/manage/push', label: 'Push-розсилка', icon: BellRing },
     { to: '/manage/history', label: 'Історія змін', icon: History },
     { to: '/manage/users', label: 'Користувачі', icon: Users, superOnly: true },
