@@ -564,23 +564,50 @@ def _chat_ambient():
     return '\n\n'.join(parts)
 
 
+import math
+
+def _cosine_similarity(v1, v2):
+    dot = sum(a * b for a, b in zip(v1, v2))
+    mag1 = math.sqrt(sum(a * a for a in v1))
+    mag2 = math.sqrt(sum(b * b for b in v2))
+    return dot / (mag1 * mag2) if mag1 and mag2 else 0.0
+
+
 def _chat_context(question, limit=6):
-    """Контекст для ШІ-чату: завжди-актуальні дані (дата/меню/контакти/події) +
-    топ-N релевантних розділів з індексу пошуку (із вказаними посиланнями)."""
+    """Контекст для ШІ-чату: векторний пошук + fallback до токенів."""
     ambient = _chat_ambient()
     qtokens = [t for t in _search_tokens(question) if t not in _SEARCH_STOPWORDS] or _search_tokens(question)
-    if not qtokens:
-        return ambient, []
+    
+    from main.ai import get_embedding
+    from main.models import SearchEmbedding
+    
+    q_emb = get_embedding(question)
+    db_embs = {}
+    if q_emb:
+        for e in SearchEmbedding.objects.all():
+            db_embs[(e.content_type, str(e.object_id))] = e.embedding
+
     index = cache.get_or_set('search_index_v1', _build_search_index, 600)
     scored = []
     for it in index:
         s = 0.0
+        
+        # 1. Векторний скоринг (пріоритет)
+        emb = db_embs.get((it['type'], str(it['slug'])))
+        if emb and q_emb:
+            sim = _cosine_similarity(q_emb, emb)
+            if sim > 0.3:
+                s += sim * 15.0
+                
+        # 2. Токен-скоринг (fallback)
         for qt in qtokens:
             bt = max((_search_match_quality(qt, w) for w in it['title_tokens']), default=0.0)
             bb = max((_search_match_quality(qt, w) for w in it['body_tokens']), default=0.0)
             s += bt * 3 + bb
+            
         if s > 0:
             scored.append((s * it.get('weight', 1.0), it))
+            
     scored.sort(key=lambda x: x[0], reverse=True)
 
     chunks, sources, seen = [], [], set()
@@ -600,13 +627,15 @@ def _chat_context(question, limit=6):
     return full.strip(), sources[:5]
 
 
+from django.http import StreamingHttpResponse
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 @throttle_classes([ChatRateThrottle])
 def chat(request):
-    """ШІ-помічник: відповідає на запитання батьків на основі контенту сайту.
-    Якщо ШІ не налаштований/недоступний — повертає дружній fallback (HTTP 200)."""
+    """ШІ-помічник: відповідає стрімінгом (SSE) на основі контенту сайту."""
     from main import ai
+    import json
 
     question = (request.data.get('question') or '').strip()
     if len(question) < 2:
@@ -615,20 +644,20 @@ def chat(request):
 
     if not ai.is_configured():
         return Response({
-            'answer': 'Вибачте, помічник зараз недоступний 😔 Скористайтеся пошуком угорі сайту '
-                      'або зверніться до нас на сторінці «Контакти».',
+            'answer': 'Вибачте, помічник зараз недоступний 😔 Скористайтеся пошуком угорі сайту або зверніться до нас на сторінці «Контакти».',
             'sources': [], 'available': False,
         })
 
     history = request.data.get('history')
     history = history if isinstance(history, list) else None
     context, sources = _chat_context(question)
-    try:
-        answer = ai.answer_question(question, context, history=history)
-    except ai.AIError:
-        return Response({
-            'answer': 'Вибачте, зараз не вдалося отримати відповідь 😔 Спробуйте трохи згодом, '
-                      'скористайтеся пошуком або зверніться на сторінці «Контакти».',
-            'sources': [], 'available': True,
-        })
-    return Response({'answer': answer, 'sources': sources, 'available': True})
+    
+    def generate_sse():
+        yield f"data: {json.dumps({'sources': sources, 'text': ''}, ensure_ascii=False)}\n\n"
+        for chunk in ai.answer_question_stream(question, context, history=history):
+            yield f"data: {json.dumps({'text': chunk}, ensure_ascii=False)}\n\n"
+            
+    response = StreamingHttpResponse(generate_sse(), content_type="text/event-stream")
+    response['Cache-Control'] = 'no-cache'
+    response['X-Accel-Buffering'] = 'no'
+    return response

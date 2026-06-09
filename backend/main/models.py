@@ -431,3 +431,31 @@ class PushSubscription(models.Model):
 
     def __str__(self):
         return f'Підписка #{self.pk} ({self.endpoint[:40]}…)'
+
+
+# ============================================================================
+# Векторний пошук (Embeddings) для ШІ
+# ============================================================================
+class SearchEmbedding(models.Model):
+    """
+    Збереження векторів (embeddings) для розумного пошуку чат-бота.
+    Використовуємо JSONField замість pgvector для повної сумісності з локальним SQLite.
+    Вектор порівнюється in-memory (для <1000 елементів це працює <5мс).
+    """
+    content_type = models.CharField('Тип контенту', max_length=50)
+    object_id = models.CharField('ID обʼєкта', max_length=100)
+    text_hash = models.CharField('Хеш тексту', max_length=64, help_text='MD5 хеш для інвалідації при зміні тексту')
+    embedding = models.JSONField('Вектор', help_text='Список float (напр. 768 значень)')
+    updated_at = models.DateTimeField('Дата оновлення', auto_now=True)
+
+    class Meta:
+        verbose_name = 'Вектор пошуку'
+        verbose_name_plural = 'Вектори пошуку'
+        unique_together = ('content_type', 'object_id')
+        indexes = [
+            models.Index(fields=['content_type', 'object_id']),
+        ]
+
+    def __str__(self):
+        return f'{self.content_type} #{self.object_id}'
+

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { m as motion } from '@/lib/motion';
-import { MessageCircle, X, Send, Sparkles, Trash2, ArrowUpRight } from 'lucide-react';
+import { MessageCircle, X, Send, Sparkles, Trash2, ArrowUpRight, Mic } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { api } from '@/api/client';
 import { RichContent } from '@/components/common/RichContent';
@@ -49,6 +49,43 @@ export function ChatWidget() {
   const trapRef = useFocusTrap<HTMLDivElement>(open);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const recognitionRef = useRef<any>(null);
+  const [listening, setListening] = useState(false);
+
+  useEffect(() => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const rec = new SpeechRecognition();
+      rec.continuous = false;
+      rec.interimResults = true;
+      rec.lang = 'uk-UA';
+
+      rec.onresult = (e: any) => {
+        let transcript = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          transcript += e.results[i][0].transcript;
+        }
+        setInput(transcript);
+      };
+      rec.onerror = () => setListening(false);
+      rec.onend = () => setListening(false);
+      recognitionRef.current = rec;
+    }
+  }, []);
+
+  const toggleListening = () => {
+    if (!recognitionRef.current) {
+      alert('Голосовий ввід не підтримується цим браузером.');
+      return;
+    }
+    if (listening) {
+      recognitionRef.current.stop();
+    } else {
+      setInput('');
+      recognitionRef.current.start();
+      setListening(true);
+    }
+  };
 
   useEffect(() => {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-30))); } catch { /* ignore */ }
@@ -93,17 +130,62 @@ export function ChatWidget() {
     const q = text.trim();
     if (!q || loading) return;
     setInput('');
+    if (listening) recognitionRef.current?.stop();
     const history = messages.filter(m => m.content).slice(-6).map(m => ({ role: m.role, content: m.content }));
-    setMessages(prev => [...prev, { role: 'user', content: q }]);
+    const newId = Date.now().toString();
+    
+    setMessages(prev => [...prev, { role: 'user', content: q }, { role: 'assistant', content: '', sources: [], _id: newId } as any]);
     setLoading(true);
+    
     try {
-      const { data } = await api.post('/chat/', { question: q, history });
-      setMessages(prev => [...prev, { role: 'assistant', content: data.answer, sources: data.sources || [] }]);
+      const res = await fetch('/api/v1/chat/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: q, history })
+      });
+      
+      if (!res.ok) throw new Error('Response error');
+      
+      const reader = res.body?.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      
+      if (reader) {
+        setLoading(false);
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+          
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.substring(6));
+                setMessages(prev => prev.map(m => {
+                  if ((m as any)._id === newId) {
+                    return {
+                      ...m,
+                      content: data.text ? m.content + data.text : m.content,
+                      sources: data.sources && data.sources.length ? data.sources : m.sources
+                    };
+                  }
+                  return m;
+                }));
+              } catch (e) {}
+            }
+          }
+        }
+      }
     } catch {
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: 'Вибачте, зараз не вдалося відповісти 😔 Спробуйте ще раз трохи згодом або скористайтеся пошуком угорі сайту.',
-      }]);
+      setMessages(prev => prev.map(m => {
+        if ((m as any)._id === newId) {
+          return { ...m, content: 'Вибачте, зараз не вдалося відповісти 😔 Спробуйте ще раз трохи згодом або скористайтеся пошуком.' };
+        }
+        return m;
+      }));
     } finally {
       setLoading(false);
     }
@@ -253,11 +335,18 @@ export function ChatWidget() {
                            text-gray-900 dark:text-slate-100 placeholder:text-gray-400
                            focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
-              <button type="submit" disabled={!input.trim() || loading} aria-label="Надіслати"
-                className="w-11 h-11 shrink-0 rounded-full bg-blue-600 text-white flex items-center justify-center
-                           hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-                <Send size={18} />
-              </button>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <button type="button" onClick={toggleListening} aria-label="Голосовий ввід"
+                  className={cn("w-11 h-11 shrink-0 rounded-full flex items-center justify-center transition-colors",
+                    listening ? "bg-red-500 text-white animate-pulse" : "bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-slate-300 hover:bg-gray-300 dark:hover:bg-slate-600")}>
+                  <Mic size={18} />
+                </button>
+                <button type="submit" disabled={!input.trim() && !loading} aria-label="Надіслати"
+                  className="w-11 h-11 shrink-0 rounded-full bg-blue-600 text-white flex items-center justify-center
+                             hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                  <Send size={18} />
+                </button>
+              </div>
             </form>
             <p className="px-4 pb-2 text-[10px] text-center text-gray-400 dark:text-slate-500 shrink-0">
               Відповіді ШІ можуть бути неточними. Уточнюйте важливе на сторінці «Контакти».

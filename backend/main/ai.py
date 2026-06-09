@@ -25,6 +25,26 @@ def is_configured() -> bool:
     return bool(getattr(settings, 'GEMINI_API_KEY', ''))
 
 
+def get_embedding(text: str) -> list[float]:
+    """Генерує векторне представлення тексту через text-embedding-004."""
+    key = getattr(settings, 'GEMINI_API_KEY', '')
+    if not key or not text.strip():
+        return []
+
+    url = 'https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent'
+    body = {
+        "model": "models/text-embedding-004",
+        "content": {"parts": [{"text": text}]}
+    }
+    try:
+        r = requests.post(url, params={'key': key}, json=body, timeout=10)
+        if r.status_code == 200:
+            return r.json().get('embedding', {}).get('values', [])
+    except Exception as e:
+        logger.error('Gemini Embedding Error: %s', e)
+    return []
+
+
 def _models():
     return getattr(settings, 'GEMINI_MODELS', None) or ['gemini-2.5-flash-lite']
 
@@ -189,3 +209,66 @@ def answer_question(question: str, context: str = '', history=None) -> str:
         'Дай корисну відповідь українською:'
     )
     return _generate(prompt, system=_CHAT_SYSTEM, max_tokens=700, temperature=0.4)
+
+
+def answer_question_stream(question: str, context: str = '', history=None):
+    """Відповідь чат-бота (стрімінг через SSE)."""
+    convo = ''
+    if history:
+        lines = []
+        for h in history[-4:]:
+            if not isinstance(h, dict):
+                continue
+            role = 'Батьки' if h.get('role') == 'user' else 'Помічник'
+            text = str(h.get('content') or '')[:400]
+            if text:
+                lines.append(f'{role}: {text}')
+        if lines:
+            convo = 'Попередній діалог:\n' + '\n'.join(lines) + '\n\n'
+    ctx = (context or '').strip() or 'На сайті не знайдено релевантної інформації за цим запитом.'
+    prompt = (
+        f'Контекст із сайту ЗДО №52:\n"""\n{ctx}\n"""\n\n'
+        f'{convo}'
+        f'Запитання батьків: {question}\n\n'
+        'Дай корисну відповідь українською:'
+    )
+
+    key = getattr(settings, 'GEMINI_API_KEY', '')
+    if not key:
+        yield 'Вибачте, ШІ не налаштовано.'
+        return
+
+    model = _models()[0]
+    url = f'https://generativelanguage.googleapis.com/v1beta/models/{model}:streamGenerateContent?alt=sse'
+    body = {
+        'contents': [{'parts': [{'text': prompt}]}],
+        'generationConfig': {'maxOutputTokens': 700, 'temperature': 0.4},
+        'systemInstruction': {'parts': [{'text': _CHAT_SYSTEM}]}
+    }
+
+    try:
+        with requests.post(url, params={'key': key}, json=body, stream=True, timeout=30) as r:
+            if r.status_code != 200:
+                logger.error('Gemini stream error: %s %s', r.status_code, r.text[:200])
+                yield 'Виникла помилка при генерації відповіді.'
+                return
+            for line in r.iter_lines():
+                if line:
+                    line = line.decode('utf-8')
+                    if line.startswith('data: '):
+                        data_str = line[6:]
+                        if data_str.strip() == '[DONE]':
+                            continue
+                        try:
+                            data = json.loads(data_str)
+                            cands = data.get('candidates', [])
+                            if cands:
+                                parts = cands[0].get('content', {}).get('parts', [])
+                                chunk = ''.join(p.get('text', '') for p in parts)
+                                if chunk:
+                                    yield chunk
+                        except json.JSONDecodeError:
+                            continue
+    except Exception as e:
+        logger.error('Gemini Stream Exception: %s', e)
+        yield '\n[Звʼязок перервано]'

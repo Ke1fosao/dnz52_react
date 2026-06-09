@@ -15,7 +15,7 @@ services:
     plan: free
     region: frankfurt          # поряд із Supabase eu-central-1 → мінімальна латентність БД
     rootDir: backend
-    buildCommand: "pip install -r requirements.txt && python manage.py migrate --noinput && python manage.py collectstatic --noinput"
+    buildCommand: "pip install -r requirements.txt && python manage.py migrate --noinput && python manage.py collectstatic --noinput && python manage.py update_embeddings"
     # preDeployCommand: генерує WebP-версії зображень у Supabase Storage.
     # Ідемпотентна: пропускає файли що вже мають .webp-пару (default — без --force).
     # Запускається після buildCommand (migrate+collectstatic) і перед стартом сервісу.
