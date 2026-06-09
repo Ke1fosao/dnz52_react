@@ -220,3 +220,17 @@ export const adminAiApi = {
 
 // Типи подій (редагований довідник)
 export const adminEventTypesApi = crud<AdminCategory>('event-types');
+
+// Аналітика чатів ШІ
+export interface AdminChatLog {
+  id: number;
+  question: string;
+  sources_found: boolean;
+  created_at: string;
+}
+
+export const adminChatLogsApi = {
+  list: () => http.get<AdminChatLog[]>('/chat-logs/').then(r => r.data),
+  analyze: (days: number, hide_answered: boolean) => 
+    http.post<{ report: string }>('/chat-logs/analyze/', { days, hide_answered }).then(r => r.data),
+};

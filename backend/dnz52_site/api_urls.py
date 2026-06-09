@@ -52,7 +52,7 @@ from main.admin_api import (
     admin_profile, admin_change_password,
     admin_2fa_setup, admin_2fa_confirm, admin_2fa_disable,
     AdminEventTypeViewSet, admin_ai_settings, admin_ai_generate,
-    AdminEnrollmentViewSet, AdminTourStopViewSet,
+    AdminEnrollmentViewSet, AdminTourStopViewSet, AdminChatLogViewSet,
 )
 
 
@@ -161,6 +161,7 @@ router.register(r'admin/users', AdminUserViewSet, basename='admin-user')
 router.register(r'admin/event-types', AdminEventTypeViewSet, basename='admin-event-type')
 router.register(r'admin/enrollment', AdminEnrollmentViewSet, basename='admin-enrollment')
 router.register(r'admin/tour', AdminTourStopViewSet, basename='admin-tour')
+router.register(r'admin/chat-logs', AdminChatLogViewSet, basename='admin-chat-log')
 
 
 urlpatterns = [

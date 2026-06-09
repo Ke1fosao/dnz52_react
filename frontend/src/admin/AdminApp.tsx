@@ -42,6 +42,7 @@ import { UserFormPage } from './pages/UserFormPage';
 import { PushPage } from './pages/PushPage';
 import { HistoryPage } from './pages/HistoryPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { ChatAnalyticsPage } from './pages/ChatAnalyticsPage';
 
 function Guarded() {
   const { user, loading } = useAdminAuth();
@@ -116,6 +117,7 @@ export default function AdminApp() {
           <Route path="users/:id/edit" element={<UserFormPage />} />
           <Route path="push" element={<PushPage />} />
           <Route path="history" element={<HistoryPage />} />
+          <Route path="chat-analytics" element={<ChatAnalyticsPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="*" element={<Navigate to="/manage" replace />} />
         </Route>

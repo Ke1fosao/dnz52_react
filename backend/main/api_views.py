@@ -652,6 +652,9 @@ def chat(request):
     history = history if isinstance(history, list) else None
     context, sources = _chat_context(question)
     
+    from main.models import ChatLog
+    ChatLog.objects.create(question=question, sources_found=bool(sources))
+    
     def generate_sse():
         yield f"data: {json.dumps({'sources': sources, 'text': ''}, ensure_ascii=False)}\n\n"
         for chunk in ai.answer_question_stream(question, context, history=history):

@@ -459,3 +459,20 @@ class SearchEmbedding(models.Model):
     def __str__(self):
         return f'{self.content_type} #{self.object_id}'
 
+
+# ============================================================================
+# Аналітика чатів ШІ
+# ============================================================================
+class ChatLog(models.Model):
+    """Збереження анонімних запитань батьків до чат-бота для аналітики керівництвом."""
+    question = models.TextField('Запитання')
+    sources_found = models.BooleanField('Знайдено інформацію на сайті', default=False)
+    created_at = models.DateTimeField('Дата', auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Лог чату'
+        verbose_name_plural = 'Логи чатів'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'Запит від {self.created_at.strftime("%d.%m.%Y %H:%M")}'
