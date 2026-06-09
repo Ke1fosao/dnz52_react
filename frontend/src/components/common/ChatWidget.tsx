@@ -170,7 +170,7 @@ export function ChatWidget() {
                 }
 
                 if (data.text) {
-                    const tokens = data.text.match(/.{1,3}/g) || [];
+                    const tokens = data.text.match(/[\s\S]{1,3}/g) || [];
                     for (const token of tokens) {
                         setMessages(prev => prev.map(m => {
                             if ((m as any)._id === newId) {
