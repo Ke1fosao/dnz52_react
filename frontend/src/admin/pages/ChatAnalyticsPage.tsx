@@ -101,7 +101,7 @@ export function ChatAnalyticsPage() {
               </div>
             </div>
             <div className="prose prose-purple dark:prose-invert max-w-none">
-              <RichContent html={analyzeMutation.data.report} />
+              <RichContent content={analyzeMutation.data.report} />
             </div>
           </div>
         )}

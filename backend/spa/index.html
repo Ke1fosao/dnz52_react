@@ -17,6 +17,15 @@
           document.documentElement.style.fontSize = '112.5%';
         }
       } catch (e) {}
+
+      // Очищення старих Service Workers для гарантії оновлення (наприклад кнопки мікрофону)
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            registration.unregister();
+          }
+        });
+      }
     </script>
     <meta name="theme-color" content="#4A90E2" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -26,12 +35,12 @@
     <link rel="preload" as="font" type="font/woff2" href="/fonts/manrope-cyrillic.woff2" crossorigin />
     <link rel="preload" as="font" type="font/woff2" href="/fonts/manrope-latin.woff2" crossorigin />
     <title>ЗДО №52 — Заклад дошкільної освіти</title>
-    <script type="module" crossorigin src="/assets/index-Crg5FCuB.js"></script>
+    <script type="module" crossorigin src="/assets/index-BneCNJlf.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/vendor-react-gCHKl9E9.js">
     <link rel="modulepreload" crossorigin href="/assets/vendor-query-AvpwhUOL.js">
     <link rel="modulepreload" crossorigin href="/assets/vendor-motion-o5JHLdeH.js">
     <link rel="modulepreload" crossorigin href="/assets/vendor-ui-Cvs4XG-E.js">
-    <link rel="stylesheet" crossorigin href="/assets/index-AtUOKglv.css">
+    <link rel="stylesheet" crossorigin href="/assets/index-CZqUi8EV.css">
   <link rel="manifest" href="/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/registerSW.js"></script></head>
   <body>
     <div id="root"></div>
