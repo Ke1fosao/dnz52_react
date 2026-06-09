@@ -1383,3 +1383,51 @@ def admin_ai_generate(request):
     except ai.AIError as e:
         return Response({'detail': f'ШІ зараз недоступний: {e}'}, status=502)
     return Response({'text': text})
+
+# ============================================================================
+# Аналітика чатів ШІ
+# ============================================================================
+from .models import ChatLog
+
+class AdminChatLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChatLog
+        fields = ['id', 'question', 'sources_found', 'created_at']
+
+class AdminChatLogViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Доступ до історії чатів для керівництва.
+    Додає custom endpoint /analyze/ для генерації аналітики ШІ.
+    """
+    queryset = ChatLog.objects.all().order_by('-created_at')
+    serializer_class = AdminChatLogSerializer
+    authentication_classes = [ExpiringTokenAuthentication]
+    permission_classes = [IsAdminUser]
+
+    @action(detail=False, methods=['post'])
+    def analyze(self, request):
+        from django.utils import timezone
+        import datetime
+        from . import ai
+        
+        days = int(request.data.get('days', 7))
+        hide_answered = bool(request.data.get('hide_answered', True))
+        
+        start_date = timezone.now() - datetime.timedelta(days=days)
+        qs = self.get_queryset().filter(created_at__gte=start_date)
+        
+        if hide_answered:
+            qs = qs.filter(sources_found=False)
+            
+        logs_data = [{'q': item.question, 'found': item.sources_found} for item in qs]
+        if not logs_data:
+            return Response({'detail': 'За вибраний період немає запитів для аналізу.'}, status=400)
+            
+        if not ai.is_configured():
+            return Response({'detail': 'ШІ не налаштовано.'}, status=503)
+            
+        try:
+            report = ai.analyze_chat_logs(logs_data, hide_answered=hide_answered)
+            return Response({'report': report})
+        except ai.AIError as e:
+            return Response({'detail': f'Помилка ШІ: {e}'}, status=502)
