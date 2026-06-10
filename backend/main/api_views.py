@@ -655,12 +655,5 @@ def chat(request):
     from main.models import ChatLog
     ChatLog.objects.create(question=question, sources_found=bool(sources))
     
-    def generate_sse():
-        yield f"data: {json.dumps({'sources': sources, 'text': ''}, ensure_ascii=False)}\n\n"
-        for chunk in ai.answer_question_stream(question, context, history=history):
-            yield f"data: {json.dumps({'text': chunk}, ensure_ascii=False)}\n\n"
-            
-    response = StreamingHttpResponse(generate_sse(), content_type="text/event-stream")
-    response['Cache-Control'] = 'no-cache'
-    response['X-Accel-Buffering'] = 'no'
-    return response
+    answer = ai.answer_question(question, context, history=history)
+    return Response({'answer': answer, 'sources': sources})

@@ -147,47 +147,14 @@ export function ChatWidget() {
       });
       
       if (!res.ok) throw new Error('Response error');
+      const data = await res.json();
       
-      const reader = res.body?.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-      
-      if (reader) {
-        setLoading(false);
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
-          
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              try {
-                const data = JSON.parse(line.substring(6));
-                
-                if (data.sources && data.sources.length) {
-                   setMessages(prev => prev.map(m => (m as any)._id === newId ? { ...m, sources: data.sources } : m));
-                }
-
-                if (data.text) {
-                    const tokens = data.text.match(/[\s\S]{1,3}/g) || [];
-                    for (const token of tokens) {
-                        setMessages(prev => prev.map(m => {
-                            if ((m as any)._id === newId) {
-                                return { ...m, content: m.content + token };
-                            }
-                            return m;
-                        }));
-                        await new Promise(r => setTimeout(r, 15));
-                    }
-                }
-              } catch { /* ignore JSON parse error */ }
-            }
-          }
+      setMessages(prev => prev.map(m => {
+        if ((m as any)._id === newId) {
+            return { ...m, content: data.answer || '', sources: data.sources || [] };
         }
-      }
+        return m;
+      }));
     } catch {
       setMessages(prev => prev.map(m => {
         if ((m as any)._id === newId) {
