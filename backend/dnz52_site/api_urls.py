@@ -53,8 +53,8 @@ from main.admin_api import (
     admin_2fa_setup, admin_2fa_confirm, admin_2fa_disable,
     AdminEventTypeViewSet, admin_ai_settings, admin_ai_generate,
     AdminEnrollmentViewSet, AdminTourStopViewSet, AdminChatLogViewSet,
+    admin_upcoming_holiday,
 )
-
 
 router = DefaultRouter()
 
@@ -186,6 +186,7 @@ urlpatterns = [
     path('admin/2fa/disable/', admin_2fa_disable, name='api-admin-2fa-disable'),
     path('admin/ai-settings/', admin_ai_settings, name='api-admin-ai-settings'),
     path('admin/ai-generate/', admin_ai_generate, name='api-admin-ai-generate'),
+    path('admin/upcoming-holiday/', admin_upcoming_holiday, name='api-admin-upcoming-holiday'),
 
     # Окремі endpoints (menu/today/ та menu/week/ тепер як @action в DailyMenuViewSet)
     path('search/', global_search, name='api-search'),

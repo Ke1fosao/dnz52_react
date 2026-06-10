@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Trash2, Eye, Clock, Tags, Hash } from 'lucide-react';
+import { Plus, Pencil, Trash2, Eye, Clock, Tags, Hash, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
-import { adminNewsApi, adminNewsCategoriesApi, adminNewsTagsApi } from '../lib/adminApi';
+import { adminNewsApi, adminNewsCategoriesApi, adminNewsTagsApi, adminAiApi } from '../lib/adminApi';
 import { ListSkeleton, EmptyBox, SearchInput, CollapsiblePanel } from '../components/AdminUI';
 import { CategoryManager } from '../components/CategoryManager';
 import { formatDate, cn } from '@/lib/utils';
@@ -16,6 +16,7 @@ const STATUS_CLS: Record<string, string> = {
 
 export function NewsListPage() {
   const qc = useQueryClient();
+  const nav = useNavigate();
   const [q, setQ] = useState('');
   const { data, isLoading } = useQuery({ queryKey: ['admin-news'], queryFn: adminNewsApi.list });
   const remove = useMutation({
@@ -23,6 +24,7 @@ export function NewsListPage() {
     onSuccess: () => { toast.success('Видалено'); qc.invalidateQueries({ queryKey: ['admin-news'] }); qc.invalidateQueries({ queryKey: ['admin-stats'] }); },
     onError: () => toast.error('Помилка'),
   });
+  const { data: holiday } = useQuery({ queryKey: ['admin-upcoming-holiday'], queryFn: adminAiApi.upcomingHoliday });
   const filtered = (data || []).filter(n => n.title.toLowerCase().includes(q.trim().toLowerCase()));
 
   return (
@@ -36,6 +38,25 @@ export function NewsListPage() {
           <Plus size={18} /> Додати новину
         </Link>
       </div>
+
+      {holiday && (
+        <div className="bg-gradient-to-r from-purple-100 to-indigo-100 dark:from-purple-900/30 dark:to-indigo-900/30 border border-purple-200 dark:border-purple-800 rounded-2xl p-4 md:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+          <div>
+            <h3 className="text-lg font-black text-purple-900 dark:text-purple-100 mb-1 flex items-center gap-2">
+              🎁 Скоро свято: {holiday.name}
+            </h3>
+            <p className="text-sm text-purple-700 dark:text-purple-300 font-medium">
+              До свята залишилося {holiday.days_until} дн. Бажаєте підготувати привітання для батьків заздалегідь?
+            </p>
+          </div>
+          <button
+            onClick={() => nav('/manage/news/new', { state: { holidayName: holiday.name } })}
+            className="shrink-0 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-5 rounded-xl transition-colors shadow-lg shadow-purple-500/30 flex items-center gap-2"
+          >
+            <Sparkles size={18} /> Згенерувати чернетку ШІ
+          </button>
+        </div>
+      )}
 
       <div className="grid sm:grid-cols-2 gap-3">
         <CollapsiblePanel title="Категорії новин" icon={Tags}><CategoryManager qKey="news-cat" api={adminNewsCategoriesApi} /></CollapsiblePanel>

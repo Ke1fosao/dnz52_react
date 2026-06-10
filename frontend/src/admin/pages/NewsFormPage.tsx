@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { adminNewsApi, adminMetaApi, adminNewsCategoriesApi, adminNewsTagsApi } from '../lib/adminApi';
+import { adminNewsApi, adminMetaApi, adminNewsCategoriesApi, adminNewsTagsApi, adminAiApi } from '../lib/adminApi';
 import { Field, inputCls, MarkdownEditor, ImageField, FormHeader, FormActions } from '../components/FormControls';
 import { InlineCreateSelect, InlineCreateTags } from '../components/InlineCreate';
 
@@ -10,6 +10,8 @@ export function NewsFormPage() {
   const { id } = useParams();
   const editing = !!id;
   const nav = useNavigate();
+  const location = useLocation();
+  const holidayName = location.state?.holidayName as string | undefined;
   const qc = useQueryClient();
 
   const { data: meta } = useQuery({ queryKey: ['admin-meta'], queryFn: adminMetaApi.get });
@@ -28,8 +30,20 @@ export function NewsFormPage() {
         publish_at: existing.publish_at ? existing.publish_at.slice(0, 16) : '',
       });
       setImageUrl(existing.image);
+    } else if (holidayName) {
+      setForm(f => ({ ...f, title: `Привітання: ${holidayName}` }));
+      const generateDraft = async () => {
+        try {
+          const res = await adminAiApi.generate(`Напиши красиве привітання для батьків та дітей до свята: ${holidayName}`, 'news', 'warm');
+          setForm(f => ({ ...f, content: res.text }));
+          toast.success('ШІ успішно підготував чернетку до свята!');
+        } catch (e) {
+          toast.error('Не вдалося згенерувати чернетку ШІ');
+        }
+      };
+      generateDraft();
     }
-  }, [existing]);
+  }, [existing, holidayName]);
 
   const set = (k: string, v: unknown) => setForm(f => ({ ...f, [k]: v }) as typeof form);
 
