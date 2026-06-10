@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { adminDailyMenuApi, adminMenuTemplatesApi } from '../lib/adminApi';
+import { adminDailyMenuApi, adminMenuTemplatesApi, adminAiApi } from '../lib/adminApi';
 import { MEALS, localDate, pyWeekday } from '../lib/menuMeals';
 import { Field, inputCls, Toggle, FormHeader, FormActions } from '../components/FormControls';
 
@@ -20,6 +20,7 @@ export function DailyMenuFormPage() {
 
   const [form, setForm] = useState({ ...BLANK });
   const [saving, setSaving] = useState(false);
+  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     if (existing) {
@@ -45,6 +46,30 @@ export function DailyMenuFormPage() {
       note: t.note || f.note,
     }) as typeof form);
     toast.success('Заповнено з шаблону тижня');
+  };
+
+  const generateDietAi = async () => {
+    const mealsText = MEALS.map(m => {
+      const val = form[m.key as keyof typeof form] as string;
+      return val.trim() ? `${m.label}: ${val}` : '';
+    }).filter(Boolean).join('. ');
+
+    if (!mealsText) {
+      toast.error('Спочатку заповніть принаймні один прийом їжі');
+      return;
+    }
+
+    setGenerating(true);
+    try {
+      const brief = `Меню на сьогодні: ${mealsText}`;
+      const res = await adminAiApi.generate(brief, 'diet', 'warm');
+      set('note', res.text.slice(0, 300));
+      toast.success('ШІ успішно згенерував опис раціону');
+    } catch (e) {
+      toast.error('Не вдалося згенерувати опис ШІ');
+    } finally {
+      setGenerating(false);
+    }
   };
 
   const save = async () => {
@@ -91,9 +116,19 @@ export function DailyMenuFormPage() {
           ))}
         </div>
 
-        <Field label="Примітка дня" hint="Напр. «Святкове меню до Дня матері» або позначення алергенів">
-          <input className={inputCls} value={form.note} onChange={e => set('note', e.target.value)} />
-        </Field>
+        <div className="flex flex-col gap-2">
+          <Field label="Примітка дня" hint="Напр. «Святкове меню до Дня матері» або позначення алергенів">
+            <input className={inputCls} value={form.note} onChange={e => set('note', e.target.value)} maxLength={300} />
+          </Field>
+          <button 
+            type="button" 
+            onClick={generateDietAi}
+            disabled={generating}
+            className="self-start text-sm inline-flex items-center gap-1.5 text-purple-600 hover:text-purple-700 font-bold px-3 py-1.5 bg-purple-50 hover:bg-purple-100 dark:text-purple-400 dark:bg-purple-900/30 dark:hover:bg-purple-900/50 rounded-lg transition-colors disabled:opacity-50"
+          >
+            <Wand2 size={16} /> {generating ? 'Генерується...' : 'Згенерувати опис ШІ'}
+          </button>
+        </div>
 
         <Toggle checked={form.is_published} onChange={v => set('is_published', v)} label="Опубліковано (показується на сайті)" />
 
