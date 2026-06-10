@@ -1438,8 +1438,6 @@ class AdminChatLogViewSet(viewsets.ReadOnlyModelViewSet):
             return Response({'report': report})
         except ai.AIError as e:
             return Response({'detail': f'Помилка ШІ: {e}'}, status=502)
-\ n @ a p i _ v i e w ( [ ' G E T ' ] ) \ n @ a u t h e n t i c a t i o n _ c l a s s e s ( [ E x p i r i n g T o k e n A u t h e n t i c a t i o n ] ) \ n @ p e r m i s s i o n _ c l a s s e s ( [ I s A d m i n U s e r ] ) \ n d e f   g e t _ u p c o m i n g _ h o l i d a y _ a p i ( r e q u e s t ) : \ n         f r o m   . h o l i d a y s   i m p o r t   g e t _ u p c o m i n g _ h o l i d a y \ n         h o l i d a y   =   g e t _ u p c o m i n g _ h o l i d a y ( d a y s _ a h e a d = 1 4 ) \ n         r e t u r n   R e s p o n s e ( { ' h o l i d a y ' :   h o l i d a y } ) \ n  
- 
 
 @api_view(['GET'])
 @authentication_classes([ExpiringTokenAuthentication])
@@ -1448,4 +1446,3 @@ def admin_upcoming_holiday(request):
     from .holidays import get_upcoming_holiday
     holiday = get_upcoming_holiday(days_ahead=14)
     return Response(holiday)
-
