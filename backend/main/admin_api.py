@@ -1394,6 +1394,10 @@ class AdminChatLogSerializer(serializers.ModelSerializer):
         model = ChatLog
         fields = ['id', 'question', 'sources_found', 'created_at']
 
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import never_cache
+
+@method_decorator(never_cache, name='dispatch')
 class AdminChatLogViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Доступ до історії чатів для керівництва.
