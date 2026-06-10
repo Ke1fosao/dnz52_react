@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Save, Loader2, Info, CalendarRange } from 'lucide-react';
+import { Save, Loader2, Info, CalendarRange, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { adminMenuTemplatesApi } from '../lib/adminApi';
+import { adminMenuTemplatesApi, adminAiApi } from '../lib/adminApi';
 import { MEALS } from '../lib/menuMeals';
 import { Toggle } from '../components/FormControls';
 import { ListSkeleton } from '../components/AdminUI';
@@ -17,11 +17,37 @@ export function MenuTemplatesPage({ embedded = false }: { embedded?: boolean } =
   const { data, isLoading } = useQuery({ queryKey: ['admin-menu-templates'], queryFn: adminMenuTemplatesApi.get });
   const [rows, setRows] = useState<AdminMenuTemplate[]>([]);
   const [saving, setSaving] = useState(false);
+  const [generatingFor, setGeneratingFor] = useState<number | null>(null);
 
   useEffect(() => { if (data) setRows(data); }, [data]);
 
   const setCell = (wd: number, key: string, value: unknown) =>
     setRows(rs => rs.map(r => (r.weekday === wd ? { ...r, [key]: value } : r)));
+
+  const generateDietAi = async (weekday: number, r: AdminMenuTemplate) => {
+    const mealsText = MEALS.map(m => {
+      const val = r[m.key as keyof typeof r] as string;
+      return val.trim() ? `${m.label}: ${val}` : '';
+    }).filter(Boolean).join('. ');
+
+    if (!mealsText) {
+      toast.error('Спочатку заповніть принаймні один прийом їжі');
+      return;
+    }
+
+    setGeneratingFor(weekday);
+    try {
+      const brief = `Меню на сьогодні: ${mealsText}`;
+      const res = await adminAiApi.generate(brief, 'diet', 'warm');
+      const plainText = res.text.replace(/<[^>]*>?/gm, '');
+      setCell(weekday, 'note', plainText.slice(0, 300));
+      toast.success('ШІ успішно згенерував опис раціону');
+    } catch (e) {
+      toast.error('Не вдалося згенерувати опис ШІ');
+    } finally {
+      setGeneratingFor(null);
+    }
+  };
 
   const save = async () => {
     setSaving(true);
@@ -83,9 +109,19 @@ export function MenuTemplatesPage({ embedded = false }: { embedded?: boolean } =
                     <textarea rows={2} className={mealCls} value={r[meal.key]} onChange={e => setCell(r.weekday, meal.key, e.target.value)} placeholder="—" />
                   </div>
                 ))}
-                <div>
-                  <label className="block text-xs font-bold mb-1 text-gray-600 dark:text-slate-400">📝 Примітка</label>
-                  <input className={mealCls} value={r.note} onChange={e => setCell(r.weekday, 'note', e.target.value)} placeholder="Необов'язково" />
+                <div className="flex flex-col gap-2">
+                  <div>
+                    <label className="block text-xs font-bold mb-1 text-gray-600 dark:text-slate-400">📝 Примітка</label>
+                    <input className={mealCls} value={r.note} onChange={e => setCell(r.weekday, 'note', e.target.value)} placeholder="Необов'язково" maxLength={300} />
+                  </div>
+                  <button 
+                    type="button" 
+                    onClick={() => generateDietAi(r.weekday, r)}
+                    disabled={generatingFor === r.weekday}
+                    className="self-start text-xs inline-flex items-center gap-1.5 text-purple-600 hover:text-purple-700 font-bold px-3 py-1.5 bg-purple-50 hover:bg-purple-100 dark:text-purple-400 dark:bg-purple-900/30 dark:hover:bg-purple-900/50 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    <Wand2 size={14} /> {generatingFor === r.weekday ? 'Генерується...' : 'Згенерувати опис ШІ'}
+                  </button>
                 </div>
               </div>
             ))}
