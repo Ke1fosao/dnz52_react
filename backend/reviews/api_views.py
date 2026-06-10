@@ -53,23 +53,34 @@ class ReviewViewSet(mixins.CreateModelMixin,
 
         cache.set(cache_key, True, timeout=60)
 
-        # Авто-модерація ШІ (якщо увімкнено в адмінці й заданий ключ).
-        # Fail-safe: будь-яка помилка ШІ → відгук лишається на ручній модерації.
-        published = False
+        # Авто-модерація ШІ у фоновому потоці.
         try:
             from main.models import AISettings
             from main import ai
             if AISettings.get_solo().auto_moderate_reviews and ai.is_configured():
-                safe, reason = ai.moderate_review(review.text)
-                review.ai_moderation = (reason or ('коректний' if safe else 'підозрілий вміст'))[:500]
-                review.is_approved = bool(safe)
-                published = bool(safe)
-                review.save(update_fields=['is_approved', 'ai_moderation'])
-        except Exception as e:
-            logger.warning('AI-модерація недоступна, відгук на ручну перевірку: %s', e)
+                import threading
+                from django.db import connection
+                
+                def _moderate_task(review_id):
+                    try:
+                        from reviews.models import Review
+                        review = Review.objects.get(id=review_id)
+                        if review.ai_moderation:
+                            return # Вже перевірено
+                        safe, reason = ai.moderate_review(review.text)
+                        review.ai_moderation = (reason or ('коректний' if safe else 'підозрілий вміст'))[:500]
+                        review.is_approved = bool(safe)
+                        review.save(update_fields=['is_approved', 'ai_moderation'])
+                    except Exception as e:
+                        logger.warning('Помилка фонової AI-модерації: %s', e)
+                    finally:
+                        connection.close()
 
-        msg = ('Дякуємо! Ваш відгук опубліковано.' if published
-               else 'Дякуємо! Ваш відгук відправлено на модерацію.')
+                threading.Thread(target=_moderate_task, args=(review.id,), daemon=True).start()
+        except Exception as e:
+            logger.warning('Не вдалося запустити фонову модерацію: %s', e)
+
+        msg = 'Дякуємо! Ваш відгук перевіряється.'
         return Response({'detail': msg}, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['post'])
