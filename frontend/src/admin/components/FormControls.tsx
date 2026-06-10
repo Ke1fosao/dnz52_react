@@ -48,6 +48,7 @@ export function MarkdownEditor({ value, onChange, rows = 10, aiKind }: {
   const [preview, setPreview] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
   const [brief, setBrief] = useState('');
+  const [tone, setTone] = useState<'official' | 'warm' | 'dynamic'>('warm');
   const [aiBusy, setAiBusy] = useState(false);
 
   const openAi = () => { setBrief(value && value.length < 280 ? value : ''); setAiOpen(true); };
@@ -55,7 +56,7 @@ export function MarkdownEditor({ value, onChange, rows = 10, aiKind }: {
     if (brief.trim().length < 3) { toast.error('Опишіть коротко, про що текст'); return; }
     setAiBusy(true);
     try {
-      const r = await adminAiApi.generate(brief.trim(), aiKind || 'generic');
+      const r = await adminAiApi.generate(brief.trim(), aiKind || 'generic', tone);
       onChange(r.text);
       setAiOpen(false); setPreview(true);
       toast.success('Готово! Перевірте і за потреби відредагуйте.');
@@ -84,6 +85,18 @@ export function MarkdownEditor({ value, onChange, rows = 10, aiKind }: {
           <textarea value={brief} onChange={e => setBrief(e.target.value)} rows={2} autoFocus
             placeholder="Напр.: свято осені, діти співали й танцювали, батьки були в захваті"
             className="w-full px-3 py-2 rounded-xl bg-white/80 dark:bg-slate-800/80 border border-violet-200 dark:border-violet-800 outline-none text-sm text-gray-900 dark:text-white resize-y" />
+          
+          <div className="flex flex-wrap items-center gap-2 mb-2 mt-2">
+            <span className="text-xs font-bold text-violet-700 dark:text-violet-300">Стиль тексту:</span>
+            {(['official', 'warm', 'dynamic'] as const).map(t => (
+              <button key={t} type="button" onClick={() => setTone(t)}
+                className={cn('text-xs font-bold px-3 py-1.5 rounded-lg border transition-colors',
+                  tone === t ? 'bg-violet-600 text-white border-violet-600' : 'bg-white/50 dark:bg-slate-800/50 text-gray-600 dark:text-slate-300 border-violet-200 dark:border-violet-800 hover:bg-violet-100 dark:hover:bg-violet-900/40')}>
+                {t === 'official' ? '🎩 Офіційно' : t === 'warm' ? '🤗 Дуже тепло' : '🏃‍♂️ Коротко і жваво'}
+              </button>
+            ))}
+          </div>
+
           <div className="flex gap-2">
             <button type="button" onClick={runAi} disabled={aiBusy}
               className="inline-flex items-center gap-1.5 bg-violet-600 hover:bg-violet-700 disabled:opacity-60 text-white font-bold text-sm px-4 py-2 rounded-xl transition-colors">

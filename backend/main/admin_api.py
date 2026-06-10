@@ -1374,12 +1374,14 @@ def admin_ai_generate(request):
     from . import ai
     brief = (request.data.get('brief') or '').strip()
     kind = (request.data.get('kind') or 'generic').strip()
+    tone = (request.data.get('tone') or 'warm').strip()
+    
     if len(brief) < 3:
         return Response({'detail': 'Опишіть коротко, про що має бути текст.'}, status=400)
     if not ai.is_configured():
         return Response({'detail': 'ШІ не налаштовано (немає ключа в .env).'}, status=503)
     try:
-        text = ai.generate_text(brief, kind)
+        text = ai.generate_text(brief, kind, tone)
     except ai.AIError as e:
         return Response({'detail': f'ШІ зараз недоступний: {e}'}, status=502)
     return Response({'text': text})

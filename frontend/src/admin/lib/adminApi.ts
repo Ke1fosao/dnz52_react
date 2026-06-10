@@ -215,7 +215,7 @@ export const adminPushApi = {
 export const adminAiApi = {
   settings: () => http.get<AdminAISettings>('/ai-settings/').then(r => r.data),
   updateSettings: (data: Partial<AdminAISettings>) => http.patch<AdminAISettings>('/ai-settings/', data).then(r => r.data),
-  generate: (brief: string, kind: string) => http.post<{ text: string }>('/ai-generate/', { brief, kind }).then(r => r.data),
+  generate: (brief: string, kind: string, tone: string = 'warm') => http.post<{ text: string }>('/ai-generate/', { brief, kind, tone }).then(r => r.data),
 };
 
 // Типи подій (редагований довідник)
