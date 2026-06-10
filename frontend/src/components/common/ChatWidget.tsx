@@ -286,7 +286,7 @@ export function ChatWidget() {
                       : 'bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-slate-100 rounded-bl-md',
                   )}>
                     {msg.role === 'assistant'
-                      ? <RichContent content={msg.content} className="prose-sm [&_p]:my-1 [&_ul]:my-1.5 [&_li]:my-0.5" />
+                      ? <RichContent content={msg.content} className="prose-sm whitespace-pre-wrap [&_p]:my-1 [&_ul]:my-1.5 [&_li]:my-0.5" />
                       : <span className="whitespace-pre-wrap">{msg.content}</span>}
 
                     {!!msg.sources?.length && (

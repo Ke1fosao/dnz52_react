@@ -255,7 +255,7 @@ def answer_question_stream(question: str, context: str = '', history=None):
         return
 
     model = _models()[0]
-    url = f'https://generativelanguage.googleapis.com/v1beta/models/{model}:streamGenerateContent?alt=sse'
+    url = f'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent'
     body = {
         'contents': [{'parts': [{'text': prompt}]}],
         'generationConfig': {'maxOutputTokens': 700, 'temperature': 0.4},
@@ -263,28 +263,19 @@ def answer_question_stream(question: str, context: str = '', history=None):
     }
 
     try:
-        with requests.post(url, params={'key': key}, json=body, stream=True, timeout=30) as r:
-            if r.status_code != 200:
-                logger.error('Gemini stream error: %s %s', r.status_code, r.text[:200])
-                yield 'Виникла помилка при генерації відповіді.'
-                return
-            for line in r.iter_lines():
-                if line:
-                    line = line.decode('utf-8')
-                    if line.startswith('data: '):
-                        data_str = line[6:]
-                        if data_str.strip() == '[DONE]':
-                            continue
-                        try:
-                            data = json.loads(data_str)
-                            cands = data.get('candidates', [])
-                            if cands:
-                                parts = cands[0].get('content', {}).get('parts', [])
-                                chunk = ''.join(p.get('text', '') for p in parts)
-                                if chunk:
-                                    yield chunk
-                        except json.JSONDecodeError:
-                            continue
+        r = requests.post(url, params={'key': key}, json=body, timeout=30)
+        if r.status_code != 200:
+            logger.error('Gemini error: %s %s', r.status_code, r.text[:200])
+            yield 'Виникла помилка при генерації відповіді.'
+            return
+            
+        data = r.json()
+        cands = data.get('candidates', [])
+        if cands:
+            parts = cands[0].get('content', {}).get('parts', [])
+            chunk = ''.join(p.get('text', '') for p in parts)
+            if chunk:
+                yield chunk
     except Exception as e:
         logger.error('Gemini Stream Exception: %s', e)
         yield '\n[Звʼязок перервано]'
