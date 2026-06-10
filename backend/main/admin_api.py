@@ -1401,6 +1401,7 @@ class AdminChatLogViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = ChatLog.objects.all().order_by('-created_at')
     serializer_class = AdminChatLogSerializer
+    pagination_class = None
     authentication_classes = [ExpiringTokenAuthentication]
     permission_classes = [IsAdminUser]
 

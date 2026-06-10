@@ -302,7 +302,11 @@ def analyze_chat_logs(questions_data: list, hide_answered: bool = False) -> str:
     
     data_str = "\n".join(data_str_lines)
 
+    from django.utils.timezone import now
+    current_date = now().strftime('%d %B %Y')
+
     prompt = (
+        f"Сьогоднішня дата: {current_date}\n\n"
         "Ось лог запитань батьків до чат-бота за обраний період:\n"
         "```\n"
         f"{data_str}\n"
