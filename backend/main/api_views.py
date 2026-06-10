@@ -652,8 +652,14 @@ def chat(request):
     history = history if isinstance(history, list) else None
     context, sources = _chat_context(question)
     
-    from main.models import ChatLog
-    ChatLog.objects.create(question=question, sources_found=bool(sources))
-    
     answer = ai.answer_question(question, context, history=history)
+    
+    sources_found = True
+    if '[NOT_FOUND]' in answer:
+        sources_found = False
+        answer = answer.replace('[NOT_FOUND]', '').strip()
+        
+    from main.models import ChatLog
+    ChatLog.objects.create(question=question, sources_found=sources_found)
+    
     return Response({'answer': answer, 'sources': sources})
