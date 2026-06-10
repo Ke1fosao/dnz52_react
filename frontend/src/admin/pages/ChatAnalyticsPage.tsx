@@ -4,6 +4,7 @@ import { adminChatLogsApi } from '../lib/adminApi';
 import { toast } from 'sonner';
 import { LineChart, Sparkles, AlertCircle, Bot, Loader2, Calendar, History, ArrowUpDown } from 'lucide-react';
 import { RichContent } from '@/components/common/RichContent';
+import { Toggle } from '../components/FormControls';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 
@@ -83,20 +84,16 @@ export function ChatAnalyticsPage() {
             </div>
 
             <div className="flex-1 space-y-3">
-              <label className="text-sm font-bold text-gray-700 dark:text-slate-300 flex items-center gap-2">
+              <label className="text-sm font-bold text-gray-700 dark:text-slate-300 flex items-center gap-2 mb-1">
                 <AlertCircle size={16} /> Фільтрація
               </label>
-              <label className="flex items-center gap-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 cursor-pointer select-none group hover:border-purple-300 transition-colors">
-                <input
-                  type="checkbox"
+              <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 hover:border-purple-300 dark:hover:border-purple-700 transition-colors flex items-center">
+                <Toggle
                   checked={hideAnswered}
-                  onChange={e => setHideAnswered(e.target.checked)}
-                  className="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-600 focus:ring-offset-0 transition-all cursor-pointer"
+                  onChange={setHideAnswered}
+                  label="Приховати питання, на які вже є відповіді"
                 />
-                <span className="font-medium text-gray-700 dark:text-slate-300 group-hover:text-purple-700 dark:group-hover:text-purple-300 transition-colors">
-                  Приховати питання, на які вже є відповіді
-                </span>
-              </label>
+              </div>
             </div>
           </div>
 
