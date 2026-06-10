@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { adminChatLogsApi } from '../lib/adminApi';
 import { toast } from 'sonner';
-import { LineChart, Sparkles, AlertCircle, Bot, Loader2, Calendar, History, ArrowUpDown } from 'lucide-react';
+import { LineChart, Sparkles, AlertCircle, Bot, Loader2, Calendar, History, ArrowUpDown, Download } from 'lucide-react';
+import html2pdf from 'html2pdf.js';
 import { RichContent } from '@/components/common/RichContent';
 import { Toggle } from '../components/FormControls';
 import { cn } from '@/lib/utils';
@@ -11,6 +12,8 @@ import { Link } from 'react-router-dom';
 export function ChatAnalyticsPage() {
   const [days, setDays] = useState<number>(7);
   const [hideAnswered, setHideAnswered] = useState<boolean>(true);
+  const [isExporting, setIsExporting] = useState<boolean>(false);
+  const reportRef = useRef<HTMLDivElement>(null);
   
   const [sortBy, setSortBy] = useState<'date' | 'status'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
@@ -44,6 +47,29 @@ export function ChatAnalyticsPage() {
     } else {
       setSortBy(field);
       setSortOrder('desc');
+    }
+  };
+
+  const handleExportPDF = async () => {
+    if (!reportRef.current) return;
+    setIsExporting(true);
+    
+    const opt = {
+      margin:       15,
+      filename:     'Звіт_Аналітики_ШІ.pdf',
+      image:        { type: 'jpeg' as const, quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true },
+      jsPDF:        { unit: 'mm' as const, format: 'a4', orientation: 'portrait' as const }
+    };
+
+    try {
+      await html2pdf().set(opt).from(reportRef.current).save();
+      toast.success('PDF успішно завантажено!');
+    } catch (err) {
+      toast.error('Не вдалося згенерувати PDF');
+      console.error(err);
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -113,16 +139,30 @@ export function ChatAnalyticsPage() {
 
         {analyzeMutation.data && (
           <div className="bg-gradient-to-br from-white to-purple-50 dark:from-slate-800 dark:to-slate-800/80 rounded-2xl p-6 md:p-8 border border-purple-100 dark:border-purple-900/50 shadow-xl shadow-purple-500/5 mb-10">
-            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-purple-200/50 dark:border-slate-700">
-              <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 grid place-items-center">
-                <Bot size={24} />
+            <div className="flex items-center justify-between gap-3 mb-6 pb-4 border-b border-purple-200/50 dark:border-slate-700">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 grid place-items-center">
+                  <Bot size={24} />
+                </div>
+                <div>
+                  <h3 className="font-black text-lg text-gray-900 dark:text-white">Звіт від ШІ-аналітика</h3>
+                  <p className="text-xs font-bold text-purple-600 dark:text-purple-400">Сгенеровано автоматично</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-black text-lg text-gray-900 dark:text-white">Звіт від ШІ-аналітика</h3>
-                <p className="text-xs font-bold text-purple-600 dark:text-purple-400">Сгенеровано автоматично</p>
-              </div>
+              <button 
+                onClick={handleExportPDF}
+                disabled={isExporting}
+                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-700 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800 rounded-xl font-bold hover:bg-purple-50 dark:hover:bg-slate-600 transition-colors shadow-sm disabled:opacity-50"
+              >
+                {isExporting ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
+                <span className="hidden sm:inline">Експорт у PDF</span>
+              </button>
             </div>
-            <div className="prose prose-purple dark:prose-invert max-w-none">
+            <div ref={reportRef} className="prose prose-purple dark:prose-invert max-w-none p-6 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-purple-50 dark:border-slate-700">
+              <div className="mb-4 pb-4 border-b border-gray-100 dark:border-slate-800">
+                <h2 className="text-2xl font-black text-gray-900 dark:text-white m-0">Звіт: Аналітика запитів до ШІ</h2>
+                <p className="text-sm text-gray-500 mt-1">Згенеровано: {new Date().toLocaleDateString('uk-UA')} {new Date().toLocaleTimeString('uk-UA')}</p>
+              </div>
               <RichContent content={analyzeMutation.data.report} />
             </div>
           </div>
