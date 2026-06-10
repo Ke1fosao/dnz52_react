@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { adminChatLogsApi } from '../lib/adminApi';
 import { toast } from 'sonner';
-import { LineChart, Sparkles, AlertCircle, Bot, Loader2, Calendar, History } from 'lucide-react';
+import { LineChart, Sparkles, AlertCircle, Bot, Loader2, Calendar, History, ArrowUpDown } from 'lucide-react';
 import { RichContent } from '@/components/common/RichContent';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
@@ -10,6 +10,9 @@ import { Link } from 'react-router-dom';
 export function ChatAnalyticsPage() {
   const [days, setDays] = useState<number>(7);
   const [hideAnswered, setHideAnswered] = useState<boolean>(true);
+  
+  const [sortBy, setSortBy] = useState<'date' | 'status'>('date');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   const { data: logs, isLoading: loadingLogs } = useQuery({
     queryKey: ['admin-chat-logs'],
@@ -21,6 +24,27 @@ export function ChatAnalyticsPage() {
     onSuccess: () => toast.success('Аналіз успішно завершено!'),
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Помилка при генерації звіту.'),
   });
+
+  const sortedLogs = [...(logs || [])].sort((a, b) => {
+    if (sortBy === 'status') {
+      const valA = a.sources_found ? 1 : 0;
+      const valB = b.sources_found ? 1 : 0;
+      return sortOrder === 'asc' ? valA - valB : valB - valA;
+    } else {
+      const timeA = new Date(a.created_at).getTime();
+      const timeB = new Date(b.created_at).getTime();
+      return sortOrder === 'asc' ? timeA - timeB : timeB - timeA;
+    }
+  });
+
+  const toggleSort = (field: 'date' | 'status') => {
+    if (sortBy === field) {
+      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('desc');
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -50,6 +74,7 @@ export function ChatAnalyticsPage() {
                 value={days}
                 onChange={e => setDays(Number(e.target.value))}
               >
+                <option value={1}>Останні 24 години</option>
                 <option value={7}>Останні 7 днів</option>
                 <option value={14}>Останні 14 днів</option>
                 <option value={30}>Останній місяць</option>
@@ -122,13 +147,23 @@ export function ChatAnalyticsPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-slate-700 text-sm font-black text-gray-400 dark:text-slate-500 uppercase tracking-wider">
-                  <th className="pb-4 pl-4 font-bold">Дата</th>
+                  <th 
+                    className="pb-4 pl-4 font-bold cursor-pointer hover:text-purple-500 transition-colors"
+                    onClick={() => toggleSort('date')}
+                  >
+                    <div className="flex items-center gap-1">Дата <ArrowUpDown size={14} /></div>
+                  </th>
                   <th className="pb-4 font-bold">Запитання</th>
-                  <th className="pb-4 pr-4 font-bold text-center">Статус</th>
+                  <th 
+                    className="pb-4 pr-4 font-bold text-center cursor-pointer hover:text-purple-500 transition-colors"
+                    onClick={() => toggleSort('status')}
+                  >
+                    <div className="flex items-center justify-center gap-1">Статус <ArrowUpDown size={14} /></div>
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-slate-700/50">
-                {logs.slice(0, 50).map(log => (
+                {sortedLogs.slice(0, 50).map(log => (
                   <tr key={log.id} className="hover:bg-gray-50/50 dark:hover:bg-slate-800/50 transition-colors">
                     <td className="py-4 pl-4 text-sm font-medium text-gray-500 dark:text-slate-400 whitespace-nowrap">
                       {new Date(log.created_at).toLocaleString('uk-UA', {
