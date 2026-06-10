@@ -182,7 +182,15 @@ def generate_text(brief: str, kind: str = 'generic', tone: str = 'warm') -> str:
     label, guide = _KIND_GUIDE.get(kind, _KIND_GUIDE['generic'])
     tone_instruction = _TONE_GUIDE.get(tone, _TONE_GUIDE['warm'])
     
-    system_prompt = _GEN_SYSTEM.format(tone_instruction=tone_instruction)
+    if kind == 'diet':
+        system_prompt = (
+            'Ти — копірайтер дитячого садка ЗДО №52. Пишеш українською.\n'
+            f'СТРОГА ВКАЗІВКА ЩОДО ТОНУ: {tone_instruction}\n\n'
+            'ФОРМАТ — лише звичайний текст, ЖОДНИХ HTML-тегів, без markdown. '
+            'Пиши одним коротким абзацом.'
+        )
+    else:
+        system_prompt = _GEN_SYSTEM.format(tone_instruction=tone_instruction)
     prompt = f'Напиши {label}. {guide}\n\nКоротка вказівка від працівника (про що текст):\n"""{brief}"""'
     out = _generate(prompt, system=system_prompt, max_tokens=2048, temperature=0.85).strip()
     # прибрати можливі markdown-огорожі ```html ... ```

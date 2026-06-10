@@ -63,7 +63,8 @@ export function DailyMenuFormPage() {
     try {
       const brief = `Меню на сьогодні: ${mealsText}`;
       const res = await adminAiApi.generate(brief, 'diet', 'warm');
-      set('note', res.text.slice(0, 300));
+      const plainText = res.text.replace(/<[^>]*>?/gm, '');
+      set('note', plainText.slice(0, 300));
       toast.success('ШІ успішно згенерував опис раціону');
     } catch (e) {
       toast.error('Не вдалося згенерувати опис ШІ');
