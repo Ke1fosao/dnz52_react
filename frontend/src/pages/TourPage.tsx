@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { MapPin, Compass } from 'lucide-react';
+import { MapPin, Compass, Plus, Minus, Maximize } from 'lucide-react';
 import { Pannellum } from 'pannellum-react';
 import { Seo } from '@/components/common/Seo';
 import { PageHero } from '@/components/common/PageHero';
@@ -24,6 +24,17 @@ export function TourPage() {
   });
   const [index, setIndex] = useState(0);
   const [loadingPano, setLoadingPano] = useState(true);
+  const panoRef = useRef<any>(null);
+
+  const handleZoom = (delta: number) => {
+    const viewer = panoRef.current?.getViewer();
+    if (viewer) viewer.setHfov(viewer.getHfov() + delta);
+  };
+
+  const handleFullscreen = () => {
+    const viewer = panoRef.current?.getViewer();
+    if (viewer) viewer.toggleFullscreen();
+  };
 
   const stops = data || [];
   const total = stops.length;
@@ -85,6 +96,7 @@ export function TourPage() {
               )}
               
               <Pannellum
+                ref={panoRef}
                 width="100%"
                 height="100%"
                 image={stop.image}
@@ -92,13 +104,27 @@ export function TourPage() {
                 yaw={0}
                 hfov={100}
                 autoLoad
-                showZoomCtrl={true}
-                showFullscreenCtrl={true}
-                compass={true}
-                title={stop.title}
-                author="ЗДО №52"
+                showZoomCtrl={false}
+                showFullscreenCtrl={false}
+                compass={false}
                 onLoad={() => setLoadingPano(false)}
               />
+              
+              {/* Кастомні кнопки управління */}
+              <div className="absolute top-4 left-4 flex flex-col gap-2 z-20">
+                <div className="flex flex-col bg-black/40 backdrop-blur-md rounded-xl border border-white/20 overflow-hidden shadow-lg">
+                  <button onClick={() => handleZoom(-15)} className="p-2 md:p-3 text-white hover:bg-white/20 transition-colors" aria-label="Збільшити">
+                    <Plus size={20} strokeWidth={2.5} />
+                  </button>
+                  <div className="h-[1px] w-full bg-white/20" />
+                  <button onClick={() => handleZoom(15)} className="p-2 md:p-3 text-white hover:bg-white/20 transition-colors" aria-label="Зменшити">
+                    <Minus size={20} strokeWidth={2.5} />
+                  </button>
+                </div>
+                <button onClick={handleFullscreen} className="p-2 md:p-3 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 text-white hover:bg-white/20 transition-colors shadow-lg" aria-label="На весь екран">
+                  <Maximize size={20} strokeWidth={2.5} />
+                </button>
+              </div>
             </div>
             
             {/* Затемнення + підпис у старому стилі */}
