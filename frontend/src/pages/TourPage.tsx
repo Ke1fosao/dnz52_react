@@ -74,9 +74,13 @@ export function TourPage() {
           <div className="relative rounded-[2rem] md:rounded-[2.5rem] overflow-hidden shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] bg-slate-900 ring-1 ring-slate-900/5 dark:ring-white/10 group">
             <div className="relative w-full h-[65vh] min-h-[450px]">
               {loadingPano && (
-                <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-gray-900/80 backdrop-blur-sm transition-opacity duration-500">
-                  <div className="w-12 h-12 border-4 border-sky-400 border-t-transparent rounded-full animate-spin mb-4 shadow-lg"></div>
-                  <span className="text-white text-sm font-bold tracking-widest uppercase drop-shadow-md">Завантаження...</span>
+                <div className="absolute inset-0 z-50 flex flex-col items-center justify-center overflow-hidden transition-opacity duration-500 bg-gray-900">
+                  <img src={stop.image} alt="" className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-60 transition-all duration-700" />
+                  <div className="absolute inset-0 bg-black/30" />
+                  <div className="relative z-10 flex flex-col items-center">
+                    <div className="w-12 h-12 border-4 border-sky-400 border-t-transparent rounded-full animate-spin mb-4 shadow-lg"></div>
+                    <span className="text-white text-sm font-bold tracking-widest uppercase drop-shadow-md">Завантаження...</span>
+                  </div>
                 </div>
               )}
               
