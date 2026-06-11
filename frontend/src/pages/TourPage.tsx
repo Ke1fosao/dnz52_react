@@ -79,14 +79,15 @@ export function TourPage() {
               />
             </div>
             
-            {/* Плаваюча картка з описом (Glassmorphism) */}
-            <div className="absolute bottom-4 left-4 right-4 md:bottom-8 md:left-8 md:right-auto md:max-w-md p-5 md:p-6 bg-white/20 dark:bg-black/40 backdrop-blur-xl border border-white/30 dark:border-white/10 rounded-2xl md:rounded-3xl shadow-2xl pointer-events-none z-10 transition-all duration-500 transform translate-y-0 opacity-100 group-hover:translate-y-[-4px]">
-              <div className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest bg-black/30 dark:bg-black/50 text-white px-3 py-1.5 rounded-full mb-3 backdrop-blur-md shadow-inner">
-                <MapPin size={14} className="text-sky-300" /> Зупинка {index + 1} з {total}
+            {/* Затемнення + підпис у старому стилі */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent pointer-events-none z-10" />
+            <div className="absolute inset-x-0 bottom-0 p-6 md:p-8 text-white pointer-events-none z-20">
+              <div className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider bg-white/20 backdrop-blur-md px-3 py-1 rounded-full mb-3">
+                <MapPin size={13} /> Зупинка {index + 1} з {total}
               </div>
-              <h2 className="text-2xl md:text-3xl font-nunito font-black text-white drop-shadow-lg mb-2 leading-tight">{stop.title}</h2>
+              <h2 className="text-2xl md:text-4xl font-black drop-shadow-lg mb-2">{stop.title}</h2>
               {stop.description && (
-                <p className="text-sm md:text-base text-gray-50 drop-shadow-md leading-relaxed line-clamp-3 font-medium">
+                <p className="text-sm md:text-base text-gray-100 max-w-2xl drop-shadow leading-relaxed whitespace-pre-line line-clamp-4">
                   {stop.description}
                 </p>
               )}
