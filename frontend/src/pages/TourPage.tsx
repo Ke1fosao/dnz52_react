@@ -118,7 +118,7 @@ export function TourPage() {
 
           {/* Мініатюри-навігація */}
           {total > 1 && (
-            <div className="flex gap-4 mt-8 overflow-x-auto pb-4 snap-x hide-scrollbar">
+            <div className="flex gap-4 mt-6 overflow-x-auto pt-2 px-2 pb-4 snap-x hide-scrollbar">
               {stops.map((s, i) => (
                 <button key={s.id} onClick={() => jump(i)} aria-label={s.title}
                   className={cn(
