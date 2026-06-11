@@ -23,16 +23,26 @@ export function TourPage() {
     queryFn: () => api.get<TourStop[]>('/tour/').then(r => r.data),
   });
   const [index, setIndex] = useState(0);
+  const [loadingPano, setLoadingPano] = useState(true);
 
   const stops = data || [];
   const total = stops.length;
 
-  const jump = (i: number) => { setIndex(i); };
+  const jump = (i: number) => { 
+    if (i !== index) setLoadingPano(true);
+    setIndex(i); 
+  };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') setIndex(i => (i - 1 + total) % total);
-      else if (e.key === 'ArrowRight') setIndex(i => (i + 1) % total);
+      if (e.key === 'ArrowLeft') {
+        setLoadingPano(true);
+        setIndex(i => (i - 1 + total) % total);
+      }
+      else if (e.key === 'ArrowRight') {
+        setLoadingPano(true);
+        setIndex(i => (i + 1) % total);
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -63,6 +73,13 @@ export function TourPage() {
           {/* Сцена Pannellum */}
           <div className="relative rounded-[2rem] md:rounded-[2.5rem] overflow-hidden shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] bg-slate-900 ring-1 ring-slate-900/5 dark:ring-white/10 group">
             <div className="relative w-full h-[65vh] min-h-[450px]">
+              {loadingPano && (
+                <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-gray-900/80 backdrop-blur-sm transition-opacity duration-500">
+                  <div className="w-12 h-12 border-4 border-sky-400 border-t-transparent rounded-full animate-spin mb-4 shadow-lg"></div>
+                  <span className="text-white text-sm font-bold tracking-widest uppercase drop-shadow-md">Завантаження...</span>
+                </div>
+              )}
+              
               <Pannellum
                 width="100%"
                 height="100%"
@@ -76,6 +93,7 @@ export function TourPage() {
                 compass={true}
                 title={stop.title}
                 author="ЗДО №52"
+                onLoad={() => setLoadingPano(false)}
               />
             </div>
             

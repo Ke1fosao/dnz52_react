@@ -524,3 +524,5 @@ html { scroll-behavior: smooth; }
 .bg-gradient-primary {
   background: linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 100%);
 }
+
+.pnlm-load-box { display: none !important; }
