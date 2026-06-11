@@ -61,8 +61,8 @@ export function TourPage() {
       ) : (
         <>
           {/* Сцена Pannellum */}
-          <div className="relative rounded-[2rem] overflow-hidden shadow-[0_24px_60px_rgba(0,0,0,0.22)] bg-gray-900 border-4 border-white/10">
-            <div className="relative w-full h-[60vh] min-h-[400px]">
+          <div className="relative rounded-[2rem] md:rounded-[2.5rem] overflow-hidden shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] bg-slate-900 ring-1 ring-slate-900/5 dark:ring-white/10 group">
+            <div className="relative w-full h-[65vh] min-h-[450px]">
               <Pannellum
                 width="100%"
                 height="100%"
@@ -76,37 +76,36 @@ export function TourPage() {
                 compass={true}
                 title={stop.title}
                 author="ЗДО №52"
-                onLoad={() => { console.log('Panorama loaded'); }}
-              >
-                {/* Custom hotspots could be added here later */}
-              </Pannellum>
+              />
             </div>
             
-            {/* Напівпрозорий блок з описом (якщо є) */}
-            {stop.description && (
-              <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/80 to-transparent pointer-events-none z-10">
-                <div className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-white mb-2 shadow-sm">
-                  <MapPin size={13} className="text-blue-400" /> Зупинка {index + 1} з {total}
-                </div>
-                <h2 className="text-xl md:text-3xl font-black text-white drop-shadow-md mb-1">{stop.title}</h2>
-                <p className="text-sm text-gray-200 drop-shadow max-w-3xl line-clamp-2">
+            {/* Плаваюча картка з описом (Glassmorphism) */}
+            <div className="absolute bottom-4 left-4 right-4 md:bottom-8 md:left-8 md:right-auto md:max-w-md p-5 md:p-6 bg-white/20 dark:bg-black/40 backdrop-blur-xl border border-white/30 dark:border-white/10 rounded-2xl md:rounded-3xl shadow-2xl pointer-events-none z-10 transition-all duration-500 transform translate-y-0 opacity-100 group-hover:translate-y-[-4px]">
+              <div className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest bg-black/30 dark:bg-black/50 text-white px-3 py-1.5 rounded-full mb-3 backdrop-blur-md shadow-inner">
+                <MapPin size={14} className="text-sky-300" /> Зупинка {index + 1} з {total}
+              </div>
+              <h2 className="text-2xl md:text-3xl font-nunito font-black text-white drop-shadow-lg mb-2 leading-tight">{stop.title}</h2>
+              {stop.description && (
+                <p className="text-sm md:text-base text-gray-50 drop-shadow-md leading-relaxed line-clamp-3 font-medium">
                   {stop.description}
                 </p>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {/* Мініатюри-навігація */}
           {total > 1 && (
-            <div className="flex gap-3 mt-6 overflow-x-auto pb-2 snap-x">
+            <div className="flex gap-4 mt-8 overflow-x-auto pb-4 snap-x hide-scrollbar">
               {stops.map((s, i) => (
                 <button key={s.id} onClick={() => jump(i)} aria-label={s.title}
                   className={cn(
-                    'relative shrink-0 w-32 h-24 rounded-2xl overflow-hidden snap-start transition-all',
-                    i === index ? 'ring-4 ring-blue-500 scale-100 shadow-lg' : 'ring-2 ring-transparent opacity-60 hover:opacity-100 hover:scale-[1.02]',
+                    'relative shrink-0 w-36 h-28 md:w-44 md:h-32 rounded-2xl md:rounded-3xl overflow-hidden snap-start transition-all duration-300 ease-out outline-none focus-visible:ring-4 focus-visible:ring-blue-500',
+                    i === index 
+                      ? 'ring-4 ring-sky-400 scale-100 shadow-xl opacity-100' 
+                      : 'ring-2 ring-transparent opacity-60 hover:opacity-100 hover:scale-[1.03] hover:shadow-lg filter grayscale-[30%] hover:grayscale-0'
                   )}>
-                  <img src={s.image} alt="" loading="lazy" className="w-full h-full object-cover" />
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent pt-6 pb-2 px-2 text-white text-xs font-bold truncate text-left shadow-sm">
+                  <img src={s.image} alt="" loading="lazy" className="w-full h-full object-cover transition-transform duration-700 ease-in-out hover:scale-110" />
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent pt-8 pb-3 px-3 text-white text-xs md:text-sm font-bold truncate text-left shadow-sm">
                     {s.title}
                   </div>
                 </button>
