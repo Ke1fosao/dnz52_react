@@ -89,14 +89,14 @@ export function HeroSlider() {
       <div className="absolute bottom-1/4 right-6 md:right-10 w-32 h-32 md:w-48 md:h-48 bg-blue-400/20 backdrop-blur-xl rounded-[3rem] rotate-12 animate-float-complex z-20 shadow-2xl border border-white/20" style={{ animationDelay: '1s' }} />
 
       {/* Текст */}
-      <div className="container mx-auto px-4 relative z-30 flex flex-col items-center text-center pb-28">
-        <div className="h-[280px] md:h-[380px] relative w-full flex flex-col justify-center items-center mt-10">
+      <div className="container mx-auto px-4 relative z-30 flex flex-col items-center text-center pb-12 md:pb-24 pt-10">
+        <div className="relative w-full grid" style={{ gridTemplateAreas: "'slide'" }}>
           {slides.map((slide, i) => (
-            <div key={slide.id} className={cn('absolute w-full transition-all duration-1000 ease-out', i === current ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-8 scale-95 pointer-events-none')}>
-              <div className="inline-flex items-center gap-2 px-5 py-2 bg-white/20 backdrop-blur-md rounded-full text-white font-extrabold text-xs md:text-sm mb-6 border border-white/30 shadow-sm uppercase tracking-wider">
+            <div key={slide.id} className={cn('w-full transition-all duration-1000 ease-out flex flex-col justify-center items-center', i === current ? 'opacity-100 translate-y-0 scale-100 relative z-10' : 'opacity-0 translate-y-8 scale-95 pointer-events-none absolute')} style={{ gridArea: 'slide' }}>
+              <div className="inline-flex items-center gap-2 px-5 py-2 bg-white/20 backdrop-blur-md rounded-full text-white font-extrabold text-xs md:text-sm mb-4 md:mb-6 border border-white/30 shadow-sm uppercase tracking-wider">
                 <Sparkles size={16} className="text-yellow-400" /> Кращий старт
               </div>
-              <h1 className="text-4xl sm:text-6xl lg:text-[6.5rem] font-black text-white leading-[1.05] tracking-tighter mb-6 max-w-5xl mx-auto drop-shadow-xl">
+              <h1 className="text-4xl sm:text-6xl lg:text-[6.5rem] font-black text-white leading-[1.05] tracking-tighter mb-4 md:mb-6 max-w-5xl mx-auto drop-shadow-xl">
                 {slide.title}
               </h1>
               {slide.description && (
@@ -108,10 +108,8 @@ export function HeroSlider() {
           ))}
         </div>
 
-        {/* CTA кнопки — фіксована мін-висота, щоб блок не «стрибав» між слайдами
-            (на 0 слайді — 2 кнопки, на інших — 1 або жодної). */}
-        <div className="relative z-30 mt-8 min-h-[60px] flex flex-col sm:flex-row items-center gap-4 justify-center">
-          {/* На першому слайді — основні CTA */}
+        {/* CTA кнопки */}
+        <div className="relative z-30 mt-8 mb-12 flex flex-col sm:flex-row items-center gap-4 justify-center min-h-[60px]">
           {current === 0 ? (
             <>
               <MagneticButton
@@ -145,22 +143,21 @@ export function HeroSlider() {
             ) : null
           )}
         </div>
-      </div>
 
-      {/* Точки слайдера — АБСОЛЮТНО зафіксовані внизу секції (над хвилею).
-          Не залежать від висоти тексту/кнопок, тож НЕ стрибають при зміні слайда. */}
-      {slides.length > 1 && (
-        <div className="absolute left-1/2 -translate-x-1/2 bottom-24 md:bottom-32 z-30 flex items-center gap-3">
-          {slides.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrent(i)}
-              aria-label={`Слайд ${i + 1}`}
-              className={cn('h-2 rounded-full transition-all duration-500 ease-out', i === current ? 'w-16 bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.6)]' : 'w-4 bg-white/40 hover:bg-white/70')}
-            />
-          ))}
-        </div>
-      )}
+        {/* Точки слайдера — тепер вони частина потоку документів, а не абсолютні */}
+        {slides.length > 1 && (
+          <div className="relative z-30 flex items-center gap-3 justify-center">
+            {slides.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrent(i)}
+                aria-label={`Слайд ${i + 1}`}
+                className={cn('h-2 rounded-full transition-all duration-500 ease-out', i === current ? 'w-16 bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.6)]' : 'w-4 bg-white/40 hover:bg-white/70')}
+              />
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* SVG-хвиля знизу */}
       <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-none z-30 translate-y-1">
