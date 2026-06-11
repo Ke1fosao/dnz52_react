@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { MapPin, Compass, Plus, Minus, Maximize } from 'lucide-react';
+import { MapPin, Compass, Plus, Minus, Maximize, Minimize } from 'lucide-react';
 import { Pannellum } from 'pannellum-react';
 import { Seo } from '@/components/common/Seo';
 import { PageHero } from '@/components/common/PageHero';
@@ -24,7 +24,17 @@ export function TourPage() {
   });
   const [index, setIndex] = useState(0);
   const [loadingPano, setLoadingPano] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const panoRef = useRef<any>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
 
   const handleZoom = (delta: number) => {
     const viewer = panoRef.current?.getViewer();
@@ -32,8 +42,13 @@ export function TourPage() {
   };
 
   const handleFullscreen = () => {
-    const viewer = panoRef.current?.getViewer();
-    if (viewer) viewer.toggleFullscreen();
+    if (!document.fullscreenElement) {
+      wrapperRef.current?.requestFullscreen().catch(err => {
+        console.error('Помилка повноекранного режиму:', err);
+      });
+    } else {
+      document.exitFullscreen();
+    }
   };
 
   const stops = data || [];
@@ -82,8 +97,11 @@ export function TourPage() {
       ) : (
         <>
           {/* Сцена Pannellum */}
-          <div className="relative rounded-[2rem] md:rounded-[2.5rem] overflow-hidden shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] bg-slate-900 ring-1 ring-slate-900/5 dark:ring-white/10 group">
-            <div className="relative w-full h-[65vh] min-h-[450px]">
+          <div ref={wrapperRef} className={cn(
+            "relative overflow-hidden group transition-all duration-500",
+            isFullscreen ? "fixed inset-0 z-50 bg-slate-900 rounded-none w-full h-full" : "rounded-[2rem] md:rounded-[2.5rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] bg-slate-900 ring-1 ring-slate-900/5 dark:ring-white/10"
+          )}>
+            <div className={cn("relative w-full", isFullscreen ? "h-full" : "h-[65vh] min-h-[450px]")}>
               {loadingPano && (
                 <div className="absolute inset-0 z-50 flex flex-col items-center justify-center overflow-hidden transition-opacity duration-500 bg-gray-900">
                   <img src={stop.image} alt="" className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-60 transition-all duration-700" />
@@ -121,8 +139,8 @@ export function TourPage() {
                     <Minus size={20} strokeWidth={2.5} />
                   </button>
                 </div>
-                <button onClick={handleFullscreen} className="p-2 md:p-3 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 text-white hover:bg-white/20 transition-colors shadow-lg" aria-label="На весь екран">
-                  <Maximize size={20} strokeWidth={2.5} />
+                <button onClick={handleFullscreen} className="p-2 md:p-3 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 text-white hover:bg-white/20 transition-colors shadow-lg" aria-label="Повноекранний режим">
+                  {isFullscreen ? <Minimize size={20} strokeWidth={2.5} /> : <Maximize size={20} strokeWidth={2.5} />}
                 </button>
               </div>
             </div>
@@ -133,9 +151,9 @@ export function TourPage() {
               <div className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider bg-white/20 backdrop-blur-md px-3 py-1 rounded-full mb-3">
                 <MapPin size={13} /> Зупинка {index + 1} з {total}
               </div>
-              <h2 className="text-2xl md:text-4xl font-black drop-shadow-lg mb-2">{stop.title}</h2>
+              <h2 className={cn("font-black drop-shadow-lg mb-2 transition-all", isFullscreen ? "text-3xl md:text-5xl" : "text-2xl md:text-4xl")}>{stop.title}</h2>
               {stop.description && (
-                <p className="text-sm md:text-base text-gray-100 max-w-2xl drop-shadow leading-relaxed whitespace-pre-line line-clamp-4">
+                <p className={cn("text-gray-100 max-w-2xl drop-shadow leading-relaxed whitespace-pre-line transition-all", isFullscreen ? "text-base md:text-lg line-clamp-none" : "text-sm md:text-base line-clamp-4")}>
                   {stop.description}
                 </p>
               )}
