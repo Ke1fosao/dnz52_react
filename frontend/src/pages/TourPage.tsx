@@ -71,8 +71,54 @@ export function TourPage() {
   useEffect(() => {
     if (isFullscreen && !document.fullscreenElement) {
       document.body.style.overflow = 'hidden';
+      const el = wrapperRef.current;
+      if (el) {
+        let parent = el.parentElement;
+        while (parent && parent.tagName !== 'BODY') {
+          // Backup existing inline styles if any
+          if (!parent.dataset.oldTransform) parent.dataset.oldTransform = parent.style.transform || 'NONE';
+          if (!parent.dataset.oldFilter) parent.dataset.oldFilter = parent.style.filter || 'NONE';
+          if (!parent.dataset.oldZIndex) parent.dataset.oldZIndex = parent.style.zIndex || 'NONE';
+
+          parent.style.setProperty('transform', 'none', 'important');
+          parent.style.setProperty('filter', 'none', 'important');
+          parent.style.setProperty('perspective', 'none', 'important');
+          // Add relative position if static, so z-index applies
+          if (window.getComputedStyle(parent).position === 'static') {
+            if (!parent.dataset.oldPosition) parent.dataset.oldPosition = parent.style.position || 'NONE';
+            parent.style.setProperty('position', 'relative', 'important');
+          }
+          parent.style.setProperty('z-index', '9999', 'important');
+          
+          parent = parent.parentElement;
+        }
+      }
     } else {
       document.body.style.overflow = '';
+      const el = wrapperRef.current;
+      if (el) {
+        let parent = el.parentElement;
+        while (parent && parent.tagName !== 'BODY') {
+          if (parent.dataset.oldTransform) {
+            parent.style.transform = parent.dataset.oldTransform === 'NONE' ? '' : parent.dataset.oldTransform;
+            delete parent.dataset.oldTransform;
+          }
+          if (parent.dataset.oldFilter) {
+            parent.style.filter = parent.dataset.oldFilter === 'NONE' ? '' : parent.dataset.oldFilter;
+            delete parent.dataset.oldFilter;
+          }
+          if (parent.dataset.oldZIndex) {
+            parent.style.zIndex = parent.dataset.oldZIndex === 'NONE' ? '' : parent.dataset.oldZIndex;
+            delete parent.dataset.oldZIndex;
+          }
+          if (parent.dataset.oldPosition) {
+            parent.style.position = parent.dataset.oldPosition === 'NONE' ? '' : parent.dataset.oldPosition;
+            delete parent.dataset.oldPosition;
+          }
+          parent.style.removeProperty('perspective');
+          parent = parent.parentElement;
+        }
+      }
     }
     return () => { document.body.style.overflow = ''; };
   }, [isFullscreen]);
