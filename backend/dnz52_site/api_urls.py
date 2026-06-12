@@ -165,6 +165,9 @@ router.register(r'admin/chat-logs', AdminChatLogViewSet, basename='admin-chat-lo
 
 
 urlpatterns = [
+    # Віртуальний тур проксі (ОБОВ'ЯЗКОВО ПЕРЕД router.urls, щоб уникнути 404)
+    path('tour/proxy/', tour_image_proxy, name='api-tour-proxy'),
+    
     path('', include(router.urls)),
 
     # Адмінпанель: автентифікація + статистика
@@ -201,9 +204,6 @@ urlpatterns = [
 
     # Events — завантаження .ics
     path('events/<slug:slug>/ical/', event_ical, name='api-event-ical'),
-
-    # Віртуальний тур проксі
-    path('tour/proxy/', tour_image_proxy, name='api-tour-proxy'),
 
     # Web-push
     path('push/vapid-key/', push_vapid_key, name='api-push-vapid'),
