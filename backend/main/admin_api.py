@@ -665,6 +665,22 @@ class AdminTourStopViewSet(_ContentViewSet):
     serializer_class = AdminTourStopSerializer
     queryset = TourStop.objects.all().order_by('order', 'id')
 
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except Exception as e:
+            import traceback
+            from rest_framework.response import Response
+            return Response({'detail': f'Помилка: {str(e)}', 'trace': traceback.format_exc()}, status=400)
+
+    def update(self, request, *args, **kwargs):
+        try:
+            return super().update(request, *args, **kwargs)
+        except Exception as e:
+            import traceback
+            from rest_framework.response import Response
+            return Response({'detail': f'Помилка: {str(e)}', 'trace': traceback.format_exc()}, status=400)
+
 
 class AdminStaffMemberViewSet(_ContentViewSet):
     serializer_class = AdminStaffMemberSerializer

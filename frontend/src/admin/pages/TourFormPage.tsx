@@ -41,7 +41,11 @@ export function TourFormPage() {
       qc.invalidateQueries({ queryKey: ['admin-tour'] });
       toast.success(editing ? 'Збережено' : 'Зупинку додано');
       nav('/manage/tour');
-    } catch { toast.error('Не вдалося зберегти'); } finally { setSaving(false); }
+    } catch (err: any) { 
+        console.error(err);
+        const msg = err.response?.data?.detail || err.response?.data?.trace || 'Не вдалося зберегти';
+        toast.error(msg); 
+    } finally { setSaving(false); }
   };
 
   const del = async () => {
