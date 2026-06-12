@@ -60,6 +60,16 @@ export function TourPage() {
   };
 
   useEffect(() => {
+    let timer: any;
+    if (loadingPano) {
+      timer = setTimeout(() => {
+        setLoadingPano(false);
+      }, 1500); // Резервний таймер: якщо подія onLoad загубилась
+    }
+    return () => clearTimeout(timer);
+  }, [loadingPano, index]);
+
+  useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft') {
         setLoadingPano(true);
@@ -123,6 +133,7 @@ export function TourPage() {
                 yaw={0}
                 hfov={100}
                 autoLoad
+                crossOrigin="anonymous"
                 showZoomCtrl={false}
                 showFullscreenCtrl={false}
                 compass={false}
