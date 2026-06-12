@@ -42,14 +42,40 @@ export function TourPage() {
   };
 
   const handleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      wrapperRef.current?.requestFullscreen().catch(err => {
-        console.error('Помилка повноекранного режиму:', err);
-      });
+    const el = wrapperRef.current;
+    if (!el) return;
+
+    if (!document.fullscreenElement && !isFullscreen) {
+      if (el.requestFullscreen) {
+        el.requestFullscreen().catch(() => {
+          setIsFullscreen(true); // Fallback if blocked
+        });
+      } else if ((el as any).webkitRequestFullscreen) {
+        (el as any).webkitRequestFullscreen();
+      } else {
+        setIsFullscreen(true); // Fallback for iOS iPhone
+      }
     } else {
-      document.exitFullscreen();
+      if (document.fullscreenElement) {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if ((document as any).webkitExitFullscreen) {
+          (document as any).webkitExitFullscreen();
+        }
+      } else {
+        setIsFullscreen(false);
+      }
     }
   };
+
+  useEffect(() => {
+    if (isFullscreen && !document.fullscreenElement) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [isFullscreen]);
 
   const stops = data || [];
   const total = stops.length;
@@ -109,7 +135,7 @@ export function TourPage() {
           {/* Сцена Pannellum */}
           <div ref={wrapperRef} className={cn(
             "relative overflow-hidden group transition-all duration-500",
-            isFullscreen ? "fixed inset-0 z-50 bg-slate-900 rounded-none w-full h-full" : "rounded-[2rem] md:rounded-[2.5rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] bg-slate-900 ring-1 ring-slate-900/5 dark:ring-white/10"
+            isFullscreen ? "fixed inset-0 z-[9999] bg-slate-900 rounded-none w-full h-full" : "rounded-[2rem] md:rounded-[2.5rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] bg-slate-900 ring-1 ring-slate-900/5 dark:ring-white/10"
           )}>
             <div className={cn("relative w-full", isFullscreen ? "h-full" : "h-[65vh] min-h-[450px]")}>
               {loadingPano && (
