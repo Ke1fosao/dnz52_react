@@ -42,6 +42,7 @@ _IMAGE_FIELDS = [
     ('specialists', 'Specialist',        'photo'),
     ('specialists', 'SpecialistPagePhoto', 'image'),
     ('events', 'Event',                  'image'),
+    ('tour', 'TourStop',                 'image'),
 ]
 
 

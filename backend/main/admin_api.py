@@ -669,17 +669,19 @@ class AdminTourStopViewSet(_ContentViewSet):
         try:
             return super().create(request, *args, **kwargs)
         except Exception as e:
-            import traceback
+            import logging
+            logging.getLogger('admin_api').exception('TourStop create failed')
             from rest_framework.response import Response
-            return Response({'detail': f'Помилка: {str(e)}', 'trace': traceback.format_exc()}, status=400)
+            return Response({'detail': f'Помилка збереження: {e}'}, status=400)
 
     def update(self, request, *args, **kwargs):
         try:
             return super().update(request, *args, **kwargs)
         except Exception as e:
-            import traceback
+            import logging
+            logging.getLogger('admin_api').exception('TourStop update failed')
             from rest_framework.response import Response
-            return Response({'detail': f'Помилка: {str(e)}', 'trace': traceback.format_exc()}, status=400)
+            return Response({'detail': f'Помилка збереження: {e}'}, status=400)
 
 
 class AdminStaffMemberViewSet(_ContentViewSet):
