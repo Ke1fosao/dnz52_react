@@ -128,7 +128,7 @@ export function TourPage() {
                 ref={panoRef}
                 width="100%"
                 height="100%"
-                image={stop.image}
+                image={`/api/v1/tour/proxy/?url=${encodeURIComponent(stop.image)}`}
                 pitch={0}
                 yaw={0}
                 hfov={100}

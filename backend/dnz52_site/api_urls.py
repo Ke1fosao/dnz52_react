@@ -27,7 +27,7 @@ from menu.api_views import DailyMenuViewSet
 from faq.api_views import faq_list, faq_like, faq_ask
 from events.api_views import EventViewSet, event_ical
 from enrollment.api_views import enrollment_create
-from tour.api_views import TourStopViewSet
+from tour.api_views import TourStopViewSet, tour_image_proxy
 from main.admin_api import (
     admin_login, admin_logout, admin_me, admin_stats, admin_meta,
     AdminReviewViewSet, AdminQuestionViewSet,
@@ -201,6 +201,9 @@ urlpatterns = [
 
     # Events — завантаження .ics
     path('events/<slug:slug>/ical/', event_ical, name='api-event-ical'),
+
+    # Віртуальний тур проксі
+    path('tour/proxy/', tour_image_proxy, name='api-tour-proxy'),
 
     # Web-push
     path('push/vapid-key/', push_vapid_key, name='api-push-vapid'),
