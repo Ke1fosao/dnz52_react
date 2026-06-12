@@ -299,7 +299,7 @@ if AWS_STORAGE_BUCKET_NAME:
     _s3_host = _urlparse(AWS_S3_ENDPOINT_URL).netloc
     if _s3_host:
         AWS_S3_CUSTOM_DOMAIN = f'{_s3_host}/storage/v1/object/public/{AWS_STORAGE_BUCKET_NAME}'
-    STORAGES['default'] = {'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage'}
+    STORAGES['default'] = {'BACKEND': 'dnz52_site.storage_backends.SupabaseS3Storage'}
 
 
 
