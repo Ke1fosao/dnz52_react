@@ -1,5 +1,8 @@
 from django.db import models
+from PIL import Image
 
+# Дозволяємо завантаження величезних панорамних фото (зняття захисту від DecompressionBomb)
+Image.MAX_IMAGE_PIXELS = None
 
 class TourStop(models.Model):
     """Зупинка віртуального туру — кімната/локація садочка з фото та описом."""
