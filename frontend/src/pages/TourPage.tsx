@@ -114,6 +114,7 @@ export function TourPage() {
               )}
               
               <Pannellum
+                key={stop.image}
                 ref={panoRef}
                 width="100%"
                 height="100%"
@@ -126,6 +127,10 @@ export function TourPage() {
                 showFullscreenCtrl={false}
                 compass={false}
                 onLoad={() => setLoadingPano(false)}
+                onError={(err: any) => {
+                  console.error("Помилка Pannellum:", err);
+                  setLoadingPano(false);
+                }}
               />
               
               {/* Кастомні кнопки управління */}
